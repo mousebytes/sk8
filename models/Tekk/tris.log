@@ -1,0 +1,221 @@
+File Name       : models/tekk/tris.md2
+magic           : IDP2
+version         : 8
+skinWidth       : 256
+skinHeight      : 256
+frameSize       : 1756
+numSkins        : 2
+numVertices     : 429
+numTexCoords    : 437
+numTriangles    : 756
+numGlCommands   : 4145
+numFrames       : 200
+---------------------
+offsetSkins     : 68
+offsetTexCoord  : 196
+offsetTriangles : 1944
+offsetFrames    : 11016
+offsetGlCommands: 362216
+offsetEnd       : 378796
+Total Frames  : 200
+----------------------
+[  1] stand0
+[  2] stand1
+[  3] stand2
+[  4] stand3
+[  5] stand4
+[  6] stand5
+[  7] stand6
+[  8] stand7
+[  9] stand8
+[ 10] stand9
+[ 11] stand10
+[ 12] stand11
+[ 13] stand12
+[ 14] stand13
+[ 15] stand14
+[ 16] stand15
+[ 17] stand16
+[ 18] stand17
+[ 19] stand18
+[ 20] stand19
+[ 21] stand20
+[ 22] stand21
+[ 23] stand22
+[ 24] stand23
+[ 25] stand24
+[ 26] stand25
+[ 27] stand26
+[ 28] stand27
+[ 29] stand28
+[ 30] stand29
+[ 31] stand30
+[ 32] stand31
+[ 33] stand32
+[ 34] stand33
+[ 35] stand34
+[ 36] stand35
+[ 37] stand36
+[ 38] stand37
+[ 39] stand38
+[ 40] stand39
+[ 41] run1
+[ 42] run2
+[ 43] run3
+[ 44] run4
+[ 45] run5
+[ 46] run6
+[ 47] attack1
+[ 48] attack2
+[ 49] attack3
+[ 50] attack4
+[ 51] attack5
+[ 52] attack6
+[ 53] attack7
+[ 54] attack8
+[ 55] pain1
+[ 56] pain2
+[ 57] pain3
+[ 58] pain4
+[ 59] pain5
+[ 60] pain6
+[ 61] pain7
+[ 62] pain8
+[ 63] pain9
+[ 64] pain10
+[ 65] pain11
+[ 66] pain12
+[ 67] jump1
+[ 68] jump2
+[ 69] jump3
+[ 70] jump4
+[ 71] jump5
+[ 72] jump6
+[ 73] flipoff1
+[ 74] flipoff2
+[ 75] flipoff3
+[ 76] flipoff4
+[ 77] flipoff5
+[ 78] flipoff6
+[ 79] flipoff7
+[ 80] flipoff8
+[ 81] flipoff9
+[ 82] flipoff10
+[ 83] flipoff11
+[ 84] flipoff12
+[ 85] salute1
+[ 86] salute2
+[ 87] salute3
+[ 88] salute4
+[ 89] salute5
+[ 90] salute6
+[ 91] salute7
+[ 92] salute8
+[ 93] salute9
+[ 94] salute10
+[ 95] salute11
+[ 96] taunt1
+[ 97] taunt2
+[ 98] taunt3
+[ 99] taunt4
+[100] taunt5
+[101] taunt6
+[102] taunt7
+[103] taunt8
+[104] taunt9
+[105] taunt10
+[106] taunt11
+[107] taunt12
+[108] taunt13
+[109] taunt14
+[110] taunt15
+[111] taunt16
+[112] taunt17
+[113] wave1
+[114] wave2
+[115] wave3
+[116] wave4
+[117] wave5
+[118] wave6
+[119] wave7
+[120] wave8
+[121] wave9
+[122] wave10
+[123] wave11
+[124] point1
+[125] point2
+[126] point3
+[127] point4
+[128] point5
+[129] point6
+[130] point7
+[131] point8
+[132] point9
+[133] point10
+[134] point11
+[135] point12
+[136] crstand1
+[137] crstand2
+[138] crstand3
+[139] crstand4
+[140] crstand5
+[141] crstand6
+[142] crstand7
+[143] crstand8
+[144] crstand9
+[145] crstand10
+[146] crstand11
+[147] crstand12
+[148] crstand13
+[149] crstand14
+[150] crstand15
+[151] crstand16
+[152] crstand17
+[153] crstand18
+[154] crstand19
+[155] crwalk1
+[156] crwalk2
+[157] crwalk3
+[158] crwalk4
+[159] crwalk5
+[160] crwalk6
+[161] crattack1
+[162] crattack2
+[163] crattack3
+[164] crattack4
+[165] crattack5
+[166] crattack6
+[167] crattack7
+[168] crattack8
+[169] crattack9
+[170] crpain1
+[171] crpain2
+[172] crpain3
+[173] crpain4
+[174] crdeath1
+[175] crdeath2
+[176] crdeath3
+[177] crdeath4
+[178] crdeath5
+[179] deatha1
+[180] deatha2
+[181] deatha3
+[182] deatha4
+[183] deatha5
+[184] deatha6
+[185] deathb1
+[186] deathb2
+[187] deathb3
+[188] deathb4
+[189] deathb5
+[190] deathb6
+[191] deathc1
+[192] deathc2
+[193] deathc3
+[194] deathc4
+[195] deathc5
+[196] deathc6
+[197] deathc7
+[198] deathc8
+[199] skinref
+[200] exploded
