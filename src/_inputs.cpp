@@ -65,31 +65,6 @@ void _inputs::keyPressed(_parallax* prlx)
      }
 }
 
-void _inputs::keyPressed(_3DModelLoader* Ply, _3DModelLoader* W)
-{
-      switch(wParam)
-     {
-     case VK_LEFT:
-           W->actionTrigger = Ply->actionTrigger = Ply->RUN;
-        break;
-     case VK_RIGHT:
-           W->actionTrigger = Ply->actionTrigger = Ply->ATTACK;
-        break;
-
-     case VK_UP:
-           W->actionTrigger = Ply->actionTrigger = Ply->JUMP;
-        break;
-     case VK_DOWN:
-          W->actionTrigger = Ply->actionTrigger = Ply->PAIN;
-        break;
-
-     default:
-        W->actionTrigger = Ply->actionTrigger = Ply->STAND;
-        break;
-   }
-
-}
-
 void _inputs::keyPressed(_skyBox* sky)
 {
 
@@ -189,7 +164,7 @@ void _inputs::keyPressed(_camera* cm)
         break;
      case 32:   // space bar
             //cm->camReset();
-            cm->isFreeCam = !cm->isFreeCam;
+            //cm->isFreeCam = !cm->isFreeCam;
         break;
      }
 }

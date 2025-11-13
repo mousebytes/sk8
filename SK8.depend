@@ -7,7 +7,7 @@
 	<gl/gl.h>
 	<_scene.h>
 
-1762948677 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
+1763018199 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
 	<_common.h>
 	<_light.h>
 	<_model.h>
@@ -17,7 +17,6 @@
 	<_skybox.h>
 	<_sprite.h>
 	<_timer.h>
-	<_3dmodelloader.h>
 	<_camera.h>
 	<_collisioncheck.h>
 	"_StaticModelInstance.h"
@@ -64,14 +63,13 @@
 1762563177 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_model.h
 	<_common.h>
 
-1762639633 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_inputs.h
+1763017854 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_inputs.h
 	<_common.h>
 	<_model.h>
 	<_parallax.h>
 	<_skybox.h>
 	<_sprite.h>
 	<_camera.h>
-	<_3dmodelloader.h>
 	"_StaticModelInstance.h"
 
 1762563177 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_parallax.h
@@ -116,7 +114,7 @@
 	"_SphereHitbox.h"
 	"_CubeHitbox.h"
 
-1762822023 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_camera.cpp
+1763018563 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_camera.cpp
 	"_camera.h"
 
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_collisioncheck.cpp
@@ -125,7 +123,7 @@
 1762563177 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_collisioncheck.h
 	<_common.h>
 
-1762949728 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_inputs.cpp
+1763018179 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_inputs.cpp
 	"_inputs.h"
 
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_light.cpp
@@ -137,7 +135,7 @@
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_parallax.cpp
 	"_parallax.h"
 
-1762998081 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
+1763019154 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
 	"_scene.h"
 
 1762949818 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_skybox.cpp
@@ -235,7 +233,7 @@
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
 
-1762827080 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
+1763017885 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
 	"_camera.h"
 	"_inputs.h"
 	"_common.h"
@@ -259,7 +257,7 @@
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
 
-1762944159 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
+1763018987 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
 	"_Player.h"
 
 1762998150 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_spherehitbox.cpp

@@ -7,7 +7,6 @@
 #include<_skybox.h>
 #include<_sprite.h>
 #include<_camera.h>
-#include<_3dmodelloader.h>
 #include"_StaticModelInstance.h"
 
 
@@ -22,7 +21,6 @@ class _inputs
         void keyPressed(_skyBox *);
         void keyPressed(_sprite *);
         void keyPressed(_camera *);     // key pressed on keyboard
-        void keyPressed(_3DModelLoader *,_3DModelLoader*);
         void keyPressed(_StaticModelInstance *staticModel);
         void keyUp(_sprite *);     // key released on keyboard
 

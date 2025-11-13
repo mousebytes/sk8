@@ -10,7 +10,6 @@
 #include<_skybox.h>
 #include<_sprite.h>
 #include<_timer.h>
-#include<_3dmodelloader.h>
 #include<_camera.h>
 #include<_collisioncheck.h>
 #include"_StaticModelInstance.h"
