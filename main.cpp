@@ -131,7 +131,8 @@ BOOL CreateGLWindow(char* title, int width, int height, int bits, bool fullscree
 
 		dwExStyle=WS_EX_APPWINDOW;				            // Window Extended Style
 		dwStyle= WS_POPUP;			  		                // must handle Gsync situations: Windows Style
-		ShowCursor(FALSE);					                // Hide Mouse Pointer
+		ShowCursor(TRUE);
+		//ShowCursor(FALSE);					                // Hide Mouse Pointer
 	}
 	else
 	{
@@ -359,7 +360,7 @@ int WINAPI WinMain(
 	  else						        // If There Are No Messages
 		{
 			// Draw The Scene.  Watch For ESC Key And Quit Messages From DrawGLScene()
-			if (!active || keys[VK_ESCAPE])	// Active?  Was There A Quit Received?
+			if (!active )//|| keys[VK_ESCAPE])	// Active?  Was There A Quit Received?
 			{
 				done=TRUE;		        // ESC or DrawGLScene Signalled A Quit
 			}

@@ -19,6 +19,8 @@ class _model
 
         double scale;
 
+        vec3 p;
+
         void drawModel();
 
     protected:

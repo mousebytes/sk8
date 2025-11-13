@@ -47,9 +47,12 @@
 		</Linker>
 		<Unit filename="include/Anorms.h" />
 		<Unit filename="include/_AnimatedModel.h" />
+		<Unit filename="include/_Hitbox.h" />
 		<Unit filename="include/_MD2Model.h" />
 		<Unit filename="include/_ModelInstance.h" />
+		<Unit filename="include/_ObjModel.h" />
 		<Unit filename="include/_StaticModel.h" />
+		<Unit filename="include/_StaticModelInstance.h" />
 		<Unit filename="include/_Time.h" />
 		<Unit filename="include/_bullets.h" />
 		<Unit filename="include/_camera.h" />
@@ -66,9 +69,12 @@
 		<Unit filename="include/_timer.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/_AnimatedModel.cpp" />
+		<Unit filename="src/_Hitbox.cpp" />
 		<Unit filename="src/_MD2Model.cpp" />
 		<Unit filename="src/_ModelInstance.cpp" />
+		<Unit filename="src/_ObjModel.cpp" />
 		<Unit filename="src/_StaticModel.cpp" />
+		<Unit filename="src/_StaticModelInstance.cpp" />
 		<Unit filename="src/_Time.cpp" />
 		<Unit filename="src/_bullets.cpp" />
 		<Unit filename="src/_camera.cpp" />

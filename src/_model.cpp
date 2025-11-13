@@ -11,6 +11,10 @@ _model::_model()
         posY = 0;
         posZ =-8.0;
 
+        p.x = posX;
+        p.y = posY;
+        p.z = posZ;
+
         scale =1;
 }
 
@@ -22,6 +26,10 @@ void _model::drawModel()
 {
     glPushMatrix();          // start group
     glColor3f(1,1,1);    //set colors
+
+        p.x = posX;
+        p.y = posY;
+        p.z = posZ;
 
     glTranslated(posX,posY,posZ); //translation
     glRotated(rotateX,1,0,0);     //rotate around X-Axis

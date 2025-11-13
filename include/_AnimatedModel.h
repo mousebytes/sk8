@@ -2,7 +2,7 @@
 #define _ANIMATEDMODEL_H
 
 #include<_common.h>
-#include"_StaticModel.h"
+#include"_ObjModel.h"
 
 /*
 EX for naming schema:
@@ -28,28 +28,37 @@ SK8/
 └── main.cpp
 */
 
-class _AnimatedModel{
-    public:
-        _AnimatedModel();
-        ~_AnimatedModel();
+class _AnimatedModel {
+public:
+    _AnimatedModel();
+    ~_AnimatedModel();
 
-        // loads an animation from sequence of OBJs
-        // ex: LoadAnimation("models/skater/push",10);
-        // would load push_00.obj, push_01.obj, ..., push_09.obj
-        bool LoadAnimation(const char* baseName, int frameCount);
+    // call this once before registering animations
+    bool LoadTexture(char* texpath);
 
-        void FreeModel();
+    // loads an animation sequence and stores it with a name (key)
+    bool RegisterAnimation(std::string name, const char* baseName, int frameCount);
 
-        //render function which does lerp
-        void RenderInterpolated(int frameA, int frameB, float interp);
+    void FreeModel();
 
-        int GetFrameCount();
-    private:
-        // flipbook of frames
-        std::vector<ObjModel*> m_Frames;
-        _textureLoader myTex;
-        GLuint modelTexID;
-    protected:
+    // draws an animation given a name & two frames & interp factor
+    void Draw(std::string animName, int frameA, int frameB, float interp);
+
+    // gets the frame count for a specific animation
+    int GetFrameCount(std::string animName);
+
+private:
+
+    // this map stores all loaded animation sequences by name
+    std::map<std::string, std::vector<ObjModel*>> m_Animations;
+
+    _textureLoader myTex;
+    GLuint modelTexID;
+
+    // a temporary model to hold the interpolated result
+    ObjModel m_ScratchFrame;
+
+protected:
 };
 
 #endif //_ANIMATEDMODEL_H

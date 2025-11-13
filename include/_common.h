@@ -2,6 +2,9 @@
 #define _COMMON_H
 
 #include<iostream>
+// needed this because windows.h was killing my intellisense
+// and causing false errors :(
+#define NOMINMAX
 #include<windows.h>
 #include<string>
 
@@ -14,8 +17,12 @@
 
 #include<fstream>
 #include<vector>
+#include<list>
 #include <sstream>
 #include <limits>
+#include<algorithm>
+#include<cmath>
+#include<map>
 
 #include"_Time.h"
 
@@ -50,6 +57,13 @@ struct Vector3{
     Vector3 operator+(Vector3& other){
         return Vector3(x+other.x, y+other.y, z+other.z);
     }
+    Vector3 operator+(const Vector3& other){
+        return Vector3(x+other.x, y+other.y, z+other.z);
+    }
+
+    Vector3 operator+(float scalar){
+        return Vector3(x+scalar,y+scalar,z+scalar);
+    }
 
     Vector3 operator-(Vector3& other){
         return Vector3(x-other.x, y-other.y, z-other.z);
@@ -61,6 +75,15 @@ struct Vector3{
 
     Vector3 operator/(float scalar){
         return Vector3(x/scalar, y/scalar, z/scalar);
+    }
+
+    void normalize() {
+        float length = sqrt(x*x + y*y + z*z);
+        if (length > 0.0f) { // avoid divide by zero
+            x /= length;
+            y /= length;
+            z /= length;
+        }
     }
 
 };
@@ -75,5 +98,8 @@ struct Vector2{
         return Vector2(x+other.x, y+other.y);
     }
 };
+
+extern bool isDebug;
+extern bool colliderDrawFace;
 
 #endif // _COMMON_H

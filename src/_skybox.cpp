@@ -18,15 +18,16 @@ void _skyBox::skyBoxInit()
 
     rotation.x= rotation.y=rotation.z = 0;
     pos.x = pos.y =0;
-    pos.z = -9.0;
+    pos.z = -10.0;
 
-    boxSize.x = boxSize.z = 30.0;
-    boxSize.y = 5.0;
+    boxSize.x = boxSize.z = 150.0;
+    boxSize.y = 40.0;
 
 }
 
 void _skyBox::drawSkyBox()
 {
+    glDisable(GL_CULL_FACE);
    glDisable(GL_LIGHTING); // if you are using room comment this line
    glPushMatrix();
 
@@ -106,6 +107,7 @@ void _skyBox::drawSkyBox()
    glPopMatrix();
 
    glEnable(GL_LIGHTING);
+   glEnable(GL_CULL_FACE);
 
 }
 

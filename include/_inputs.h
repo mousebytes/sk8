@@ -7,6 +7,8 @@
 #include<_skybox.h>
 #include<_sprite.h>
 #include<_camera.h>
+#include<_3dmodelloader.h>
+#include"_StaticModelInstance.h"
 
 
 class _inputs
@@ -19,12 +21,12 @@ class _inputs
         void keyPressed(_parallax *); // key pressed on keyboard
         void keyPressed(_skyBox *);
         void keyPressed(_sprite *);
-        void keyPressed(_camera *);     // key released on keyboard
-
+        void keyPressed(_camera *);     // key pressed on keyboard
+        void keyPressed(_3DModelLoader *,_3DModelLoader*);
+        void keyPressed(_StaticModelInstance *staticModel);
         void keyUp(_sprite *);     // key released on keyboard
-        void keyUp();              // key released on keyboard
-        void keyUp(_camera *);     // key released on keyboard
 
+        void keyUp();              // key released on keyboard
 
         void mouseEventDown(_model *, double,double);//mouse pressed
         void mouseEventUp();        // mouse released

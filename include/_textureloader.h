@@ -10,7 +10,7 @@ class _textureLoader
         _textureLoader();
         virtual ~_textureLoader();
 
-        GLuint loadTexture(const char *);    //To read the image file
+        GLuint loadTexture(char *);    //To read the image file
         void bindTexture();          //To bind image to a model
 
         unsigned char *image;        // To handle image data

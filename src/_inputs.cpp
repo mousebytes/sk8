@@ -63,11 +63,32 @@ void _inputs::keyPressed(_parallax* prlx)
      case VK_SUBTRACT:
         break;
      }
-
-
 }
 
+void _inputs::keyPressed(_3DModelLoader* Ply, _3DModelLoader* W)
+{
+      switch(wParam)
+     {
+     case VK_LEFT:
+           W->actionTrigger = Ply->actionTrigger = Ply->RUN;
+        break;
+     case VK_RIGHT:
+           W->actionTrigger = Ply->actionTrigger = Ply->ATTACK;
+        break;
 
+     case VK_UP:
+           W->actionTrigger = Ply->actionTrigger = Ply->JUMP;
+        break;
+     case VK_DOWN:
+          W->actionTrigger = Ply->actionTrigger = Ply->PAIN;
+        break;
+
+     default:
+        W->actionTrigger = Ply->actionTrigger = Ply->STAND;
+        break;
+   }
+
+}
 
 void _inputs::keyPressed(_skyBox* sky)
 {
@@ -123,6 +144,77 @@ mySprite->actionTrigger = mySprite->WALKLEFT;
         break;
      }
 }
+
+void _inputs::keyPressed(_camera* cm)
+{
+   // cout<< wParam << endl;
+     switch(wParam)
+     {
+     case 'A':
+     case 'a':
+           cm->camMoveLtRt(-1);
+        break;
+     case 'D':
+     case 'd':
+            cm->camMoveLtRt(1);
+        break;
+
+     case 'W':
+     case 'w':
+            cm->camMoveFdBd(1);
+        break;
+     case 'S':
+     case 's':
+            cm->camMoveFdBd(-1);
+        break;
+
+     case 73:    //i
+            cm->rotAngle.y +=1.0;
+            cm->rotateXY();
+        break;
+
+     case 74: //j
+            cm->rotAngle.x -=1.0;
+              cm->rotateXY();
+        break;
+
+      case 75:    //k
+             cm->rotAngle.y -=1.0;
+               cm->rotateXY();
+        break;
+
+     case 76: //l
+           cm->rotAngle.x +=1.0;
+             cm->rotateXY();
+        break;
+     case 32:   // space bar
+            //cm->camReset();
+            cm->isFreeCam = !cm->isFreeCam;
+        break;
+     }
+}
+
+//DEBUG remove this function later
+void _inputs::keyPressed(_StaticModelInstance *staticModel){
+   switch(wParam){
+      case 'W':
+         staticModel->Push(0,0,-20);
+         break;
+      case 'S':
+         staticModel->Push(0,0,20);
+         break;
+      case 'A':
+         staticModel->Rotate(0,-45,0);
+         break;
+      case 'D':
+         staticModel->Rotate(0,45,0);
+      default:
+         break;
+   }
+}
+
+
+
 
 void _inputs::keyUp(_sprite* mySprite)
 {
@@ -184,66 +276,4 @@ void _inputs::mouseMove(_model* mdl, double x, double y)
     prev_MouseX = x;                         // reset mouse x
     prev_MouseY = y;                         // reset mouse y
 }
-
-void _inputs::keyPressed(_camera* cm)
-{
-    //cout << wParam << endl;
-    switch(wParam)
-     {
-    case 65: // a
-        cm->camMoveLtRt(-1);
-        break;
-    case 68: // d
-        cm->camMoveLtRt(1);
-        break;
-    case 83: // s
-        cm->camMoveFdBd(1);
-        break;
-    case 87: // w
-        cm->camMoveFdBd(-1);
-        break;
-    case 32:
-        cm->camReset();
-        break;
-    case 73: // i
-        cm->rotAngle.y+=1.0;
-        cm->rotateXY();
-        break;
-    case 74: // j
-        cm->rotAngle.x-=1.0;
-        cm->rotateXY();
-        break;
-    case 75: // k
-        cm->rotAngle.y-=1.0;
-        cm->rotateXY();
-        break;
-    case 76: // l
-        cm->rotAngle.x+=1.0;
-        cm->rotateXY();
-        break;
-     case VK_LEFT:
-        break;
-     case VK_RIGHT:
-        break;
-
-     case VK_UP:
-        break;
-     case VK_DOWN:
-        break;
-
-       case VK_ADD:
-
-        break;
-     case VK_SUBTRACT:
-
-        break;
-     }
-}
-
-void _inputs::keyUp(_camera*)
-{
-
-}
-
-
 

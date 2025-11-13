@@ -2,26 +2,14 @@
 #define _STATIC_MODEL_H
 #include<_common.h>
 #include<_textureloader.h>
-
-struct ObjModel {
-    std::vector<Vector3> vertices;
-    std::vector<Vector2> tex_coords;
-    std::vector<Vector3> normals;
-    std::vector<std::vector<Vector3>> faces;
-    std::string filename;
-    
-    // Add these functions
-    void readObj();
-    void Draw();
-    void init(std::string filename);
-};
+#include"_ObjModel.h"
 
 class _StaticModel{
     public:
         _StaticModel();
         ~_StaticModel();
 
-        bool LoadModel(const char* filename);
+        bool LoadModel(const char* filename,char* texpath);
         void Draw();
         void FreeModel();
     private:
