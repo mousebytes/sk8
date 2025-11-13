@@ -34,8 +34,6 @@ _Scene::_Scene()
     m_targetBlueprint = new _AnimatedModel();
     m_targetManager = nullptr;
 
-    m_gunBlueprint = new _StaticModel;
-    m_gunInstance = new _StaticModelInstance(m_gunBlueprint);
 }
 
 _Scene::~_Scene()
@@ -64,9 +62,6 @@ _Scene::~_Scene()
 
     delete m_targetBlueprint;
     delete m_targetManager;
-
-    delete m_gunBlueprint;
-    delete m_gunInstance;
     
     delete m_resumeButton;
     delete m_pauseHelpButton;
@@ -477,7 +472,6 @@ void _Scene::initGameplay()
     m_targetManager->RegisterBulletManager(m_bulletManager);
     m_targetManager->RegisterStaticCollider(terrainInstance);
 
-    m_gunBlueprint->LoadModel("models/gun/gun.obj","models/gun/AK_ATLAS.png");
 
 }
 
@@ -551,17 +545,12 @@ void _Scene::drawGameplay()
 
     m_player->Draw();
     
-    // gun drawing
-    m_gunInstance->pos = Vector3(m_player->m_body->pos.x,m_player->m_body->pos.y+1.2f,m_player->m_body->pos.z);
-    m_gunInstance->scale= Vector3(0.7f,0.7f,0.7f);
-    m_gunInstance->rotation = Vector3(m_camera->rotAngle.y, m_camera->rotAngle.x, 0);
-    //glDisable(GL_CULL_FACE);
-    //m_gunInstance->Draw();
-    //glEnable(GL_CULL_FACE);
-    
     //m_bulletInstance->Draw();
     m_bulletManager->Draw();
     m_targetManager->Draw();
+
+    // this used to be the gun area but could be used to
+    // draw anything over the scene
 
     // after this point render ON TOP of the 3D world
     glClear(GL_DEPTH_BUFFER_BIT);
@@ -577,10 +566,6 @@ void _Scene::drawGameplay()
 
     // scale the gun to the right size
     glScalef(0.7f, 0.7f, 0.7f);
-
-    glDisable(GL_CULL_FACE);
-    m_gunBlueprint->Draw();
-    glEnable(GL_CULL_FACE);
    
 }
 
