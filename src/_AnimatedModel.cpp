@@ -9,7 +9,7 @@ _AnimatedModel::~_AnimatedModel() {
 }
 
 bool _AnimatedModel::LoadTexture(char* texpath) {
-    //cout << "Loading texture: " << texpath << '\n';
+    cout << "Loading texture: " << texpath << '\n';
     myTex.loadTexture(texpath);
     modelTexID = myTex.textID;
     return modelTexID != 0;

@@ -26,7 +26,7 @@ bool _StaticModel::LoadModel(const char* filename, char* texpath){
     char* s_texPath = texpath;
 
     // DEBUG
-    //std::cout << "Loading texture: " << s_texPath << '\n';
+    cout << "Loading texture: " << s_texPath << '\n';
     myTex.loadTexture(s_texPath);
     modelTexID=myTex.textID;
 

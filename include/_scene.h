@@ -22,7 +22,6 @@
 #include"_AnimatedModelInstance.h"
 #include"_Player.h"
 #include"_Bullets.h"
-#include"_TargetManager.h"
 
 class _Scene
 {
@@ -86,16 +85,20 @@ class _Scene
         _StaticModel *terrainBlueprint;
         _StaticModelInstance *terrainInstance;
 
+        // grind rail
+        _StaticModel* m_railBlueprint;
+        _StaticModelInstance* m_railInstance;
+
         _inputs *m_inputs;
         _camera *m_camera;
         _AnimatedModel *m_player_blueprint;
         _Player *m_player;
+        _StaticModel *m_skateboardBlueprint;
+        _StaticModelInstance *m_skateboardInstance;
 
         _StaticModel *m_bulletBlueprint;
         _Bullets *m_bulletManager;
 
-        _AnimatedModel* m_targetBlueprint;
-        _TargetManager* m_targetManager;
 
         enum SceneState {LandingPage, MainMenu, Help, Playing, Paused};
         SceneState m_sceneState;

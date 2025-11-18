@@ -4,6 +4,7 @@
 
 _AnimatedModelInstance::_AnimatedModelInstance(_AnimatedModel* modelAsset){
     blueprint = modelAsset;
+    m_rigidbody = new _Rigidbody();
 
     pos.x=pos.y=0;
     pos.z=-10.0;
@@ -16,13 +17,6 @@ _AnimatedModelInstance::_AnimatedModelInstance(_AnimatedModel* modelAsset){
     // set default animation to play
     PlayAnimation("idle",1.0f);
 
-    // start with no velocity
-    velocity = Vector3(0,0,0);
-    // start in the air
-    isGrounded=false;
-
-    // change to 0 for no gravity (duh)
-    gravity = 9.8f;
     isHit=false;
 }
 
@@ -31,6 +25,8 @@ _AnimatedModelInstance::~_AnimatedModelInstance(){
         delete collider;
     }
     colliders.clear();
+
+    if(m_rigidbody) delete m_rigidbody;
 }
 // play animation by name
 void _AnimatedModelInstance::PlayAnimation(string name, float speed){
@@ -59,14 +55,7 @@ void _AnimatedModelInstance::PlayAnimation(string name, float speed){
 
 void _AnimatedModelInstance::Update(){
 
-    // FIZZICS
-    if(!isGrounded){
-        velocity.y-=gravity*_Time::deltaTime;
-    }
-
-    pos.x+=velocity.x*_Time::deltaTime;
-    pos.y+=velocity.y*_Time::deltaTime;
-    pos.z+=velocity.z*_Time::deltaTime;
+    m_rigidbody->Update(pos);
 
     // animation
     int frameCount = blueprint->GetFrameCount(m_currentAnimationName);
@@ -89,7 +78,7 @@ void _AnimatedModelInstance::Update(){
 void _AnimatedModelInstance::Draw(){
     glPushMatrix();
         glTranslatef(pos.x,pos.y,pos.z);
-        //DEBUG ROT
+
         glRotatef(rotation.x,1.0f,0.0f,0.0f);
         glRotatef(rotation.y,0.0f,1.0f,0.0f);
         glRotatef(rotation.z,0.0f,0.0f,1.0f);
@@ -157,4 +146,8 @@ bool _AnimatedModelInstance::CheckCollision(_StaticModelInstance* other) {
     }
 
     return false; // no collisions found
+}
+
+_Rigidbody* _AnimatedModelInstance::GetRigidBody(){
+    return m_rigidbody;
 }

@@ -31,9 +31,11 @@ _Scene::_Scene()
     m_bulletBlueprint = new _StaticModel();
     m_bulletManager = nullptr;
 
-    m_targetBlueprint = new _AnimatedModel();
-    m_targetManager = nullptr;
+    m_railBlueprint = new _StaticModel();
+    m_railInstance = new _StaticModelInstance(m_railBlueprint);
 
+    m_skateboardBlueprint = new _StaticModel();
+    m_skateboardInstance = new _StaticModelInstance(m_skateboardBlueprint);
 }
 
 _Scene::~_Scene()
@@ -59,13 +61,16 @@ _Scene::~_Scene()
 
     delete m_bulletManager;
     delete m_bulletBlueprint;
-
-    delete m_targetBlueprint;
-    delete m_targetManager;
     
     delete m_resumeButton;
     delete m_pauseHelpButton;
     delete m_pauseMenuButton;
+
+    delete m_railBlueprint;
+    delete m_railInstance;
+
+    delete m_skateboardBlueprint;
+    delete m_skateboardInstance;
 }
 
 void _Scene::reSizeScene(int width, int height)
@@ -454,6 +459,10 @@ void _Scene::initGameplay()
 
     m_player = new _Player(m_player_blueprint);
     m_player->RegisterStaticCollider(terrainInstance);
+    m_player->RegisterStaticCollider(m_railInstance);
+
+    // skateboard
+    m_skateboardBlueprint->LoadModel("models/skateboard/skateboard.obj","models/skateboard/colormap.png");
 
     // add sphere collider centered at (0,0,0) local space & r=1.0
     // note: model is norm -1 to +1
@@ -463,14 +472,16 @@ void _Scene::initGameplay()
     //m_bulletInstance->scale = Vector3(0.2,0.2,0.2);
     m_bulletManager = new _Bullets(m_bulletBlueprint);
 
-    // TARGET MANAGER
-    m_targetBlueprint->LoadTexture("models/player/Human_Atlas.png");
-    m_targetBlueprint->RegisterAnimation("idle","models/player/walk",2);
-
-    m_targetManager = new _TargetManager(m_targetBlueprint);
-
-    m_targetManager->RegisterBulletManager(m_bulletManager);
-    m_targetManager->RegisterStaticCollider(terrainInstance);
+    m_railBlueprint->LoadModel("models/bullet/untitled.obj","models/bullet/BulletAtlas.png");
+    m_railInstance->pos = Vector3(5, -17, -10); // Position it in the world
+    m_railInstance->scale = Vector3(20, 1, 1); // Make it long and thin
+    m_railInstance->rotation.y = 15; // Angle it slightly
+    // Add a collider for the rail
+    m_railInstance->AddCollider(new _CubeHitbox(
+        Vector3(-0.5f, -0.5f, -0.5f), // Min corner (local space)
+        Vector3(0.5f, 0.5f, 0.5f),   // Max corner (local space)
+        COLLIDER_RAIL                // Set the type
+    ));
 
 
 }
@@ -517,7 +528,6 @@ void _Scene::updateGameplay()
 {
     m_player->UpdatePhysics();
     m_bulletManager->Update();
-    m_targetManager->Update();
 
     // update cam set eye/des/up based on player
     m_player->UpdateCamera(m_camera);
@@ -542,12 +552,13 @@ void _Scene::drawGameplay()
     glDepthMask(GL_TRUE);
 
     terrainInstance->Draw();
+    m_railInstance->Draw();
 
     m_player->Draw();
+    m_skateboardInstance->Draw();
     
     //m_bulletInstance->Draw();
     m_bulletManager->Draw();
-    m_targetManager->Draw();
 
     // this used to be the gun area but could be used to
     // draw anything over the scene

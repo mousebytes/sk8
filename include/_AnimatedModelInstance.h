@@ -7,6 +7,7 @@
 #include"_StaticModelInstance.h"
 #include"_CubeHitbox.h"
 #include"_SphereHitbox.h"
+#include"_Rigidbody.h"
 
 
 class _AnimatedModelInstance{
@@ -29,10 +30,12 @@ class _AnimatedModelInstance{
         Vector3 rotation;
         Vector3 scale;
 
-        Vector3 velocity;
-        float gravity;
+        _Rigidbody* GetRigidBody();
 
-        bool isGrounded;
+        //Vector3 velocity;
+        //float gravity;
+
+        //bool isGrounded;
         bool isHit;
 
 
@@ -45,6 +48,7 @@ class _AnimatedModelInstance{
 
     //_MD2Model* blueprint;
     _AnimatedModel* blueprint;
+    _Rigidbody* m_rigidbody;
 
     string m_currentAnimationName;
     int m_currentFrame;

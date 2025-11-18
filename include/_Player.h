@@ -39,6 +39,8 @@ class _Player{
     vector<_StaticModelInstance*> m_collidableStaticModels;
     vector<_AnimatedModelInstance*> m_collidableAnimatedModels;
 
+    _StaticModelInstance* m_currentRail;
+
     bool isFrozen;
 
     // takes raw input deltas
@@ -54,7 +56,6 @@ class _Player{
 
     // handle gravity, collisions, apply velocity
     void UpdatePhysics();
-
     // set camera position and lookat
     void UpdateCamera(_camera* cam);
 

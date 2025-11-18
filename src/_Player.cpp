@@ -30,6 +30,8 @@ _Player::_Player(_AnimatedModel* modelBlueprint)
     m_camHeight = 2.0f;     // looks at a point 2 units above player's origin
     m_mouseSensitivity = 0.1f;
 
+    m_currentRail = nullptr;
+
     isFrozen = false;
 }
 
@@ -59,6 +61,7 @@ void _Player::HandleMouse(float deltaX, float deltaY)
 
 void _Player::HandleKeys(WPARAM wParam)
 {
+    _Rigidbody *rb = m_body->GetRigidBody();
     // calculate forward vector based on player's yaw
     Vector3 fwd;
     fwd.x = -sin(m_playerYaw * PI / 180.0);
@@ -69,14 +72,14 @@ void _Player::HandleKeys(WPARAM wParam)
     if (wParam == 'W') // Accelerate
     {
         // Add force in the forward direction
-        m_body->velocity.x += fwd.x * m_acceleration * _Time::deltaTime;
-        m_body->velocity.z += fwd.z * m_acceleration * _Time::deltaTime;
+        rb->velocity.x += fwd.x * m_acceleration * _Time::deltaTime;
+        rb->velocity.z += fwd.z * m_acceleration * _Time::deltaTime;
     }
     if (wParam == 'S') // Brake / Reverse
     {
          // Add force in the backward direction
-        m_body->velocity.x -= fwd.x * m_acceleration * _Time::deltaTime;
-        m_body->velocity.z -= fwd.z * m_acceleration * _Time::deltaTime;
+        rb->velocity.x -= fwd.x * m_acceleration * _Time::deltaTime;
+        rb->velocity.z -= fwd.z * m_acceleration * _Time::deltaTime;
     }
     if (wParam == 'A') // Turn Left
     {
@@ -88,11 +91,12 @@ void _Player::HandleKeys(WPARAM wParam)
     }
     if (wParam == VK_SPACE) // Jump (Ollie)
     {
-        if (m_state == STATE_GROUNDED) // Can only jump if on the ground
+        // --- Allow jumping from ground or grind ---
+        if (m_state == STATE_GROUNDED || m_state == STATE_GRINDING)
         {
-            m_body->velocity.y = m_jumpForce;
+            rb->velocity.y = m_jumpForce;
             m_state = STATE_AIR; // We are now in the air
-            m_body->isGrounded = false; // Manually set this, physics will confirm
+            rb->isGrounded = false; // manually set this
         }
     }
 }
@@ -120,12 +124,15 @@ void _Player::UpdatePhysics()
     // --- Wall Collision & Sliding Logic ---
     if (m_body->colliders.empty()) return; // safety check
 
+    _Rigidbody *rb = m_body->GetRigidBody();
+    m_currentRail = nullptr;
+
     _Collider* playerMainCollider = m_body->colliders[0];
     
     // check x axis movement
     bool hitX = false;
     Vector3 predictedPosX = m_body->pos;
-    predictedPosX.x += m_body->velocity.x * _Time::deltaTime;
+    predictedPosX.x += rb->velocity.x * _Time::deltaTime;
     _Collider* playerPredictedColliderX = playerMainCollider->GetWorldSpaceCollider(predictedPosX, m_body->scale, m_body->rotation);
     
     if(playerPredictedColliderX)
@@ -134,6 +141,7 @@ void _Player::UpdatePhysics()
             for (_Collider* staticCollider : staticModel->colliders) {
                 _Collider* staticWorldCollider = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
                 if(staticWorldCollider) {
+                    // --- ignore rails for wall collision ---
                     if (playerPredictedColliderX->CheckCollision(staticWorldCollider) && staticCollider->m_type == COLLIDER_WALL) {
                         hitX = true;
                     }
@@ -149,7 +157,7 @@ void _Player::UpdatePhysics()
     // check z axis movement
     bool hitZ = false;
     Vector3 predictedPosZ = m_body->pos;
-    predictedPosZ.z += m_body->velocity.z * _Time::deltaTime;
+    predictedPosZ.z += rb->velocity.z * _Time::deltaTime;
     _Collider* playerPredictedColliderZ = playerMainCollider->GetWorldSpaceCollider(predictedPosZ, m_body->scale, m_body->rotation);
     
     if(playerPredictedColliderZ)
@@ -158,6 +166,7 @@ void _Player::UpdatePhysics()
             for (_Collider* staticCollider : staticModel->colliders) {
                 _Collider* staticWorldCollider = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
                 if(staticWorldCollider) {
+                    // --- ignore rails for wall collision ---
                     if (playerPredictedColliderZ->CheckCollision(staticWorldCollider) && staticCollider->m_type == COLLIDER_WALL) {
                         hitZ = true;
                     }
@@ -171,11 +180,13 @@ void _Player::UpdatePhysics()
     }
 
     // zero out velocity for the axis that hit
-    if (hitX) m_body->velocity.x = 0;
-    if (hitZ) m_body->velocity.z = 0;
+    if (hitX) rb->velocity.x = 0;
+    if (hitZ) rb->velocity.z = 0;
 
-    // --- Ground Check & Gravity Logic ---
-    m_body->isGrounded = false;
+
+    // --- unified Ground & Rail Check Logic ---
+    rb->isGrounded = false; // Reset at the start of the check
+    bool isOnRail = false;
     
     _Collider* playerCurrentCollider = playerMainCollider->GetWorldSpaceCollider(m_body->pos, m_body->scale, m_body->rotation);
     
@@ -192,76 +203,120 @@ void _Player::UpdatePhysics()
                     {
                         if (staticCollider->m_type == COLLIDER_FLOOR)
                         {
-                            m_body->isGrounded = true;
-                            m_state = STATE_GROUNDED; // Update our state
-                            if(m_body->velocity.y < 0) { 
-                                m_body->velocity.y = 0; 
-                            }
+                            rb->isGrounded = true; // We are on the floor
+                        }
+                        else if (staticCollider->m_type == COLLIDER_RAIL)
+                        {
+                            isOnRail = true; // We are on a rail
+                            m_currentRail = staticModel; // store the rail
                         }
                     }
                     delete staticWorldCollider;
                 }
-                if (m_body->isGrounded) break;
+                if (rb->isGrounded) break; // Ground check is highest priority
             }
-            if (m_body->isGrounded) break;
+            if (rb->isGrounded) break;
         }
         delete playerCurrentCollider;
     }
 
-    // If no ground was detected, we are in the air
-    if (!m_body->isGrounded) {
-        m_state = STATE_AIR;
-    }
-
-    // --- Apply Friction & Speed Cap ---
-    if (m_state == STATE_GROUNDED) 
+    // --- unified State Machine & Friction ---
+    if (rb->isGrounded) // This is true only if we hit a COLLIDER_FLOOR
     {
-        // Calculate horizontal speed
-        float horizSpeed = sqrt(m_body->velocity.x * m_body->velocity.x + m_body->velocity.z * m_body->velocity.z);
+        m_state = STATE_GROUNDED;
+        if(rb->velocity.y < 0) { 
+            rb->velocity.y = 0; 
+        }
 
+        // --- Apply Friction & Speed Cap (Only on Ground) ---
+        float horizSpeed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
         if (horizSpeed > 0.01f) // If we are moving
         {
-            // Apply friction (damp
             float frictionAmount = m_friction * _Time::deltaTime;
-            m_body->velocity.x -= m_body->velocity.x * frictionAmount;
-            m_body->velocity.z -= m_body->velocity.z * frictionAmount;
+            rb->velocity.x -= rb->velocity.x * frictionAmount;
+            rb->velocity.z -= rb->velocity.z * frictionAmount;
 
-            // Cap speed
             if (horizSpeed > m_maxSpeed)
             {
-                m_body->velocity.x = (m_body->velocity.x / horizSpeed) * m_maxSpeed;
-                m_body->velocity.z = (m_body->velocity.z / horizSpeed) * m_maxSpeed;
+                rb->velocity.x = (rb->velocity.x / horizSpeed) * m_maxSpeed;
+                rb->velocity.z = (rb->velocity.z / horizSpeed) * m_maxSpeed;
             }
         }
-        else // Stop micromovements
+        else // Stop micro-movements
         {
-            m_body->velocity.x = 0;
-            m_body->velocity.z = 0;
+            rb->velocity.x = 0;
+            rb->velocity.z = 0;
         }
     }
-    // (In the air, we might want less or no friction for air control)
+    else if (isOnRail) // This is true if we hit a rail AND NOT the floor
+    {
+        // Check if we *just* landed on the rail in this frame
+        if (m_state != STATE_GRINDING && m_currentRail != nullptr)
+        {
+            // --- SNAP ROTATION ---
+            // Set the player's yaw to match the rail's yaw
+            m_playerYaw = m_currentRail->rotation.y;
+
+            // --- SNAP VELOCITY ---
+            // First, get the player's current horizontal speed
+            float horizSpeed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
+            
+            // Second, get the rail's forward direction vector
+            float railYawRad = m_currentRail->rotation.y * PI / 180.0f;
+            Vector3 railForward;
+            railForward.x = -sin(railYawRad); // Same as player's 'W' key logic
+            railForward.z = -cos(railYawRad);
+            
+            // Finally, set the player's velocity to that speed in the rail's direction
+            rb->velocity.x = railForward.x * horizSpeed;
+            rb->velocity.z = railForward.z * horizSpeed;
+        }
+
+        m_state = STATE_GRINDING;
+        rb->velocity.y = 0; // Negate gravity
+        
+        // we Update()
+        // into thinking we are "grounded" so it doesn't apply gravity
+        rb->isGrounded = true; 
+        
+        // (No friction is applied while grinding)
+    }
+    else // Not on floor, not on rail
+    {
+        m_state = STATE_AIR; 
+        // rb->isGrounded is already false, so gravity will be applied
+        // in m_body->Update()
+    }
+    // ---------------------------------
+
 
     // Apply the player's turning rotation to the model
     m_body->rotation.y = m_playerYaw;
 
-    // applies gravity (if not grounded)
+    // applies gravity (if in STATE_AIR)
     // and movement velocity (now corrected for walls, friction, and speed)
     m_body->Update();
 
-    // ---- ANIMATION STATE SELECTION ----
-    float currentSpeed = sqrt(m_body->velocity.x * m_body->velocity.x + m_body->velocity.z * m_body->velocity.z);
+    // ---- UNIFIED ANIMATION STATE SELECTION ----
+    float currentSpeed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
 
     if (m_state == STATE_AIR) {
         // m_body->PlayAnimation("jump", 1.0f); // TODO: Add jump/air animation
         m_body->PlayAnimation("idle", 1.0f); // Placeholder
-    } else if (currentSpeed > 0.1f) {
+    }
+    else if (m_state == STATE_GRINDING)
+    {
+        // m_body->PlayAnimation("grind", 1.0f); // TODO: Add grind animation
+        m_body->PlayAnimation("idle", 1.0f); // Placeholder
+    }
+    else if (currentSpeed > 0.1f) { // Grounded and moving
         // m_body->PlayAnimation("push", 1.0f); // TODO: Add pushing/rolling animation
-        m_body->PlayAnimation("walk", 1.0f);
-    } else {
+        m_body->PlayAnimation("walk", 1.0f); // Placeholder
+    } 
+    else { // Grounded and not moving
         // player is on the ground and not moving
         m_body->PlayAnimation("idle", 1.0f);
     }
-
 }
 
 void _Player::UpdateCamera(_camera* cam)
