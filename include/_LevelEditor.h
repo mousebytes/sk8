@@ -7,6 +7,7 @@
 #include "_camera.h"
 #include"_CubeHitbox.h"
 #include"_SphereHitbox.h"
+#include "_AnimatedModelInstance.h"
 
 class _LevelEditor {
 public:
@@ -16,6 +17,8 @@ public:
     void Init(int width, int height);
     void Update(HWND hWnd, _camera* cam);
     void Draw();
+
+    void SetReferenceBlueprint(_AnimatedModel* bp);
     
     void HandleKeyInput(WPARAM wParam);
     
@@ -34,6 +37,7 @@ private:
     _StaticModelInstance* m_ghostObject;
     _StaticModelInstance* m_hoveredObject; // The object currently under the mouse
     _StaticModelInstance* m_floorPlane;    // The huge area for the player to stand on
+    _AnimatedModelInstance* m_refPlayer;
 
     vector<_Button*> m_itemButtons; 
     vector<string> m_itemNames;     

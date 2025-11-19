@@ -7,7 +7,7 @@
 	<gl/gl.h>
 	<_scene.h>
 
-1763554379 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
+1763591536 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
 	<_common.h>
 	<_light.h>
 	<_model.h>
@@ -135,7 +135,7 @@
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_parallax.cpp
 	"_parallax.h"
 
-1763554379 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
+1763592668 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
 	"_scene.h"
 
 1762949818 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_skybox.cpp
@@ -201,7 +201,7 @@
 1762853566 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_staticmodelinstance.cpp
 	"_StaticModelInstance.h"
 
-1763509373 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_staticmodelinstance.h
+1763590476 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_staticmodelinstance.h
 	"_StaticModel.h"
 	"_common.h"
 	"_Collider.h"
@@ -213,7 +213,7 @@
 1762692527 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_hitbox.cpp
 	"_Hitbox.h"
 
-1763554379 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_collider.h
+1763586666 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_collider.h
 	"_common.h"
 
 1762683111 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_button.h
@@ -259,7 +259,7 @@
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
 
-1763554379 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
+1763586742 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
 	"_Player.h"
 
 1762998150 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_spherehitbox.cpp
@@ -275,14 +275,15 @@
 1763508283 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_rigidbody.cpp
 	"_Rigidbody.h"
 
-1763554379 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_leveleditor.h
+1763592484 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_leveleditor.h
 	"_common.h"
 	"_StaticModelInstance.h"
 	"_Button.h"
 	"_camera.h"
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
+	"_AnimatedModelInstance.h"
 
-1763553533 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_leveleditor.cpp
+1763592999 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_leveleditor.cpp
 	"_LevelEditor.h"
 

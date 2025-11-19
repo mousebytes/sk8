@@ -650,6 +650,10 @@ void _Scene::initLevelEditor() {
     // Only call this once usually, or check if already init
     m_levelEditor->Init(width, height);
 
+    if(m_player_blueprint) {
+        m_levelEditor->SetReferenceBlueprint(m_player_blueprint);
+    }
+
     // Initialize Pause Menu Buttons centered on screen
     int cX = width / 2;
     int cY = height / 2;
@@ -1016,6 +1020,6 @@ void _Scene::loadCustomLevel() {
     }
     file.close();
     
-    m_player->m_body->pos = Vector3(0, 5, 0);
+    m_player->m_body->pos = Vector3(0, 1, 0);
     m_player->ResetBoard();
 }

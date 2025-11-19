@@ -1,9 +1,17 @@
 #include "_LevelEditor.h"
 
+// --- HELPER: Get distance from Center to Bottom/Top based on type ---
+static float GetHalfHeight(string type, float scaleY) {
+    if (type == "wood_floor") return 0.1f * scaleY; // Thin floor
+    if (type == "rail") return 0.5f * scaleY;       // Rails are lower
+    return 1.0f * scaleY;                           // Standard blocks (Scaffold, Ramp, etc)
+}
+
 _LevelEditor::_LevelEditor() {
     m_ghostObject = nullptr;
     m_hoveredObject = nullptr;
     m_floorPlane = nullptr;
+    m_refPlayer = nullptr;
     m_gridSize = 1.0f;
     m_currentRotation = 0.0f;
     m_selectedType = "";
@@ -22,6 +30,19 @@ _LevelEditor::~_LevelEditor() {
         delete pair.second;
     }
     ClearLevel();
+    if (m_refPlayer) delete m_refPlayer;
+}
+
+void _LevelEditor::SetReferenceBlueprint(_AnimatedModel* bp) {
+    if (m_refPlayer) delete m_refPlayer;
+    
+    m_refPlayer = new _AnimatedModelInstance(bp);
+    
+    m_refPlayer->pos = Vector3(0, 1, 0); 
+    m_refPlayer->GetRigidBody()->gravity = 0;
+    
+    m_refPlayer->scale = Vector3(1, 1, 1);
+    m_refPlayer->PlayAnimation("idle", 1.0f);
 }
 
 void _LevelEditor::Init(int width, int height) {
@@ -112,9 +133,8 @@ void _LevelEditor::SetGhost(string type) {
 
     m_selectedType = type;
     m_ghostObject = new _StaticModelInstance(m_blueprints[type]);
+    m_ghostObject->modelName = type; // Ensure name is set for logic checks
     
-    //if(type == "halfpipe") m_ghostObject->scale = Vector3(4,4,4);
-    //else m_ghostObject->scale = Vector3(1,1,1);
     m_ghostObject->scale = Vector3(1,1,1);
     
     m_ghostObject->rotation.y = m_currentRotation;
@@ -213,36 +233,34 @@ void _LevelEditor::Update(HWND hWnd, _camera* cam) {
     m_cursorPos.z = round(m_cursorPos.z / m_gridSize) * m_gridSize;
     m_cursorPos.y = 0; 
 
+    // Just tick the animation, DO NOT move the position
+    if (m_refPlayer) {
+        m_refPlayer->Update();
+    }
+
     // Check for Hover
     m_hoveredObject = RaycastCheck(hWnd, cam);
 
+    
+
     if (m_ghostObject) {
         m_ghostObject->pos = m_cursorPos;
+        
 
-        // --- STACKING PREVIEW ---
+        // Calculate how tall the GHOST is (distance from center to bottom)
+        float ghostHalfHeight = GetHalfHeight(m_selectedType, m_ghostObject->scale.y);
+
         if (m_hoveredObject) {
-            // Calculate the TOP of the object we are hovering over
-            // Assuming hovered object is a scaffold (Center at Y, Height 2 -> Top is Y+1)
-            float hoveredTop = m_hoveredObject->pos.y + 1.0f;
+            // Calculate the exact TOP of the hovered object
+            float hoveredHalfHeight = GetHalfHeight(m_hoveredObject->modelName, m_hoveredObject->scale.y);
+            float hoveredTop = m_hoveredObject->pos.y + hoveredHalfHeight;
 
-            if (m_selectedType == "wood_floor") {
-                // Floor center is 0.1 units above surface
-                m_ghostObject->pos.y = hoveredTop + 0.1f; 
-            } 
-            else if (m_selectedType == "rail") {
-                // Rail center is 0.5 units above surface
-                m_ghostObject->pos.y = hoveredTop + 0.5f;
-            }
-            else {
-                // Standard Block (Scaffold) center is 1.0 unit above surface
-                m_ghostObject->pos.y = hoveredTop + 1.0f;
-            }
+            // Place ghost on top
+            m_ghostObject->pos.y = hoveredTop + ghostHalfHeight;
         }
         else {
-            // --- GROUND PLACEMENT ---
-            if (m_selectedType == "rail") m_ghostObject->pos.y = m_ghostObject->scale.y / 2; // 0.5
-            else if (m_selectedType == "wood_floor") m_ghostObject->pos.y = 0.1f; 
-            else m_ghostObject->pos.y = 1.0f; 
+            // Place ghost on ground (0 + height)
+            m_ghostObject->pos.y = 0.0f + ghostHalfHeight;
         }
 
         m_ghostObject->rotation.y = m_currentRotation;
@@ -254,8 +272,14 @@ void _LevelEditor::HandleKeyInput(WPARAM wParam) {
         m_currentRotation += 90.0f;
         if (m_currentRotation >= 360.0f) m_currentRotation -= 360.0f;
     }
-    if (wParam == 'J' || wParam == 'j') ScaleGhost(0.2f);
-    if (wParam == 'K' || wParam == 'k') ScaleGhost(-0.2f);
+    if (wParam == 'J' || wParam == 'j') ScaleGhost(0.5f);
+    if (wParam == 'K' || wParam == 'k') ScaleGhost(-0.5f);
+    
+    if (wParam == VK_BACK) {
+        if (m_ghostObject) {
+            m_ghostObject->scale = Vector3(1.0f, 1.0f, 1.0f);
+        }
+    }
 }
 
 bool _LevelEditor::HandleMouseClick(UINT uMsg, int mouseX, int mouseY) {
@@ -270,7 +294,7 @@ bool _LevelEditor::HandleMouseClick(UINT uMsg, int mouseX, int mouseY) {
         }
     }
 
-    // 2. RIGHT CLICK DELETE (Keep existing)
+    // 2. RIGHT CLICK DELETE
     if (uMsg == WM_RBUTTONDOWN) {
         if (m_hoveredObject) {
             for (auto it = m_placedObjects.begin(); it != m_placedObjects.end(); ++it) {
@@ -291,37 +315,28 @@ bool _LevelEditor::HandleMouseClick(UINT uMsg, int mouseX, int mouseY) {
         _StaticModelInstance* newObj = new _StaticModelInstance(m_blueprints[m_selectedType]);
         
         newObj->modelName = m_selectedType;
+        newObj->scale = m_ghostObject->scale; // Apply Scale FIRST
 
-        // --- STACKING LOGIC ---
-        // If we are hovering over an existing object, stack on top!
-        // --- STACKING LOGIC ---
+        // --- DYNAMIC PLACEMENT LOGIC ---
+        float newObjHalfHeight = GetHalfHeight(m_selectedType, newObj->scale.y);
+
         if (m_hoveredObject) {
             newObj->pos.x = m_hoveredObject->pos.x;
             newObj->pos.z = m_hoveredObject->pos.z;
             
-            float hoveredTop = m_hoveredObject->pos.y + 1.0f;
-
-            // --- PRECISE STACKING ---
-            if (m_selectedType == "wood_floor") {
-                newObj->pos.y = hoveredTop + 0.1f;
-            }
-            else if (m_selectedType == "rail") {
-                newObj->pos.y = hoveredTop + 0.5f;
-            }
-            else {
-                // Standard Scaffold
-                newObj->pos.y = hoveredTop + 1.0f;
-            }
+            // Dynamic Stacking
+            float hoveredHalfHeight = GetHalfHeight(m_hoveredObject->modelName, m_hoveredObject->scale.y);
+            float hoveredTop = m_hoveredObject->pos.y + hoveredHalfHeight;
             
+            newObj->pos.y = hoveredTop + newObjHalfHeight;
             newObj->rotation = m_ghostObject->rotation;
         }
         else {
-             // Standard Placement on Ground (matches Update logic)
+             // Standard Placement on Ground
              newObj->pos = m_ghostObject->pos;
+             newObj->pos.y = 0.0f + newObjHalfHeight;
              newObj->rotation = m_ghostObject->rotation;
         }
-
-        newObj->scale = m_ghostObject->scale;
 
         // --- COLLIDER ASSIGNMENT ---
         // Assign specific physics types based on the selected object name
@@ -338,7 +353,7 @@ bool _LevelEditor::HandleMouseClick(UINT uMsg, int mouseX, int mouseY) {
              newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_STAIRS));
         }
         else if(m_selectedType == "wood_floor") {
-             newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_FLOOR));
+             newObj->AddCollider(new _CubeHitbox(Vector3(-1, -0.1f, -1), Vector3(1, 0.1f, 1), COLLIDER_FLOOR));
         }
         else {
              // Scaffolds and Side pieces are Walls (Solid blocks)
@@ -356,6 +371,11 @@ void _LevelEditor::Draw() {
     
     // Draw the HUGE floor
     if(m_floorPlane) m_floorPlane->Draw();
+
+    // Draw Reference Player
+    if (m_refPlayer) {
+        m_refPlayer->Draw();
+    }
 
     // Draw placed objects
     for (auto* obj : m_placedObjects) {
@@ -433,7 +453,6 @@ void _LevelEditor::SaveLevel(string filename) {
     ofstream file(filename);
     if (!file.is_open()) return;
     for (auto* obj : m_placedObjects) {
-        // Use the stored name, or default to "rail" if empty (safety)
         string type = obj->modelName;
         if (type.empty()) type = "rail";
 
@@ -462,14 +481,13 @@ void _LevelEditor::LoadLevel(string filename) {
             newObj->pos = Vector3(x, y, z);
             newObj->rotation.y = rot;
             newObj->scale = Vector3(scale, scale, scale);
-            newObj->modelName = type; // Remember the name for next save!
+            newObj->modelName = type;
 
-            // 2. Restore Physics (MUST MATCH HANDLEMOUSECLICK LOGIC)
+            // 2. Restore Physics
             Vector3 cMin(-1, -1, -1);
             Vector3 cMax(1, 1, 1);
 
             if(type == "wood_floor") {
-                 // Thin Floor Collider
                  newObj->AddCollider(new _CubeHitbox(Vector3(-1, -0.1f, -1), Vector3(1, 0.1f, 1), COLLIDER_FLOOR));
             }
             else if(type == "rail") {
@@ -482,7 +500,6 @@ void _LevelEditor::LoadLevel(string filename) {
                  newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_STAIRS));
             }
             else {
-                 // Scaffold, Side, etc. (Walls)
                  newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_WALL));
             }
 
