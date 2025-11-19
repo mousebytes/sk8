@@ -275,84 +275,140 @@ void _Player::UpdatePhysics()
                             }
                         }
                         // halfpipe logic
+                        else if (staticCollider->m_type == COLLIDER_HALFPIPE)
+                        {
+                            // --- 1. ROBUST LOCAL SPACE TRANSFORMATION ---
+                            Vector3 relPos = m_body->pos - staticModel->pos;
+                        
+                            // Convert rotation to radians
+                            float rad = staticModel->rotation.y * PI / 180.0f;
+                            float c = cos(rad);
+                            float s = sin(rad);
+                        
+                            // Apply Inverse Rotation (World -> Local)
+                            float localX = relPos.x * c - relPos.z * s;
+                            float localZ = relPos.x * s + relPos.z * c;
+                        
+                            // --- 2. DIMENSIONS & BOUNDS ---
+                            float halfWidth = staticModel->scale.x;
+                            float halfDepth = staticModel->scale.z; 
+                            float halfHeight = staticModel->scale.y;
+                        
+                            // Check Width (Side to side)
+                            if (localX < -halfWidth - 0.5f || localX > halfWidth + 0.5f) continue;
+                        
+                            // --- 3. CURVE LOGIC ---
+                            float radius = halfHeight * 2.0f;
+                            float wallZ = -halfDepth;
+                            float distFromWall = localZ - wallZ;
+                        
+                            // Prevent going through the back
+                            if (distFromWall < -0.5f) continue;
+                            // Clamp flat ground
+                            if (distFromWall > radius) distFromWall = radius;
+                        
+                            // Circle Math: xCircle is 0 at bottom, R at top
+                            float xCircle = radius - distFromWall;
+                            if (xCircle < 0) xCircle = 0;
+                        
+                            // Calculate raw surface height at this position
+                            float circleY = radius - sqrt(pow(radius, 2) - pow(xCircle, 2));
+                            float pipeBottomY = staticModel->pos.y - halfHeight;
+                        
+                            // --- 4. OFFSET CALCULATIONS (THE FIX) ---
 
-else if (staticCollider->m_type == COLLIDER_HALFPIPE)
-{
-    // --- 1. ROBUST LOCAL SPACE TRANSFORMATION ---
-    Vector3 relPos = m_body->pos - staticModel->pos;
+                            // A. Calculate Slope Angle
+                            float slopeRad = asin(xCircle / radius); // 0 at bottom, PI/2 at top
+                        
+                            // B. Geometry Correction: 
+                            // To keep a sphere on a slope, we divide radius by cos(theta).
+                            // As the wall gets vertical, this value gets huge, so we clamp it.
+                            float cosTheta = cos(slopeRad);
+                            if(cosTheta < 0.3f) cosTheta = 0.3f; // Clamp to prevent shooting to space
 
-    // Convert rotation to radians
-    float rad = staticModel->rotation.y * PI / 180.0f;
-    float c = cos(rad);
-    float s = sin(rad);
+                            float geometryOffset = 1.0f / cosTheta; 
+                        
+                            // C. Manual Visual Offset:
+                            // Tweak this value to push the model further out visually!
+                            float visualTweak = 2.5f; 
+                        
+                            float finalY = pipeBottomY + circleY + geometryOffset + visualTweak;
+                        
+                            // --- 5. APPLY PHYSICS ---
+                            if (m_body->pos.y <= finalY + 2.0f && m_body->pos.y >= pipeBottomY - 1.0f)
+                            {
+                                isOnVert = true;
+                                rb->isGrounded = true;
+                                m_body->pos.y = finalY;
 
-    // Apply Inverse Rotation (World -> Local)
-    float localX = relPos.x * c - relPos.z * s;
-    float localZ = relPos.x * s + relPos.z * c;
+                                // Stop falling
+                                if(rb->velocity.y < 0) rb->velocity.y = 0;
+                            
+                                // Apply Pitch Rotation
+                                // Convert radians to degrees for rotation
+                                float slopeDeg = slopeRad * (180.0f / PI);
 
-    // --- 2. DIMENSIONS & BOUNDS ---
-    float halfWidth = staticModel->scale.x;
-    float halfDepth = staticModel->scale.z; 
-    float halfHeight = staticModel->scale.y;
+                                m_body->rotation.x = slopeDeg;
+                                m_body->rotation.z = 0;
+                            }
+                        }
+                        else if (staticCollider->m_type == COLLIDER_STAIRS)
+                        {
+                            // --- 1. LOCAL SPACE TRANSFORM (Standard) ---
+                            Vector3 relPos = m_body->pos - staticModel->pos;
+                            float rad = staticModel->rotation.y * PI / 180.0f;
+                            float c = cos(rad);
+                            float s = sin(rad);
+                            float localX = relPos.x * c - relPos.z * s;
+                            float localZ = relPos.x * s + relPos.z * c;
+                        
+                            // --- 2. BOUNDS CHECK ---
+                            float halfWidth = staticModel->scale.x;
+                            float halfDepth = staticModel->scale.z;
+                            float halfHeight = staticModel->scale.y;
+                        
+                            // Check Width (Side to side)
+                            if (localX < -halfWidth - 0.5f || localX > halfWidth + 0.5f) continue;
+                            // Check Depth (Front to back)
+                            if (localZ < -halfDepth - 0.5f || localZ > halfDepth + 0.5f) continue;
+                        
+                            // --- 3. LINEAR SLOPE LOGIC ---
+                            // Map localZ (-halfDepth to +halfDepth) to Height (0 to 2*halfHeight)
 
-    // Check Width (Side to side)
-    if (localX < -halfWidth - 0.5f || localX > halfWidth + 0.5f) continue;
+                            // Normalize Z to 0.0 - 1.0 range
+                            // Assuming Front of stairs is at -halfDepth and Top is at +halfDepth
+                            float totalDepth = halfDepth * 2.0f;
+                            float distFromFront = localZ - (-halfDepth); // 0 at front
+                            float t = distFromFront / totalDepth;
+                        
+                            // Clamp t (so we have a flat spot at top and bottom)
+                            if (t < 0.0f) t = 0.0f;
+                            if (t > 1.0f) t = 1.0f;
+                        
+                            // Calculate target height (Linear interpolation)
+                            float rampHeight = t * (halfHeight * 2.0f);
 
-    // --- 3. CURVE LOGIC ---
-    float radius = halfHeight * 2.0f;
-    float wallZ = -halfDepth;
-    float distFromWall = localZ - wallZ;
+                            float pipeBottomY = staticModel->pos.y - halfHeight;
+                            float targetWorldY = pipeBottomY + rampHeight;
+                        
+                            // --- 4. SNAP TO STAIRS ---
+                            // Check if player is close enough to the surface to snap
+                            if (m_body->pos.y <= targetWorldY + 2.0f && m_body->pos.y >= pipeBottomY - 0.5f)
+                            {
+                                rb->isGrounded = true;
+                                m_body->pos.y = targetWorldY + 1.0f; // +1.0 offset for player center
 
-    // Prevent going through the back
-    if (distFromWall < -0.5f) continue;
-    // Clamp flat ground
-    if (distFromWall > radius) distFromWall = radius;
+                                if(rb->velocity.y < 0) rb->velocity.y = 0;
+                            
+                                // --- 5. VISUAL TILT (Optional) ---
+                                // Calculate slope angle: tan(theta) = height / length
+                                float slopeAngle = atan2(halfHeight * 2.0f, totalDepth) * (180.0f / PI);
 
-    // Circle Math: xCircle is 0 at bottom, R at top
-    float xCircle = radius - distFromWall;
-    if (xCircle < 0) xCircle = 0;
-
-    // Calculate raw surface height at this position
-    float circleY = radius - sqrt(pow(radius, 2) - pow(xCircle, 2));
-    float pipeBottomY = staticModel->pos.y - halfHeight;
-
-    // --- 4. OFFSET CALCULATIONS (THE FIX) ---
-    
-    // A. Calculate Slope Angle
-    float slopeRad = asin(xCircle / radius); // 0 at bottom, PI/2 at top
-
-    // B. Geometry Correction: 
-    // To keep a sphere on a slope, we divide radius by cos(theta).
-    // As the wall gets vertical, this value gets huge, so we clamp it.
-    float cosTheta = cos(slopeRad);
-    if(cosTheta < 0.3f) cosTheta = 0.3f; // Clamp to prevent shooting to space
-    
-    float geometryOffset = 1.0f / cosTheta; 
-
-    // C. Manual Visual Offset:
-    // Tweak this value to push the model further out visually!
-    float visualTweak = 2.5f; 
-
-    float finalY = pipeBottomY + circleY + geometryOffset + visualTweak;
-
-    // --- 5. APPLY PHYSICS ---
-    if (m_body->pos.y <= finalY + 2.0f && m_body->pos.y >= pipeBottomY - 1.0f)
-    {
-        isOnVert = true;
-        rb->isGrounded = true;
-        m_body->pos.y = finalY;
-        
-        // Stop falling
-        if(rb->velocity.y < 0) rb->velocity.y = 0;
-
-        // Apply Pitch Rotation
-        // Convert radians to degrees for rotation
-        float slopeDeg = slopeRad * (180.0f / PI);
-        
-        m_body->rotation.x = slopeDeg;
-        m_body->rotation.z = 0;
-    }
-}
+                                // If we are facing up the stairs, tilt up. If down, tilt down.
+                                // For now, just simple pitch based on object rotation
+                                // m_body->rotation.x = -slopeAngle; 
+                            }
+                        }
                     }
                     delete staticWorldCollider;
                 }

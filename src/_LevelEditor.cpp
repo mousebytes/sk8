@@ -44,25 +44,66 @@ void _LevelEditor::Init(int width, int height) {
     m_floorPlane->scale = Vector3(100, 1, 100); // HUGE area
     m_floorPlane->rotation = Vector3(0,0,0);
 
+    _StaticModel* scaffold = new _StaticModel();
+    scaffold->LoadModel("models/skatepark assets/scaffold/scaffold.obj", "models/skatepark assets/colormap.png");
+    m_blueprints["scaffold"] = scaffold;
+
+    _StaticModel* stairs = new _StaticModel();
+    stairs->LoadModel("models/skatepark assets/stairs/stairs.obj", "models/skatepark assets/colormap.png");
+    m_blueprints["stairs"] = stairs;
+
+    _StaticModel* woodFloor = new _StaticModel();
+    woodFloor->LoadModel("models/skatepark assets/floor/floor.obj", "models/skatepark assets/colormap.png");
+    m_blueprints["wood_floor"] = woodFloor;
+
+    _StaticModel* side = new _StaticModel();
+    side->LoadModel("models/skatepark assets/side piece/side.obj", "models/skatepark assets/colormap.png");
+    m_blueprints["side"] = side;
 
     // 3. Create UI
     int startY = 60;
-    int gapY = 70;
+    int gapY = 60;
 
+    // 1. Rail
     _Button* btnRail = new _Button();
     btnRail->Init("images/play-btn.png", 80, 50, 60, startY, 0, 1, 1); 
     m_itemButtons.push_back(btnRail);
     m_itemNames.push_back("rail");
 
+    // 2. Halfpipe
     _Button* btnPipe = new _Button();
     btnPipe->Init("images/play-btn.png", 80, 50, 60, startY + gapY, 0, 1, 1); 
     m_itemButtons.push_back(btnPipe);
     m_itemNames.push_back("halfpipe");
 
-    SetGhost("rail");
+    // 3. Scaffold
+    _Button* btnScaff = new _Button();
+    btnScaff->Init("images/play-btn.png", 80, 50, 60, startY + gapY*2, 0, 1, 1); 
+    m_itemButtons.push_back(btnScaff);
+    m_itemNames.push_back("scaffold");
+
+    // 4. Stairs
+    _Button* btnStairs = new _Button();
+    btnStairs->Init("images/play-btn.png", 80, 50, 60, startY + gapY*3, 0, 1, 1); 
+    m_itemButtons.push_back(btnStairs);
+    m_itemNames.push_back("stairs");
+
+    // 5. Wood Floor
+    _Button* btnWFloor = new _Button();
+    btnWFloor->Init("images/play-btn.png", 80, 50, 60, startY + gapY*4, 0, 1, 1); 
+    m_itemButtons.push_back(btnWFloor);
+    m_itemNames.push_back("wood_floor");
+
+    // 6. Side Piece
+    _Button* btnSide = new _Button();
+    btnSide->Init("images/play-btn.png", 80, 50, 60, startY + gapY*5, 0, 1, 1); 
+    m_itemButtons.push_back(btnSide);
+    m_itemNames.push_back("side");
+
+    SetGhost("scaffold");
     
     // 4. AUTO LOAD ON START
-    LoadLevel("level_custom.txt");
+    LoadLevel("saves/level_custom.txt");
 }
 
 void _LevelEditor::SetGhost(string type) {
@@ -176,10 +217,33 @@ void _LevelEditor::Update(HWND hWnd, _camera* cam) {
 
     if (m_ghostObject) {
         m_ghostObject->pos = m_cursorPos;
-        //if(m_selectedType == "halfpipe") m_ghostObject->pos.y = 0.0f; 
-        //else m_ghostObject->pos.y = 4.0f;
-        if(m_selectedType == "rail") m_ghostObject->pos.y = m_ghostObject->scale.y/2;
-        else m_ghostObject->pos.y = m_ghostObject->scale.y;
+
+        // --- STACKING PREVIEW ---
+        if (m_hoveredObject) {
+            // Calculate the TOP of the object we are hovering over
+            // Assuming hovered object is a scaffold (Center at Y, Height 2 -> Top is Y+1)
+            float hoveredTop = m_hoveredObject->pos.y + 1.0f;
+
+            if (m_selectedType == "wood_floor") {
+                // Floor center is 0.1 units above surface
+                m_ghostObject->pos.y = hoveredTop + 0.1f; 
+            } 
+            else if (m_selectedType == "rail") {
+                // Rail center is 0.5 units above surface
+                m_ghostObject->pos.y = hoveredTop + 0.5f;
+            }
+            else {
+                // Standard Block (Scaffold) center is 1.0 unit above surface
+                m_ghostObject->pos.y = hoveredTop + 1.0f;
+            }
+        }
+        else {
+            // --- GROUND PLACEMENT ---
+            if (m_selectedType == "rail") m_ghostObject->pos.y = m_ghostObject->scale.y / 2; // 0.5
+            else if (m_selectedType == "wood_floor") m_ghostObject->pos.y = 0.1f; 
+            else m_ghostObject->pos.y = 1.0f; 
+        }
+
         m_ghostObject->rotation.y = m_currentRotation;
     }
 }
@@ -195,7 +259,7 @@ void _LevelEditor::HandleKeyInput(WPARAM wParam) {
 
 bool _LevelEditor::HandleMouseClick(UINT uMsg, int mouseX, int mouseY) {
     
-    // 1. UI INTERACTION (Only on Left Click)
+    // 1. UI INTERACTION
     if (uMsg == WM_LBUTTONDOWN) {
         for(size_t i=0; i<m_itemButtons.size(); i++) {
             if(m_itemButtons[i]->isClicked(mouseX, mouseY)) {
@@ -205,10 +269,9 @@ bool _LevelEditor::HandleMouseClick(UINT uMsg, int mouseX, int mouseY) {
         }
     }
 
-    // 2. OBJECT DELETION (Right Click)
+    // 2. RIGHT CLICK DELETE (Keep existing)
     if (uMsg == WM_RBUTTONDOWN) {
         if (m_hoveredObject) {
-            // Find and remove from vector
             for (auto it = m_placedObjects.begin(); it != m_placedObjects.end(); ++it) {
                 if (*it == m_hoveredObject) {
                     delete *it;
@@ -221,20 +284,70 @@ bool _LevelEditor::HandleMouseClick(UINT uMsg, int mouseX, int mouseY) {
         }
     }
 
-    // 3. PLACEMENT (Left Click)
-    if (uMsg == WM_LBUTTONDOWN && m_ghostObject && !m_hoveredObject) {
+    // 3. PLACEMENT & STACKING (Left Click)
+    if (uMsg == WM_LBUTTONDOWN && m_ghostObject) {
+        
         _StaticModelInstance* newObj = new _StaticModelInstance(m_blueprints[m_selectedType]);
-        newObj->pos = m_ghostObject->pos;
-        newObj->rotation = m_ghostObject->rotation;
+        
+        newObj->modelName = m_selectedType;
+
+        // --- STACKING LOGIC ---
+        // If we are hovering over an existing object, stack on top!
+        // --- STACKING LOGIC ---
+        if (m_hoveredObject) {
+            newObj->pos.x = m_hoveredObject->pos.x;
+            newObj->pos.z = m_hoveredObject->pos.z;
+            
+            float hoveredTop = m_hoveredObject->pos.y + 1.0f;
+
+            // --- PRECISE STACKING ---
+            if (m_selectedType == "wood_floor") {
+                newObj->pos.y = hoveredTop + 0.1f;
+            }
+            else if (m_selectedType == "rail") {
+                newObj->pos.y = hoveredTop + 0.5f;
+            }
+            else {
+                // Standard Scaffold
+                newObj->pos.y = hoveredTop + 1.0f;
+            }
+            
+            newObj->rotation = m_ghostObject->rotation;
+        }
+        else {
+             // Standard Placement on Ground (matches Update logic)
+             newObj->pos = m_ghostObject->pos;
+             newObj->rotation = m_ghostObject->rotation;
+        }
+
         newObj->scale = m_ghostObject->scale;
 
-        if(m_selectedType == "rail") 
-             newObj->AddCollider(new _CubeHitbox(Vector3(-1, -1, -1), Vector3(1, 1, 1), COLLIDER_RAIL));
-        else if(m_selectedType == "halfpipe") 
-             newObj->AddCollider(new _CubeHitbox(Vector3(-1, -1, -1), Vector3(1, 1, 1), COLLIDER_HALFPIPE));
+        // --- COLLIDER ASSIGNMENT ---
+        // Assign specific physics types based on the selected object name
+        Vector3 cMin(-1, -1, -1);
+        Vector3 cMax(1, 1, 1);
+
+        if(m_selectedType == "rail") {
+             newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_RAIL));
+        }
+        else if(m_selectedType == "halfpipe") {
+             newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_HALFPIPE));
+        }
+        else if(m_selectedType == "stairs") {
+             newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_STAIRS));
+        }
+        else if(m_selectedType == "wood_floor") {
+             newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_FLOOR));
+        }
+        else {
+             // Scaffolds and Side pieces are Walls (Solid blocks)
+             newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_WALL));
+        }
 
         m_placedObjects.push_back(newObj);
+        return true;
     }
+
     return false;
 }
 
@@ -319,8 +432,9 @@ void _LevelEditor::SaveLevel(string filename) {
     ofstream file(filename);
     if (!file.is_open()) return;
     for (auto* obj : m_placedObjects) {
-        string type = "rail";
-        if(!obj->colliders.empty() && obj->colliders[0]->m_type == COLLIDER_HALFPIPE) type = "halfpipe";
+        // Use the stored name, or default to "rail" if empty (safety)
+        string type = obj->modelName;
+        if (type.empty()) type = "rail";
 
         file << type << " " 
              << obj->pos.x << " " << obj->pos.y << " " << obj->pos.z << " "
@@ -340,16 +454,37 @@ void _LevelEditor::LoadLevel(string filename) {
     float x, y, z, rot, scale;
     while (file >> type >> x >> y >> z >> rot >> scale) {
         if (m_blueprints.find(type) != m_blueprints.end()) {
+            
             _StaticModelInstance* newObj = new _StaticModelInstance(m_blueprints[type]);
+            
+            // 1. Restore Properties
             newObj->pos = Vector3(x, y, z);
             newObj->rotation.y = rot;
             newObj->scale = Vector3(scale, scale, scale);
-            
-            if(type == "halfpipe") {
-                newObj->AddCollider(new _CubeHitbox(Vector3(-1,-1,-1),Vector3(1,1,1),COLLIDER_HALFPIPE));
-            } else {
-                newObj->AddCollider(new _CubeHitbox(Vector3(-1,-1,-1),Vector3(1,1,1),COLLIDER_RAIL));
+            newObj->modelName = type; // Remember the name for next save!
+
+            // 2. Restore Physics (MUST MATCH HANDLEMOUSECLICK LOGIC)
+            Vector3 cMin(-1, -1, -1);
+            Vector3 cMax(1, 1, 1);
+
+            if(type == "wood_floor") {
+                 // Thin Floor Collider
+                 newObj->AddCollider(new _CubeHitbox(Vector3(-1, -0.1f, -1), Vector3(1, 0.1f, 1), COLLIDER_FLOOR));
             }
+            else if(type == "rail") {
+                 newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_RAIL));
+            }
+            else if(type == "halfpipe") {
+                 newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_HALFPIPE));
+            }
+            else if(type == "stairs") {
+                 newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_STAIRS));
+            }
+            else {
+                 // Scaffold, Side, etc. (Walls)
+                 newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_WALL));
+            }
+
             m_placedObjects.push_back(newObj);
         }
     }

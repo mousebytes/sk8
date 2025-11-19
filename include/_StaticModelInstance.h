@@ -20,6 +20,8 @@ public:
 
     vector<_Collider*> colliders;
 
+    string modelName;
+
     
 
     void SetPushable(bool flag);
