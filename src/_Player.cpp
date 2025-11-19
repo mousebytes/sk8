@@ -246,6 +246,7 @@ void _Player::UpdatePhysics()
     // --- unified Ground & Rail Check Logic ---
     rb->isGrounded = false; // Reset at the start of the check
     bool isOnRail = false;
+    bool isOnVert = false;
     
     _Collider* playerCurrentCollider = playerMainCollider->GetWorldSpaceCollider(m_body->pos, m_body->scale, m_body->rotation);
     
@@ -269,6 +270,81 @@ void _Player::UpdatePhysics()
                             isOnRail = true; // We are on a rail
                             m_currentRail = staticModel; // store the rail
                         }
+                        // halfpipe logic
+                        // [Inside the nested collision loop in UpdatePhysics]
+                        else if (staticCollider->m_type == COLLIDER_HALFPIPE)
+                        {
+                            // 1. Calculate Relative Position
+                            Vector3 relPos = m_body->pos - staticModel->pos;
+                        
+                            // 2. Convert to Local Space
+                            float rad = -staticModel->rotation.y * PI / 180.0f;
+                            float localX = relPos.x * cos(rad) - relPos.z * sin(rad);
+                            float localZ = relPos.x * sin(rad) + relPos.z * cos(rad);
+                            
+                            float pipeHalfDepth = staticModel->scale.z; 
+                            
+                            // 3. Define the "Start" of the ramp
+                            // Let's move it slightly forward so the curve matches the visual model better.
+                            // Assuming the ramp goes from +Z (flat) to -Z (top).
+                            float rampStartZ = pipeHalfDepth * 0.2f; // Adjust this value to shift where curve starts
+                        
+                            // === CHECK: Are we on the Flat part or the Curved part? ===
+                            
+                            if (localZ > rampStartZ) 
+                            {
+                                // === FLAT GROUND (Front Side) ===
+                                // Just act like a normal floor at the object's base Y
+                                rb->isGrounded = true;
+                                
+                                // Snap to floor if we are close enough
+                                if(m_body->pos.y < staticModel->pos.y + 1.5f) {
+                                     m_body->pos.y = staticModel->pos.y + 1.0f; // +1.0 for player radius
+                                     if(rb->velocity.y < 0) rb->velocity.y = 0;
+                                }
+                                
+                                // Reset rotation
+                                m_body->rotation.x = 0;
+                            }
+                            else 
+                            {
+                                // === CURVED RAMP (Back Side) ===
+                                isOnVert = true;
+                            
+                                // Calculate how far UP the ramp we are (0.0 at start, 1.0 at top)
+                                // We are moving from rampStartZ towards -pipeHalfDepth
+                                float rampLength = rampStartZ - (-pipeHalfDepth);
+                                float distanceTraveled = rampStartZ - localZ; // Positive as we go deeper
+                                
+                                float rampProgress = distanceTraveled / rampLength;
+                                
+                                // Clamp progress
+                                if(rampProgress < 0) rampProgress = 0;
+                                if(rampProgress > 1) rampProgress = 1;
+                            
+                                // Calculate Height (Parabola)
+                                // scale.y * 2.0f looked a bit high in the image, trying 1.8f
+                                float curveHeight = (rampProgress * rampProgress) * staticModel->scale.y * 1.8f; 
+                                
+                                float targetY = staticModel->pos.y + curveHeight + 1.0f; 
+                            
+                                // Snap player to curve
+                                // We check a larger range here to catch them as they skate up
+                                if (m_body->pos.y < targetY + 1.0f) {
+                                    m_body->pos.y = targetY;
+                                    rb->isGrounded = true;
+                                    
+                                    if(rb->velocity.y < 0) rb->velocity.y = 0; 
+                                    
+                                    // Visual Rotation: Tilt UP (negative X rotation)
+                                    // The deeper we go, the steeper it gets
+                                    m_body->rotation.x = +60.0f * rampProgress;
+                                }
+                                
+                                // Stop them from going over the back wall if you want
+                                // if (rampProgress >= 1.0f) { ... stop velocity ... }
+                            }
+                        }
                     }
                     delete staticWorldCollider;
                 }
@@ -281,8 +357,9 @@ void _Player::UpdatePhysics()
 
     // --- unified State Machine & Friction ---
     if (rb->isGrounded) // This is true only if we hit a COLLIDER_FLOOR
-    {
-        m_state = STATE_GROUNDED;
+    {   
+        // If we are on vert, use specific state, otherwise standard grounded
+        m_state = isOnVert ? STATE_VERT : STATE_GROUNDED;
         if(rb->velocity.y < 0) { 
             rb->velocity.y = 0; 
         }
@@ -305,6 +382,13 @@ void _Player::UpdatePhysics()
         {
             rb->velocity.x = 0;
             rb->velocity.z = 0;
+        }
+
+        // RESET VISUAL ROTATION IF NOT ON VERT
+        if(!isOnVert) {
+            m_body->rotation.x = 0.0f;
+            // Rotate back to flat slowly in air
+            m_body->rotation.x *= 0.95f;
         }
     }
     else if (isOnRail) // This is true if we hit a rail AND NOT the floor
@@ -451,7 +535,70 @@ void _Player::UpdateCamera(_camera* cam)
 
 void _Player::Draw()
 {
-    // we just tell our body to draw itself
+    // ... existing draw calls ...
     m_body->Draw();
     m_skateboard->Draw();
+
+    // === DEBUG DRAWING FOR HALF-PIPE ===
+    if (isDebug) // Only draw if debug mode is on (Press '1')
+    {
+        glDisable(GL_TEXTURE_2D);
+        glDisable(GL_LIGHTING);
+        glLineWidth(3.0f); // Make lines thick
+
+        for (auto* staticModel : m_collidableStaticModels)
+        {
+            // Check if this model is a half-pipe
+            // (We need to access the collider type, assume the first one is the main one)
+            if (!staticModel->colliders.empty() && staticModel->colliders[0]->m_type == COLLIDER_HALFPIPE)
+            {
+                // 1. RECALCULATE LOCAL SPACE (Same math as UpdatePhysics)
+                Vector3 relPos = m_body->pos - staticModel->pos;
+                float rad = -staticModel->rotation.y * PI / 180.0f;
+                float localX = relPos.x * cos(rad) - relPos.z * sin(rad);
+                float localZ = relPos.x * sin(rad) + relPos.z * cos(rad);
+
+                float pipeHalfDepth = staticModel->scale.z; 
+                float rampStartThreshold = -pipeHalfDepth * 0.5f;
+
+                // 2. DRAW THE THRESHOLD LINE (Red)
+                // This shows where the flat ground *should* turn into a ramp
+                glColor3f(1.0f, 0.0f, 0.0f); // Red
+                glPushMatrix();
+                glTranslatef(staticModel->pos.x, staticModel->pos.y, staticModel->pos.z);
+                glRotatef(staticModel->rotation.y, 0, 1, 0); // Rotate with the model
+                
+                glBegin(GL_LINES);
+                    // Draw a vertical line at the threshold
+                    glVertex3f(0, 0, rampStartThreshold); 
+                    glVertex3f(0, 5, rampStartThreshold);
+                    
+                    // Draw a horizontal line across the pipe width at the threshold
+                    glVertex3f(-staticModel->scale.x, 0.1f, rampStartThreshold);
+                    glVertex3f(staticModel->scale.x, 0.1f, rampStartThreshold);
+                glEnd();
+                glPopMatrix();
+
+                // 3. DRAW THE PLAYER'S CALCULATED CURVE HEIGHT (Yellow)
+                // This shows where the physics thinks the floor is right now
+                if (localZ <= rampStartThreshold)
+                {
+                    float rampProgress = (localZ - rampStartThreshold) / (pipeHalfDepth - rampStartThreshold);
+                    if(rampProgress > 1) rampProgress = 1;
+                    float curveHeight = (rampProgress * rampProgress) * staticModel->scale.y * 2.0f; 
+                    float targetY = staticModel->pos.y + curveHeight;
+
+                    glColor3f(1.0f, 1.0f, 0.0f); // Yellow
+                    glBegin(GL_LINES);
+                        // Line from player center down to the curve surface
+                        glVertex3f(m_body->pos.x, m_body->pos.y, m_body->pos.z);
+                        glVertex3f(m_body->pos.x, targetY, m_body->pos.z);
+                    glEnd();
+                }
+            }
+        }
+        
+        glEnable(GL_LIGHTING);
+        glEnable(GL_TEXTURE_2D);
+    }
 }

@@ -10,7 +10,8 @@ enum PlayerState {
     STATE_GROUNDED,
     STATE_AIR,
     STATE_GRINDING,
-    STATE_BAILED // for when off board
+    STATE_BAILED, // for when off board
+    STATE_VERT
 };
 
 class _Player{

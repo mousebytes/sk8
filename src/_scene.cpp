@@ -489,9 +489,10 @@ void _Scene::initGameplay()
 
     // HALF PIPE
     m_halfpipeBlueprint->LoadModel("models/skatepark assets/halfpipe/halfpipe.obj", "models/skatepark assets/colormap.png");
-    m_halfpipeInstance->AddCollider(new _CubeHitbox(Vector3(-1,-1,-1),Vector3(1,1,1),COLLIDER_GENERAL));
-    m_halfpipeInstance->pos = Vector3(20,-15,-10);
+    m_halfpipeInstance->AddCollider(new _CubeHitbox(Vector3(-1,-1,-1),Vector3(1,1,1),COLLIDER_HALFPIPE));
+    m_halfpipeInstance->pos = Vector3(20,-13.5,-10);
     m_halfpipeInstance->scale = Vector3(4,4,4);
+    //m_halfpipeInstance->rotation = Vector3(0,90,0);
     m_player->RegisterStaticCollider(m_halfpipeInstance);
 }
 
