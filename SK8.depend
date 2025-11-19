@@ -7,7 +7,7 @@
 	<gl/gl.h>
 	<_scene.h>
 
-1763546993 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
+1763554379 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
 	<_common.h>
 	<_light.h>
 	<_model.h>
@@ -123,7 +123,7 @@
 1762563177 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_collisioncheck.h
 	<_common.h>
 
-1763546290 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_inputs.cpp
+1763554379 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_inputs.cpp
 	"_inputs.h"
 
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_light.cpp
@@ -135,7 +135,7 @@
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_parallax.cpp
 	"_parallax.h"
 
-1763547985 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
+1763554379 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
 	"_scene.h"
 
 1762949818 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_skybox.cpp
@@ -213,14 +213,14 @@
 1762692527 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_hitbox.cpp
 	"_Hitbox.h"
 
-1763549091 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_collider.h
+1763554379 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_collider.h
 	"_common.h"
 
 1762683111 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_button.h
 	"_common.h"
 	"_textureloader.h"
 
-1763549178 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_cubehitbox.h
+1763554379 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_cubehitbox.h
 	"_Collider.h"
 
 1762772807 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_spherehitbox.h
@@ -235,7 +235,7 @@
 	"_SphereHitbox.h"
 	"_Rigidbody.h"
 
-1763540207 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
+1763554379 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
 	"_camera.h"
 	"_inputs.h"
 	"_common.h"
@@ -249,17 +249,17 @@
 	"_common.h"
 	"_Bullets.h"
 
-1763553593 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_animatedmodelinstance.cpp
+1763554379 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_animatedmodelinstance.cpp
 	"_AnimatedModelInstance.h"
 
 1762684664 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_button.cpp
 	"_Button.h"
 
-1763549187 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_cubehitbox.cpp
+1763554379 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_cubehitbox.cpp
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
 
-1763554215 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
+1763554379 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
 	"_Player.h"
 
 1762998150 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_spherehitbox.cpp
@@ -275,7 +275,7 @@
 1763508283 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_rigidbody.cpp
 	"_Rigidbody.h"
 
-1763544241 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_leveleditor.h
+1763554379 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_leveleditor.h
 	"_common.h"
 	"_StaticModelInstance.h"
 	"_Button.h"

@@ -59,15 +59,6 @@ void _LevelEditor::Init(int width, int height) {
     m_itemButtons.push_back(btnPipe);
     m_itemNames.push_back("halfpipe");
 
-    m_saveButton = new _Button();
-    m_saveButton->Init("images/play-btn.png", 100, 40, width - 60, 40, 0, 1, 1);
-    
-    m_loadButton = new _Button();
-    m_loadButton->Init("images/play-btn.png", 100, 40, width - 60, 90, 0, 1, 1);
-
-    m_exitButton = new _Button();
-    m_exitButton->Init("images/exit-btn.png", 100, 40, width - 60, height - 40, 0, 1, 1);
-
     SetGhost("rail");
     
     // 4. AUTO LOAD ON START
@@ -212,9 +203,6 @@ bool _LevelEditor::HandleMouseClick(UINT uMsg, int mouseX, int mouseY) {
                 return true; 
             }
         }
-        if(m_saveButton->isClicked(mouseX, mouseY)) { SaveLevel("level_custom.txt"); return true; }
-        if(m_loadButton->isClicked(mouseX, mouseY)) { LoadLevel("level_custom.txt"); return true; }
-        if(m_exitButton->isClicked(mouseX, mouseY)) { return true; /* Signal to exit in Scene */ }
     }
 
     // 2. OBJECT DELETION (Right Click)
@@ -319,9 +307,6 @@ void _LevelEditor::Draw() {
 
     glColor3f(1.0f, 1.0f, 1.0f);
     for(auto* btn : m_itemButtons) btn->Draw();
-    m_saveButton->Draw();
-    m_loadButton->Draw();
-    m_exitButton->Draw();
 
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
