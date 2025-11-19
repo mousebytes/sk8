@@ -287,7 +287,6 @@ else if (staticCollider->m_type == COLLIDER_HALFPIPE)
     float s = sin(rad);
 
     // Apply Inverse Rotation (World -> Local)
-    // Correct Formula: x' = x*cos - z*sin, z' = x*sin + z*cos
     float localX = relPos.x * c - relPos.z * s;
     float localZ = relPos.x * s + relPos.z * c;
 
@@ -299,52 +298,58 @@ else if (staticCollider->m_type == COLLIDER_HALFPIPE)
     // Check Width (Side to side)
     if (localX < -halfWidth - 0.5f || localX > halfWidth + 0.5f) continue;
 
-    // --- 3. CURVE LOGIC & BACK FACE CULLING ---
-    // Define the Ramp Geometry:
-    // Wall is at localZ = -halfDepth. 
-    // Front/Entry is at localZ = -halfDepth + Radius.
+    // --- 3. CURVE LOGIC ---
     float radius = halfHeight * 2.0f;
     float wallZ = -halfDepth;
-    
-    // Calculate distance relative to the Wall
     float distFromWall = localZ - wallZ;
 
-    // FIX: Prevent going through the back
-    // If we are behind the wall (dist < 0), ignore collision
+    // Prevent going through the back
     if (distFromWall < -0.5f) continue;
-
-    // Check if we are past the front of the ramp (on flat ground)
+    // Clamp flat ground
     if (distFromWall > radius) distFromWall = radius;
 
-    // FIX: Invert curve logic
-    // We want Flat at Entry (dist = Radius) and Vertical at Wall (dist = 0)
-    // Let x be distance from the center of the imaginary circle
+    // Circle Math: xCircle is 0 at bottom, R at top
     float xCircle = radius - distFromWall;
     if (xCircle < 0) xCircle = 0;
 
-    // Equation of circle: y = R - sqrt(R^2 - x^2)
+    // Calculate raw surface height at this position
     float circleY = radius - sqrt(pow(radius, 2) - pow(xCircle, 2));
-
-    // Calculate world height
     float pipeBottomY = staticModel->pos.y - halfHeight;
-    float targetWorldY = pipeBottomY + circleY + 1.0f; // +1.0 for player height
 
-    // --- 4. COLLISION CHECK & SNAP ---
-    if (m_body->pos.y <= targetWorldY + 2.0f && m_body->pos.y >= pipeBottomY - 1.0f)
+    // --- 4. OFFSET CALCULATIONS (THE FIX) ---
+    
+    // A. Calculate Slope Angle
+    float slopeRad = asin(xCircle / radius); // 0 at bottom, PI/2 at top
+
+    // B. Geometry Correction: 
+    // To keep a sphere on a slope, we divide radius by cos(theta).
+    // As the wall gets vertical, this value gets huge, so we clamp it.
+    float cosTheta = cos(slopeRad);
+    if(cosTheta < 0.3f) cosTheta = 0.3f; // Clamp to prevent shooting to space
+    
+    float geometryOffset = 1.0f / cosTheta; 
+
+    // C. Manual Visual Offset:
+    // Tweak this value to push the model further out visually!
+    float visualTweak = 2.5f; 
+
+    float finalY = pipeBottomY + circleY + geometryOffset + visualTweak;
+
+    // --- 5. APPLY PHYSICS ---
+    if (m_body->pos.y <= finalY + 2.0f && m_body->pos.y >= pipeBottomY - 1.0f)
     {
         isOnVert = true;
         rb->isGrounded = true;
-        m_body->pos.y = targetWorldY;
+        m_body->pos.y = finalY;
         
+        // Stop falling
         if(rb->velocity.y < 0) rb->velocity.y = 0;
 
-        // --- 5. VISUAL ROTATION ---
-        // Calculate slope angle: 0 at bottom, 90 at top
-        // sin(angle) = x / R
-        float slopeAngle = asin(xCircle / radius) * (180.0f / PI);
+        // Apply Pitch Rotation
+        // Convert radians to degrees for rotation
+        float slopeDeg = slopeRad * (180.0f / PI);
         
-        // Apply Pitch (Negative X rotation is Up in this setup)
-        m_body->rotation.x = slopeAngle;
+        m_body->rotation.x = slopeDeg;
         m_body->rotation.z = 0;
     }
 }
