@@ -98,6 +98,9 @@ class _Scene
         _StaticModel *m_bulletBlueprint;
         _Bullets *m_bulletManager;
 
+        _StaticModel *m_halfpipeBlueprint;
+        _StaticModelInstance *m_halfpipeInstance;
+
 
         enum SceneState {LandingPage, MainMenu, Help, Playing, Paused};
         SceneState m_sceneState;

@@ -20,10 +20,10 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
     m_cameraYaw = 0.0f;     // Camera starts directly behind player
     
     // --- SKATE PHYSICS VARS ---
-    m_acceleration = 30.0f; // units per second^2
-    m_maxSpeed = 500.0f;     // units per second
-    m_turnSpeed = 720.0f;   // degrees per second
-    m_friction = 1.0f;      // Damping factor (higher = stops faster)
+    m_acceleration = 150.0f; // units per second^2
+    m_maxSpeed = 300.0f;     // units per second
+    m_turnSpeed = 1080.0f;   // degrees per second
+    m_friction = 0.3f;      // Damping factor (higher = stops faster)
     m_jumpForce = 8.0f;     // Initial upward velocity
     m_state = STATE_AIR;    // Start in air, will be set to grounded by physics
 
@@ -93,14 +93,47 @@ void _Player::HandleKeys(WPARAM wParam)
         rb->velocity.x -= fwd.x * m_acceleration * _Time::deltaTime;
         rb->velocity.z -= fwd.z * m_acceleration * _Time::deltaTime;
     }
+
+    // --- TURNING LOGIC ---
     if (wParam == 'A') // Turn Left
     {
-        m_playerYaw += m_turnSpeed * _Time::deltaTime;
+        float turnAmount = m_turnSpeed * _Time::deltaTime;
+        m_playerYaw += turnAmount;
+
+        // Convert angle change to radians
+        float rad = turnAmount * PI / 180.0f;
+        float cosTheta = cos(rad);
+        float sinTheta = sin(rad);
+
+        // Capture old velocity
+        float oldX = rb->velocity.x;
+        float oldZ = rb->velocity.z;
+
+        // Rotate velocity vector by +theta
+        // Formula: x' = x*cos - z*sin | z' = x*sin + z*cos
+        // Adapted for this coordinate system (Yaw 0 = -Z):
+        rb->velocity.x = oldX * cosTheta + oldZ * sinTheta;
+        rb->velocity.z = -oldX * sinTheta + oldZ * cosTheta;
     }
     if (wParam == 'D') // Turn Right
     {
-        m_playerYaw -= m_turnSpeed * _Time::deltaTime;
+        float turnAmount = m_turnSpeed * _Time::deltaTime;
+        m_playerYaw -= turnAmount;
+
+        // Convert angle change to radians (Negative for right turn)
+        float rad = -turnAmount * PI / 180.0f;
+        float cosTheta = cos(rad);
+        float sinTheta = sin(rad);
+
+        // Capture old velocity
+        float oldX = rb->velocity.x;
+        float oldZ = rb->velocity.z;
+
+        // Rotate velocity vector by -theta
+        rb->velocity.x = oldX * cosTheta + oldZ * sinTheta;
+        rb->velocity.z = -oldX * sinTheta + oldZ * cosTheta;
     }
+
     if (wParam == VK_SPACE) // Jump (Ollie)
     {
         // --- Allow jumping from ground or grind ---
@@ -276,36 +309,71 @@ void _Player::UpdatePhysics()
     }
     else if (isOnRail) // This is true if we hit a rail AND NOT the floor
     {
-        // Check if we *just* landed on the rail in this frame
-        if (m_state != STATE_GRINDING && m_currentRail != nullptr)
-        {
-            // --- SNAP ROTATION ---
-            // Set the player's yaw to match the rail's yaw
-            m_playerYaw = m_currentRail->rotation.y;
+        m_state = STATE_GRINDING;
 
-            // --- SNAP VELOCITY ---
-            // First, get the player's current horizontal speed
-            float horizSpeed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
-            
-            // Second, get the rail's forward direction vector
-            float railYawRad = m_currentRail->rotation.y * PI / 180.0f;
-            Vector3 railForward;
-            railForward.x = -sin(railYawRad); // Same as player's 'W' key logic
-            railForward.z = -cos(railYawRad);
-            
-            // Finally, set the player's velocity to that speed in the rail's direction
-            rb->velocity.x = railForward.x * horizSpeed;
-            rb->velocity.z = railForward.z * horizSpeed;
+        // --- Calculate Rail Direction Vectors ---
+        // Convert degrees to radians
+        float railYawRad = m_currentRail->rotation.y * PI / 180.0f;
+
+        // Calculate the rail's forward unit vector 
+        // (Matches standard OpenGL rotation: x = -sin, z = -cos)
+        Vector3 railDir;
+        railDir.x = -sin(railYawRad); 
+        railDir.y = 0;
+        railDir.z = -cos(railYawRad);
+        railDir.normalize();
+
+        // --- Determine Momentum Direction ---
+        // Get current horizontal velocity direction
+        Vector3 currentVel = rb->velocity;
+        currentVel.y = 0; 
+
+        // Use Dot Product to check if player is moving with or against the rail
+        // Dot > 0: Same direction, Dot < 0: Opposite direction
+        float dot = (currentVel.x * railDir.x) + (currentVel.z * railDir.z);
+
+        // If moving opposite to the rail's defined forward vector, flip the direction
+        if (dot < 0) {
+            railDir = railDir * -1.0f;
         }
 
-        m_state = STATE_GRINDING;
-        rb->velocity.y = 0; // Negate gravity
+        // --- Snap Velocity (Preserve Momentum) ---
+        // Get the player's current speed magnitude
+        float speed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
         
-        // we Update()
-        // into thinking we are "grounded" so it doesn't apply gravity
+        // Apply that speed purely along the aligned rail direction
+        rb->velocity.x = railDir.x * speed;
+        rb->velocity.z = railDir.z * speed;
+        rb->velocity.y = 0; // No gravity while grinding
+
+        // --- Snap Position (Top-Center Logic) ---
+        // We project the player's position onto the rail's infinite line
+        // to snap X/Z to the center, but preserve their progress along the rail.
+        
+        // Vector from Rail Origin to Player
+        Vector3 diff = m_body->pos - m_currentRail->pos;
+        
+        // Project 'diff' onto the normalized 'railDir'
+        float distAlongRail = (diff.x * railDir.x) + (diff.z * railDir.z);
+        
+        // Calculate the new snapped position on the rail line
+        Vector3 newPos = m_currentRail->pos + (railDir * distAlongRail);
+        
+        // Calculate Height: Rail Pos Y + Rail Top Bound + Player Collider Radius
+        // Assuming the rail collider is a box from -1 to 1 (Height = 1.0 * scale.y)
+        float railTopY = m_currentRail->pos.y + (m_currentRail->scale.y * 1.0f);
+        newPos.y = railTopY + 1.0f; // +1.0 for player's sphere radius so they sit on top
+
+        // Apply the position snap
+        m_body->pos = newPos;
+
+        // --- Visual Rotation (Grind Stance) ---
+        // Rotate 90 degrees relative to the rail to look like a boardslide
+        // We base this on the original rail rotation
+        m_playerYaw = m_currentRail->rotation.y + 90.0f;
+        
+        // Keep the 'grounded' flag true so gravity doesn't apply next frame
         rb->isGrounded = true; 
-        
-        // (No friction is applied while grinding)
     }
     else // Not on floor, not on rail
     {

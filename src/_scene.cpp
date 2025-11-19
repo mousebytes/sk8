@@ -35,6 +35,9 @@ _Scene::_Scene()
     m_railBlueprint = new _StaticModel();
     m_railInstance = new _StaticModelInstance(m_railBlueprint);
 
+    m_halfpipeBlueprint = new _StaticModel();
+    m_halfpipeInstance = new _StaticModelInstance(m_halfpipeBlueprint);
+
 }
 
 _Scene::~_Scene()
@@ -68,6 +71,9 @@ _Scene::~_Scene()
     delete m_railBlueprint;
     delete m_railInstance;
     delete m_skateboardBlueprint;
+
+    delete m_halfpipeBlueprint;
+    delete m_halfpipeInstance;
 }
 
 void _Scene::reSizeScene(int width, int height)
@@ -460,6 +466,7 @@ void _Scene::initGameplay()
     m_player = new _Player(m_player_blueprint, m_skateboardBlueprint);
     m_player->RegisterStaticCollider(terrainInstance);
     m_player->RegisterStaticCollider(m_railInstance);
+    
 
     // add sphere collider centered at (0,0,0) local space & r=1.0
     // note: model is norm -1 to +1
@@ -469,18 +476,23 @@ void _Scene::initGameplay()
     //m_bulletInstance->scale = Vector3(0.2,0.2,0.2);
     m_bulletManager = new _Bullets(m_bulletBlueprint);
 
-    m_railBlueprint->LoadModel("models/bullet/untitled.obj","models/bullet/BulletAtlas.png");
+    m_railBlueprint->LoadModel("models/skatepark assets/rail/rail.obj","models/skatepark assets/colormap.png");
     m_railInstance->pos = Vector3(5, -17, -10); // Position it in the world
-    m_railInstance->scale = Vector3(20, 1, 1); // Make it long and thin
-    m_railInstance->rotation.y = 15; // Angle it slightly
+    //m_railInstance->scale = Vector3(1, 1, 1); // Make it long and thin
+    //m_railInstance->rotation.y = 15; // Angle it slightly
     // Add a collider for the rail
     m_railInstance->AddCollider(new _CubeHitbox(
-        Vector3(-0.5f, -0.5f, -0.5f), // Min corner (local space)
-        Vector3(0.5f, 0.5f, 0.5f),   // Max corner (local space)
+        Vector3(-1, -1, -1), // Min corner (local space)
+        Vector3(1, 1, 1),   // Max corner (local space)
         COLLIDER_RAIL                // Set the type
     ));
 
-
+    // HALF PIPE
+    m_halfpipeBlueprint->LoadModel("models/skatepark assets/halfpipe/halfpipe.obj", "models/skatepark assets/colormap.png");
+    m_halfpipeInstance->AddCollider(new _CubeHitbox(Vector3(-1,-1,-1),Vector3(1,1,1),COLLIDER_GENERAL));
+    m_halfpipeInstance->pos = Vector3(20,-15,-10);
+    m_halfpipeInstance->scale = Vector3(4,4,4);
+    m_player->RegisterStaticCollider(m_halfpipeInstance);
 }
 
 void _Scene::initMainMenu()
@@ -552,6 +564,8 @@ void _Scene::drawGameplay()
     m_railInstance->Draw();
 
     m_player->Draw();
+
+    m_halfpipeInstance->Draw();
     
     //m_bulletInstance->Draw();
     m_bulletManager->Draw();
