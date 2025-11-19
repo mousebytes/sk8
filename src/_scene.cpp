@@ -46,6 +46,7 @@ _Scene::_Scene()
     m_editorButton = new _Button();
     m_playCustomButton = new _Button();
 
+    m_customFloor = new _StaticModelInstance(terrainBlueprint);
 }
 
 _Scene::~_Scene()
@@ -92,6 +93,8 @@ _Scene::~_Scene()
     delete m_editorSaveButton;
     delete m_editorExitButton;
     delete m_editorButton;
+
+    delete m_customFloor;
 }
 
 void _Scene::reSizeScene(int width, int height)
@@ -393,7 +396,7 @@ void _Scene::handleLevelEditorInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
-             m_levelEditor->HandleMouseClick(uMsg, (lParam), HIWORD(lParam));
+             m_levelEditor->HandleMouseClick(uMsg, LOWORD(lParam), HIWORD(lParam));
              break;
     }
 }
@@ -566,6 +569,17 @@ void _Scene::initGameplay()
     Vector3 wallWestMax = Vector3(-0.25f, wallMaxY, 0.5f);
     terrainInstance->AddCollider(new _CubeHitbox(wallWestMin, wallWestMax, COLLIDER_WALL));
 
+    // Flatten the terrain model to make a huge floor
+    m_customFloor->pos = Vector3(0, 0, 0);
+    m_customFloor->scale = Vector3(200, 1, 200);
+
+    // Add a floor collider (Box from y=-5 to y=0)
+    m_customFloor->AddCollider(new _CubeHitbox(
+        Vector3(-1, -1.0f, -1), 
+        Vector3(1, 0.0f, 1), 
+        COLLIDER_FLOOR
+    ));
+
     m_camera->camInit();
 
     m_skybox->skyBoxInit();
@@ -701,18 +715,19 @@ void _Scene::drawGameplay()
     // start writing to the depth buffer again
     glDepthMask(GL_TRUE);
 
-    terrainInstance->Draw();
-    m_railInstance->Draw();
+    //terrainInstance->Draw();
+    //m_railInstance->Draw();
 
     m_player->Draw();
 
-    m_halfpipeInstance->Draw();
+    //m_halfpipeInstance->Draw();
     
     //m_bulletInstance->Draw();
     m_bulletManager->Draw();
 
     if (m_isCustomGame) 
     {
+        m_customFloor->Draw();
         // Draw ONLY Custom Objects
         for(auto* obj : m_customLevelObjects) {
             obj->Draw();
@@ -722,6 +737,7 @@ void _Scene::drawGameplay()
     {
         // Draw ONLY Campaign Objects
         // TODO: (Eventually use a switch statement here for Level 1, 2, 3)
+        terrainInstance->Draw();
         m_railInstance->Draw();
         m_halfpipeInstance->Draw();
     }
@@ -928,7 +944,8 @@ void _Scene::loadCustomLevel() {
     // 2. Reset Player Physics/Colliders
     // We keep the basic Terrain (floor) but remove rails/pipes from the player's check list
     m_player->ClearColliders();
-    m_player->RegisterStaticCollider(terrainInstance); // Re-add the main floor
+    //m_player->RegisterStaticCollider(terrainInstance); // Re-add the main floor
+    m_player->RegisterStaticCollider(m_customFloor);
 
     // 3. Load File
     ifstream file("saves/level_custom.txt");

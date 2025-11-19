@@ -7,7 +7,7 @@
 	<gl/gl.h>
 	<_scene.h>
 
-1763545322 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
+1763546993 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
 	<_common.h>
 	<_light.h>
 	<_model.h>
@@ -135,7 +135,7 @@
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_parallax.cpp
 	"_parallax.h"
 
-1763546607 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
+1763547985 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
 	"_scene.h"
 
 1762949818 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_skybox.cpp
@@ -283,6 +283,6 @@
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
 
-1763545046 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_leveleditor.cpp
+1763547777 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_leveleditor.cpp
 	"_LevelEditor.h"
 

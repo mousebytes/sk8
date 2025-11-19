@@ -38,6 +38,8 @@ public:
     // type specific collision check
     virtual bool CheckCollisionWithCube(_CubeHitbox* cube) = 0;
     virtual bool CheckCollisionWithSphere(_SphereHitbox* sphere) = 0;
+    // For CubeHitbox (which the halfpipe uses), this returns (max - min)
+    virtual Vector3 GetSize() { return Vector3(1,1,1); }
 };
 
 #endif // _COLLIDER_H

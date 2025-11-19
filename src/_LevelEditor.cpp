@@ -185,8 +185,9 @@ void _LevelEditor::Update(HWND hWnd, _camera* cam) {
 
     if (m_ghostObject) {
         m_ghostObject->pos = m_cursorPos;
-        if(m_selectedType == "halfpipe") m_ghostObject->pos.y = -15.0f; 
-        else m_ghostObject->pos.y = 0.0f;
+        //if(m_selectedType == "halfpipe") m_ghostObject->pos.y = 0.0f; 
+        //else m_ghostObject->pos.y = 4.0f;
+        m_ghostObject->pos.y = m_ghostObject->scale.y/2;
         m_ghostObject->rotation.y = m_currentRotation;
     }
 }
@@ -302,6 +303,8 @@ void _LevelEditor::Draw() {
     glEnable(GL_TEXTURE_2D);
 
     // Draw UI Overlay
+    glDisable(GL_CULL_FACE);
+
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
     glMatrixMode(GL_PROJECTION);
@@ -313,6 +316,7 @@ void _LevelEditor::Draw() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
+    glColor3f(1.0f, 1.0f, 1.0f);
     for(auto* btn : m_itemButtons) btn->Draw();
     m_saveButton->Draw();
     m_loadButton->Draw();

@@ -91,6 +91,8 @@ class _Scene
         void loadCampaignLevel();
         void loadCustomLevel();
 
+        _StaticModelInstance* m_customFloor;
+
 
         void drawEditorPauseMenu();
         void handleEditorPauseInput(HWND, UINT, WPARAM, LPARAM);

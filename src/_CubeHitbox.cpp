@@ -156,3 +156,7 @@ bool _CubeHitbox::CheckCollisionWithSphere(_SphereHitbox* sphere) {
     // if the distance squared is less than the radius squared, they collide
     return distSq < (sphere->radius * sphere->radius);
 }
+
+Vector3 _CubeHitbox::GetSize() {
+    return max - min;
+}
