@@ -279,73 +279,72 @@ void _Player::UpdatePhysics()
 else if (staticCollider->m_type == COLLIDER_HALFPIPE)
 {
     // --- 1. ROBUST LOCAL SPACE TRANSFORMATION ---
-    // Instead of manual vectors, we just "un-rotate" the player's position
-    // to match the model's alignment.
     Vector3 relPos = m_body->pos - staticModel->pos;
-    
-    // Invert the rotation (negative angle)
-    float rad = -staticModel->rotation.y * PI / 180.0f;
+
+    // Convert rotation to radians
+    float rad = staticModel->rotation.y * PI / 180.0f;
     float c = cos(rad);
     float s = sin(rad);
 
-    // Standard 2D Rotation Matrix (around Y axis)
+    // Apply Inverse Rotation (World -> Local)
+    // Correct Formula: x' = x*cos - z*sin, z' = x*sin + z*cos
     float localX = relPos.x * c - relPos.z * s;
     float localZ = relPos.x * s + relPos.z * c;
 
     // --- 2. DIMENSIONS & BOUNDS ---
     float halfWidth = staticModel->scale.x;
-    // Assuming the pivot is at the CENTER of the bounding box
     float halfDepth = staticModel->scale.z; 
     float halfHeight = staticModel->scale.y;
 
     // Check Width (Side to side)
-    // Add a small buffer (0.5f) so we don't fall off the edge instantly
     if (localX < -halfWidth - 0.5f || localX > halfWidth + 0.5f) continue;
 
-    // --- 3. CIRCULAR CURVE MATH ---
-    // We define the ramp curve starting from the "Front" (+Z) to "Back" (-Z)
-    // Standard Quarter Pipe: Radius = Height = Depth of the curved part
-    float radius = halfHeight * 2.0f; // Full height of the ramp
-
-    // Calculate distance from the "Wall" (Back of the ramp)
-    // The wall is at localZ = -halfDepth
+    // --- 3. CURVE LOGIC & BACK FACE CULLING ---
+    // Define the Ramp Geometry:
+    // Wall is at localZ = -halfDepth. 
+    // Front/Entry is at localZ = -halfDepth + Radius.
+    float radius = halfHeight * 2.0f;
     float wallZ = -halfDepth;
+    
+    // Calculate distance relative to the Wall
     float distFromWall = localZ - wallZ;
 
-    // Clamp distance to ensure we stay within the curve's bounds
-    if (distFromWall < 0.0f) distFromWall = 0.0f; // Touching back wall
-    if (distFromWall > radius) distFromWall = radius; // On flat ground
+    // FIX: Prevent going through the back
+    // If we are behind the wall (dist < 0), ignore collision
+    if (distFromWall < -0.5f) continue;
 
-    // EQUATION OF A CIRCLE (Bottom-Left Quadrant offset)
-    // y = R - sqrt(R^2 - x^2)
-    // This creates a curve that is vertical at the wall and flat at the entry
-    float circleY = radius - sqrt(pow(radius, 2) - pow(distFromWall, 2));
+    // Check if we are past the front of the ramp (on flat ground)
+    if (distFromWall > radius) distFromWall = radius;
 
-    // Calculate absolute world height
-    // (pos.y is center, so pos.y - halfHeight is the bottom)
+    // FIX: Invert curve logic
+    // We want Flat at Entry (dist = Radius) and Vertical at Wall (dist = 0)
+    // Let x be distance from the center of the imaginary circle
+    float xCircle = radius - distFromWall;
+    if (xCircle < 0) xCircle = 0;
+
+    // Equation of circle: y = R - sqrt(R^2 - x^2)
+    float circleY = radius - sqrt(pow(radius, 2) - pow(xCircle, 2));
+
+    // Calculate world height
     float pipeBottomY = staticModel->pos.y - halfHeight;
-    float targetWorldY = pipeBottomY + circleY + 1.0f; // +1.0 for player radius
+    float targetWorldY = pipeBottomY + circleY + 1.0f; // +1.0 for player height
 
     // --- 4. COLLISION CHECK & SNAP ---
-    // Check if player is within snapping range (Vertical)
-    // We give a generous upper bound (+2.0f) to catch the player during high-speed entry
-    if (m_body->pos.y <= targetWorldY + 2.0f && m_body->pos.y >= pipeBottomY - 0.5f)
+    if (m_body->pos.y <= targetWorldY + 2.0f && m_body->pos.y >= pipeBottomY - 1.0f)
     {
         isOnVert = true;
         rb->isGrounded = true;
         m_body->pos.y = targetWorldY;
         
-        // Cancel downward velocity so we don't fall through
         if(rb->velocity.y < 0) rb->velocity.y = 0;
 
-        // --- 5. VISUAL ROTATION (Slope Alignment) ---
-        // Calculate the slope angle derived from the circle
-        // Angle = asin(dist / R) * (180/PI)
-        // Result: 0 degrees at bottom, 90 degrees at top
-        float slopeAngle = asin(distFromWall / radius) * (180.0f / PI);
+        // --- 5. VISUAL ROTATION ---
+        // Calculate slope angle: 0 at bottom, 90 at top
+        // sin(angle) = x / R
+        float slopeAngle = asin(xCircle / radius) * (180.0f / PI);
         
-        // Apply pitch (Negative because we tilt BACK as we go up)
-        m_body->rotation.x = -slopeAngle;
+        // Apply Pitch (Negative X rotation is Up in this setup)
+        m_body->rotation.x = slopeAngle;
         m_body->rotation.z = 0;
     }
 }

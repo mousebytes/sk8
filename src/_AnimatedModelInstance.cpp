@@ -79,9 +79,9 @@ void _AnimatedModelInstance::Draw(){
     glPushMatrix();
         glTranslatef(pos.x,pos.y,pos.z);
 
-        glRotatef(rotation.x,1.0f,0.0f,0.0f);
-        glRotatef(rotation.y,0.0f,1.0f,0.0f);
-        glRotatef(rotation.z,0.0f,0.0f,1.0f);
+        glRotatef(rotation.y,0.0f,1.0f,0.0f); // Yaw
+        glRotatef(rotation.x,1.0f,0.0f,0.0f); // Pitch
+        glRotatef(rotation.z,0.0f,0.0f,1.0f); // Roll
 
         glScalef(scale.x,scale.y,scale.z);
 

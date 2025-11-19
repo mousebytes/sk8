@@ -1,4 +1,4 @@
-halfpipe 1 4 -30 0 4
-halfpipe 22 4 -19 270 4
-halfpipe -15 4 -17 90 4
-halfpipe -5 4 9 180 4
+halfpipe -2 4 -25 0 4
+halfpipe 11 4 -14 -90 4
+halfpipe -12 4 -8 -270 4
+halfpipe -1 4 4 -900 4
