@@ -113,8 +113,9 @@ void _LevelEditor::SetGhost(string type) {
     m_selectedType = type;
     m_ghostObject = new _StaticModelInstance(m_blueprints[type]);
     
-    if(type == "halfpipe") m_ghostObject->scale = Vector3(4,4,4);
-    else m_ghostObject->scale = Vector3(1,1,1);
+    //if(type == "halfpipe") m_ghostObject->scale = Vector3(4,4,4);
+    //else m_ghostObject->scale = Vector3(1,1,1);
+    m_ghostObject->scale = Vector3(1,1,1);
     
     m_ghostObject->rotation.y = m_currentRotation;
 }
