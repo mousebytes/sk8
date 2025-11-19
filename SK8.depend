@@ -7,7 +7,7 @@
 	<gl/gl.h>
 	<_scene.h>
 
-1763509113 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
+1763513275 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
 	<_common.h>
 	<_light.h>
 	<_model.h>
@@ -134,7 +134,7 @@
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_parallax.cpp
 	"_parallax.h"
 
-1763509154 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
+1763513377 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
 	"_scene.h"
 
 1762949818 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_skybox.cpp
@@ -200,10 +200,11 @@
 1762853566 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_staticmodelinstance.cpp
 	"_StaticModelInstance.h"
 
-1762691524 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_staticmodelinstance.h
+1763509373 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_staticmodelinstance.h
 	"_StaticModel.h"
 	"_common.h"
 	"_Collider.h"
+	"_Rigidbody.h"
 
 1762688775 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_hitbox.h
 	"_common.h"
@@ -233,7 +234,7 @@
 	"_SphereHitbox.h"
 	"_Rigidbody.h"
 
-1763089533 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
+1763513442 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
 	"_camera.h"
 	"_inputs.h"
 	"_common.h"
@@ -247,7 +248,7 @@
 	"_common.h"
 	"_Bullets.h"
 
-1763508517 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_animatedmodelinstance.cpp
+1763509238 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_animatedmodelinstance.cpp
 	"_AnimatedModelInstance.h"
 
 1762684664 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_button.cpp
@@ -257,7 +258,7 @@
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
 
-1763508893 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
+1763509979 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
 	"_Player.h"
 
 1762998150 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_spherehitbox.cpp

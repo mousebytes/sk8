@@ -26,6 +26,7 @@ _Scene::_Scene()
     m_skybox = new _skyBox();
 
     m_player_blueprint = new _AnimatedModel();
+    m_skateboardBlueprint = new _AnimatedModel();
 
 
     m_bulletBlueprint = new _StaticModel();
@@ -34,8 +35,6 @@ _Scene::_Scene()
     m_railBlueprint = new _StaticModel();
     m_railInstance = new _StaticModelInstance(m_railBlueprint);
 
-    m_skateboardBlueprint = new _StaticModel();
-    m_skateboardInstance = new _StaticModelInstance(m_skateboardBlueprint);
 }
 
 _Scene::~_Scene()
@@ -68,9 +67,7 @@ _Scene::~_Scene()
 
     delete m_railBlueprint;
     delete m_railInstance;
-
     delete m_skateboardBlueprint;
-    delete m_skateboardInstance;
 }
 
 void _Scene::reSizeScene(int width, int height)
@@ -457,12 +454,12 @@ void _Scene::initGameplay()
     m_player_blueprint->RegisterAnimation("walk", "models/player/walk",2);
     //m_player_blueprint->RegisterAnimation("walk","models/player/walk",2);
 
-    m_player = new _Player(m_player_blueprint);
+
+    m_skateboardBlueprint->LoadTexture("models/skateboard/colormap.png");
+    m_skateboardBlueprint->RegisterAnimation("idle","models/skateboard/skateboard",1);
+    m_player = new _Player(m_player_blueprint, m_skateboardBlueprint);
     m_player->RegisterStaticCollider(terrainInstance);
     m_player->RegisterStaticCollider(m_railInstance);
-
-    // skateboard
-    m_skateboardBlueprint->LoadModel("models/skateboard/skateboard.obj","models/skateboard/colormap.png");
 
     // add sphere collider centered at (0,0,0) local space & r=1.0
     // note: model is norm -1 to +1
@@ -555,7 +552,6 @@ void _Scene::drawGameplay()
     m_railInstance->Draw();
 
     m_player->Draw();
-    m_skateboardInstance->Draw();
     
     //m_bulletInstance->Draw();
     m_bulletManager->Draw();

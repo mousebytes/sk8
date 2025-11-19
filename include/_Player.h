@@ -9,16 +9,18 @@
 enum PlayerState {
     STATE_GROUNDED,
     STATE_AIR,
-    STATE_GRINDING
+    STATE_GRINDING,
+    STATE_BAILED // for when off board
 };
 
 class _Player{
     public:
-    _Player(_AnimatedModel* modelBlueprint);
+    _Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint);
     ~_Player();
 
     // player body
     _AnimatedModelInstance* m_body;
+    _AnimatedModelInstance* m_skateboard;
 
     // --- Player Physics ---
     float m_playerYaw;      // The direction the player's body is facing (Y-axis rotation)
@@ -28,6 +30,9 @@ class _Player{
     float m_friction;       // How much (or little) the player slows down naturally
     float m_jumpForce;      // Upward velocity applied when jumping
     PlayerState m_state;    // Current state (grounded, air, etc.)
+
+    bool m_isOnBoard;
+    Vector3 m_skateboardOffset;
 
     // --- Camera Control ---
     float m_cameraYaw;      // Camera's horizontal orbit around player
@@ -61,6 +66,9 @@ class _Player{
 
     // calls m_body->draw for now
     void Draw();
+
+    // helper to reset board pos
+    void ResetBoard();
 };
 
 

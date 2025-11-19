@@ -1,8 +1,9 @@
 #include "_Player.h"
 
-_Player::_Player(_AnimatedModel* modelBlueprint)
+_Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
 {
     m_body = new _AnimatedModelInstance(modelBlueprint);
+    m_skateboard = new _AnimatedModelInstance(boardBlueprint);
     
     // set up the player's physics collider
     // add sphere collider centered at (0,0,0) local space & r=1.0
@@ -11,6 +12,7 @@ _Player::_Player(_AnimatedModel* modelBlueprint)
     
     // set initial position
     m_body->pos = Vector3(0, 1, 0); // start slightly above ground
+    ResetBoard();
 
     // init player brain variables
     m_cameraPitch = 20.0f;  // Start camera slightly angled down
@@ -33,11 +35,21 @@ _Player::_Player(_AnimatedModel* modelBlueprint)
     m_currentRail = nullptr;
 
     isFrozen = false;
+
+    m_skateboardOffset = Vector3(0,-1.0,0);
+    m_skateboard->scale = Vector3(0.5,0.5,0.5);
 }
 
 _Player::~_Player()
 {
     delete m_body;
+    delete m_skateboard;
+}
+
+void _Player::ResetBoard(){
+    m_isOnBoard = true;
+    m_skateboard->pos = m_body->pos + m_skateboardOffset;
+    m_skateboard->rotation = m_body->rotation;
 }
 
 void _Player::HandleMouse(float deltaX, float deltaY)
@@ -54,9 +66,9 @@ void _Player::HandleMouse(float deltaX, float deltaY)
     if(m_cameraPitch > 89.0f) {
         m_cameraPitch = 89.0f;
     }
-    if(m_cameraPitch < 5.0f) { // Don't let camera go below the ground
+    /*if(m_cameraPitch < 5.0f) { // Don't let camera go below the ground
         m_cameraPitch = 5.0f;
-    }
+    }*/
 }
 
 void _Player::HandleKeys(WPARAM wParam)
@@ -97,6 +109,20 @@ void _Player::HandleKeys(WPARAM wParam)
             rb->velocity.y = m_jumpForce;
             m_state = STATE_AIR; // We are now in the air
             rb->isGrounded = false; // manually set this
+        }
+    }
+
+    // --- BAIL / RECALL MECHANIC ---
+    if (wParam == 'F') {
+        if (m_isOnBoard) {
+            // Fall off: Player hops, board stays behind
+            m_isOnBoard = false;
+            m_state = STATE_BAILED;
+            rb->velocity.y = 5.0f; // Hop off
+        } else {
+            // Recall: Board teleports back to player
+            ResetBoard();
+            m_state = STATE_AIR;
         }
     }
 }
@@ -297,6 +323,16 @@ void _Player::UpdatePhysics()
     // and movement velocity (now corrected for walls, friction, and speed)
     m_body->Update();
 
+    // --- BOARD PHYSICS SYNC ---
+    if(m_isOnBoard){
+        // board follows player with offset
+        m_skateboard->pos = m_body->pos + m_skateboardOffset;
+        m_skateboard->rotation = m_body->rotation;
+    } else {
+        // TODO: add roll away logic, for now it stays in place
+        // add a rigidbody to the board
+    }
+
     // ---- UNIFIED ANIMATION STATE SELECTION ----
     float currentSpeed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
 
@@ -349,4 +385,5 @@ void _Player::Draw()
 {
     // we just tell our body to draw itself
     m_body->Draw();
+    m_skateboard->Draw();
 }

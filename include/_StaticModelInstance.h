@@ -4,6 +4,7 @@
 #include "_StaticModel.h" // Needs the blueprint
 #include "_common.h"
 #include"_Collider.h"
+#include"_Rigidbody.h"
 
 class _StaticModelInstance {
 public:

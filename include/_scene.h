@@ -93,8 +93,7 @@ class _Scene
         _camera *m_camera;
         _AnimatedModel *m_player_blueprint;
         _Player *m_player;
-        _StaticModel *m_skateboardBlueprint;
-        _StaticModelInstance *m_skateboardInstance;
+        _AnimatedModel *m_skateboardBlueprint;
 
         _StaticModel *m_bulletBlueprint;
         _Bullets *m_bulletManager;
