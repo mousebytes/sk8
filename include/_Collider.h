@@ -9,7 +9,8 @@ enum ColliderType {
     COLLIDER_WALL,
     COLLIDER_BULLET,
     COLLIDER_TARGET,
-    COLLIDER_RAIL
+    COLLIDER_RAIL,
+    COLLIDER_HALFPIPE
 };
 
 // forward declare the types
