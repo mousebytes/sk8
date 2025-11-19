@@ -348,9 +348,9 @@ void _Player::UpdatePhysics()
                     }
                     delete staticWorldCollider;
                 }
-                if (rb->isGrounded) break; // Ground check is highest priority
+                //if (rb->isGrounded) break; // Ground check is highest priority
             }
-            if (rb->isGrounded) break;
+            //if (rb->isGrounded) break;
         }
         delete playerCurrentCollider;
     }
