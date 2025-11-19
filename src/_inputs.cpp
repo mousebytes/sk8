@@ -144,23 +144,23 @@ void _inputs::keyPressed(_camera* cm)
         break;
 
      case 73:    //i
-            cm->rotAngle.y +=1.0;
-            cm->rotateXY();
+            //cm->rotAngle.y +=1.0;
+            //cm->rotateXY();
         break;
 
      case 74: //j
-            cm->rotAngle.x -=1.0;
-              cm->rotateXY();
+            //cm->rotAngle.x -=1.0;
+            //cm->rotateXY();
         break;
 
       case 75:    //k
-             cm->rotAngle.y -=1.0;
-               cm->rotateXY();
+             //cm->rotAngle.y -=1.0;
+            //cm->rotateXY();
         break;
 
      case 76: //l
-           cm->rotAngle.x +=1.0;
-             cm->rotateXY();
+           //cm->rotAngle.x +=1.0;
+             //cm->rotateXY();
         break;
      case 32:   // space bar
             //cm->camReset();

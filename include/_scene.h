@@ -22,6 +22,7 @@
 #include"_AnimatedModelInstance.h"
 #include"_Player.h"
 #include"_Bullets.h"
+#include"_LevelEditor.h"
 
 class _Scene
 {
@@ -54,6 +55,7 @@ class _Scene
 
         // --- Main Menu Scene ---
         _Button *m_playButton;
+        _Button* m_playCustomButton;
         _Button *m_helpButton;
         _Button *m_exitButton;
         _skyBox *m_skybox;
@@ -61,6 +63,7 @@ class _Scene
         void drawMainMenu();
         void handleMainMenuInput(UINT,WPARAM,LPARAM);
 
+        
         // --- Help Scene ---
         _Button *m_backButton;
         _Button *m_helpInfo;
@@ -76,6 +79,25 @@ class _Scene
         void initPauseMenu();
         void drawPauseMenu();
         void handlePauseMenuInput(UINT,WPARAM,LPARAM);
+
+        // --- Level Editor Methods ---
+        _Button* m_editorButton;  // Button on main menu
+        void initLevelEditor();   // Called once
+        void drawLevelEditor();   // Render loop
+        void handleLevelEditorInput(HWND, UINT, WPARAM, LPARAM); // Input loop
+        vector<_StaticModelInstance*> m_customLevelObjects;
+
+        bool m_isCustomGame;
+        void loadCampaignLevel();
+        void loadCustomLevel();
+
+
+        void drawEditorPauseMenu();
+        void handleEditorPauseInput(HWND, UINT, WPARAM, LPARAM);
+
+        _Button* m_editorResumeButton;
+        _Button* m_editorSaveButton;
+        _Button* m_editorExitButton;
 
 
     protected:
@@ -102,8 +124,10 @@ class _Scene
         _StaticModelInstance *m_halfpipeInstance;
 
 
-        enum SceneState {LandingPage, MainMenu, Help, Playing, Paused};
+        enum SceneState {LandingPage, MainMenu, Help, Playing, Paused, LevelEditor, EditorPaused};
         SceneState m_sceneState;
+
+        _LevelEditor* m_levelEditor;
 
         void draw2DOverlay();
         void handleMouseMovement(HWND hWnd, LPARAM lParam);

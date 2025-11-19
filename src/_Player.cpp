@@ -27,6 +27,8 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
     m_jumpForce = 8.0f;     // Initial upward velocity
     m_state = STATE_AIR;    // Start in air, will be set to grounded by physics
 
+    m_preGrindYaw = 0.0f;
+
     // --- CAMERA VARS ---
     m_camDistance = 8.0f;   // 8 units away from player
     m_camHeight = 2.0f;     // looks at a point 2 units above player's origin
@@ -44,12 +46,6 @@ _Player::~_Player()
 {
     delete m_body;
     delete m_skateboard;
-}
-
-void _Player::ResetBoard(){
-    m_isOnBoard = true;
-    m_skateboard->pos = m_body->pos + m_skateboardOffset;
-    m_skateboard->rotation = m_body->rotation;
 }
 
 void _Player::HandleMouse(float deltaX, float deltaY)
@@ -137,8 +133,13 @@ void _Player::HandleKeys(WPARAM wParam)
     if (wParam == VK_SPACE) // Jump (Ollie)
     {
         // --- Allow jumping from ground or grind ---
-        if (m_state == STATE_GROUNDED || m_state == STATE_GRINDING)
+        if (m_state == STATE_GROUNDED || m_state == STATE_GRINDING || m_state == STATE_BAILED)
         {
+            // If we are jumping OUT of a grind, restore original rotation
+            if (m_state == STATE_GRINDING) {
+                m_playerYaw = m_preGrindYaw;
+            }
+
             rb->velocity.y = m_jumpForce;
             m_state = STATE_AIR; // We are now in the air
             rb->isGrounded = false; // manually set this
@@ -267,8 +268,11 @@ void _Player::UpdatePhysics()
                         }
                         else if (staticCollider->m_type == COLLIDER_RAIL)
                         {
-                            isOnRail = true; // We are on a rail
-                            m_currentRail = staticModel; // store the rail
+                            if (rb->velocity.y <= 0.1) 
+                            {
+                                isOnRail = true; // we are on rail
+                                m_currentRail = staticModel; // store rail
+                            }
                         }
                         // halfpipe logic
                         // [Inside the nested collision loop in UpdatePhysics]
@@ -323,8 +327,8 @@ void _Player::UpdatePhysics()
                                 if(rampProgress > 1) rampProgress = 1;
                             
                                 // Calculate Height (Parabola)
-                                // scale.y * 2.0f looked a bit high in the image, trying 1.8f
-                                float curveHeight = (rampProgress * rampProgress) * staticModel->scale.y * 1.8f; 
+                                // scale.y * 2.0f looked a bit high, trying 1.8f
+                                float curveHeight = (rampProgress * rampProgress) * staticModel->scale.y * 1.5f; 
                                 
                                 float targetY = staticModel->pos.y + curveHeight + 1.0f; 
                             
@@ -359,7 +363,13 @@ void _Player::UpdatePhysics()
     if (rb->isGrounded) // This is true only if we hit a COLLIDER_FLOOR
     {   
         // If we are on vert, use specific state, otherwise standard grounded
-        m_state = isOnVert ? STATE_VERT : STATE_GROUNDED;
+        if (m_isOnBoard) {
+            // Standard skating logic
+            m_state = isOnVert ? STATE_VERT : STATE_GROUNDED;
+        } else {
+            // Walking logic: force state to BAILED (or WALKING) so we know we are on foot
+            m_state = STATE_BAILED;
+        }
         if(rb->velocity.y < 0) { 
             rb->velocity.y = 0; 
         }
@@ -393,6 +403,10 @@ void _Player::UpdatePhysics()
     }
     else if (isOnRail) // This is true if we hit a rail AND NOT the floor
     {
+        // 1. Capture Entry Angle Only Once
+        if (m_state != STATE_GRINDING) {
+            m_preGrindYaw = m_playerYaw; // Save the direction we were facing
+        }
         m_state = STATE_GRINDING;
 
         // --- Calculate Rail Direction Vectors ---
@@ -400,67 +414,64 @@ void _Player::UpdatePhysics()
         float railYawRad = m_currentRail->rotation.y * PI / 180.0f;
 
         // Calculate the rail's forward unit vector 
-        // (Matches standard OpenGL rotation: x = -sin, z = -cos)
         Vector3 railDir;
         railDir.x = -sin(railYawRad); 
         railDir.y = 0;
         railDir.z = -cos(railYawRad);
         railDir.normalize();
 
-        // --- Determine Momentum Direction ---
-        // Get current horizontal velocity direction
-        Vector3 currentVel = rb->velocity;
-        currentVel.y = 0; 
+        // --- Determine Direction based on INTENT (Entry Angle) ---
+        // We use m_preGrindYaw instead of current velocity to prevent jitter
+        //float preYawRad = m_preGrindYaw * PI / 180.0f;
+        //Vector3 intentDir;
+        //intentDir.x = -sin(preYawRad);
+        //intentDir.y = 0;
+        //intentDir.z = -cos(preYawRad);
 
-        // Use Dot Product to check if player is moving with or against the rail
-        // Dot > 0: Same direction, Dot < 0: Opposite direction
-        float dot = (currentVel.x * railDir.x) + (currentVel.z * railDir.z);
+        Vector3 intentDir = rb->velocity;
+        intentDir.normalize();
 
-        // If moving opposite to the rail's defined forward vector, flip the direction
+        // Check if our entry angle was with or against the rail
+        float dot = (intentDir.x * railDir.x) + (intentDir.z * railDir.z);
+
+        // If we entered 'backwards', flip the rail direction for the duration of the grind
         if (dot < 0) {
             railDir = railDir * -1.0f;
         }
 
         // --- Snap Velocity (Preserve Momentum) ---
-        // Get the player's current speed magnitude
         float speed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
         
-        // Apply that speed purely along the aligned rail direction
+        // Apply speed along the stabilized rail direction
         rb->velocity.x = railDir.x * speed;
         rb->velocity.z = railDir.z * speed;
-        rb->velocity.y = 0; // No gravity while grinding
+        rb->velocity.y = 0; 
 
         // --- Snap Position (Top-Center Logic) ---
-        // We project the player's position onto the rail's infinite line
-        // to snap X/Z to the center, but preserve their progress along the rail.
-        
-        // Vector from Rail Origin to Player
         Vector3 diff = m_body->pos - m_currentRail->pos;
-        
-        // Project 'diff' onto the normalized 'railDir'
         float distAlongRail = (diff.x * railDir.x) + (diff.z * railDir.z);
-        
-        // Calculate the new snapped position on the rail line
         Vector3 newPos = m_currentRail->pos + (railDir * distAlongRail);
         
-        // Calculate Height: Rail Pos Y + Rail Top Bound + Player Collider Radius
-        // Assuming the rail collider is a box from -1 to 1 (Height = 1.0 * scale.y)
         float railTopY = m_currentRail->pos.y + (m_currentRail->scale.y * 1.0f);
-        newPos.y = railTopY + 1.0f; // +1.0 for player's sphere radius so they sit on top
+        newPos.y = railTopY + 0.9f; 
 
-        // Apply the position snap
         m_body->pos = newPos;
 
         // --- Visual Rotation (Grind Stance) ---
-        // Rotate 90 degrees relative to the rail to look like a boardslide
-        // We base this on the original rail rotation
-        m_playerYaw = m_currentRail->rotation.y + 90.0f;
+        // Calculate rotation based on the MOVEMENT direction (railDir), not the static rail
+        // This ensures if we grind 'backwards', we face the correct perpendicular direction
+        // atan2(sin, cos) -> atan2(-x, -z) because x=-sin, z=-cos
+        float moveAngle = atan2(-railDir.x, -railDir.z) * 180.0f / PI;
+        m_playerYaw = moveAngle + 90.0f;
         
-        // Keep the 'grounded' flag true so gravity doesn't apply next frame
-        rb->isGrounded = true; 
+        rb->isGrounded = true;
     }
     else // Not on floor, not on rail
     {
+        if (m_state == STATE_GRINDING) {
+            m_playerYaw = m_preGrindYaw;
+        }
+
         m_state = STATE_AIR; 
         // rb->isGrounded is already false, so gravity will be applied
         // in m_body->Update()
@@ -477,8 +488,10 @@ void _Player::UpdatePhysics()
 
     // --- BOARD PHYSICS SYNC ---
     if(m_isOnBoard){
-        // board follows player with offset
-        m_skateboard->pos = m_body->pos + m_skateboardOffset;
+        // Calculate rotated offset so board orbits the player pivot
+        Vector3 rotatedOffset = CalculateBoardOffset(m_skateboardOffset, m_body->rotation);
+        
+        m_skateboard->pos = m_body->pos + rotatedOffset;
         m_skateboard->rotation = m_body->rotation;
     } else {
         // TODO: add roll away logic, for now it stays in place
@@ -601,4 +614,37 @@ void _Player::Draw()
         glEnable(GL_LIGHTING);
         glEnable(GL_TEXTURE_2D);
     }
+}
+
+Vector3 _Player::CalculateBoardOffset(Vector3 baseOffset, Vector3 rotation) {
+    // Convert to Radians
+    float radX = rotation.x * PI / 180.0f;
+    float radY = rotation.y * PI / 180.0f;
+
+    // 1. Apply Pitch (Rotation around X)
+    // Original offset is (0, -1, 0)
+    // y' = y*cos(x) - z*sin(x)
+    // z' = y*sin(x) + z*cos(x)
+    float y1 = baseOffset.y * cos(radX) - baseOffset.z * sin(radX);
+    float z1 = baseOffset.y * sin(radX) + baseOffset.z * cos(radX);
+    float x1 = baseOffset.x; // unchanged by X rot
+
+    // 2. Apply Yaw (Rotation around Y)
+    // x'' = x'*cos(y) + z'*sin(y)
+    // z'' = -x'*sin(y) + z'*cos(y)
+    float x2 = x1 * cos(radY) + z1 * sin(radY);
+    float z2 = -x1 * sin(radY) + z1 * cos(radY);
+    float y2 = y1; // unchanged by Y rot
+
+    return Vector3(x2, y2, z2);
+}
+
+void _Player::ResetBoard(){
+    m_isOnBoard = true;
+    
+    // Calculate rotated offset
+    Vector3 rotatedOffset = CalculateBoardOffset(m_skateboardOffset, m_body->rotation);
+    
+    m_skateboard->pos = m_body->pos + rotatedOffset;
+    m_skateboard->rotation = m_body->rotation;
 }

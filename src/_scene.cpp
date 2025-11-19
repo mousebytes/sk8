@@ -2,6 +2,7 @@
 
 _Scene::_Scene()
 {
+    m_isCustomGame = false;
     //ctor
     terrainBlueprint = new _StaticModel();
     terrainInstance = new _StaticModelInstance(terrainBlueprint);
@@ -38,6 +39,13 @@ _Scene::_Scene()
     m_halfpipeBlueprint = new _StaticModel();
     m_halfpipeInstance = new _StaticModelInstance(m_halfpipeBlueprint);
 
+    m_levelEditor = new _LevelEditor();
+    m_editorResumeButton = new _Button();
+    m_editorSaveButton = new _Button();
+    m_editorExitButton = new _Button();
+    m_editorButton = new _Button();
+    m_playCustomButton = new _Button();
+
 }
 
 _Scene::~_Scene()
@@ -55,6 +63,10 @@ _Scene::~_Scene()
     delete m_helpButton;
     delete m_exitButton;
     delete m_backButton;
+    delete m_playCustomButton;
+    
+    for(auto* obj : m_customLevelObjects) delete obj;
+    m_customLevelObjects.clear();
 
     delete m_skybox;
 
@@ -74,6 +86,12 @@ _Scene::~_Scene()
 
     delete m_halfpipeBlueprint;
     delete m_halfpipeInstance;
+
+    delete m_levelEditor;
+    delete m_editorResumeButton;
+    delete m_editorSaveButton;
+    delete m_editorExitButton;
+    delete m_editorButton;
 }
 
 void _Scene::reSizeScene(int width, int height)
@@ -135,6 +153,7 @@ void _Scene::initGL()
     initMainMenu();
     initHelpScreen();
     initPauseMenu();
+    initLevelEditor();
 
     m_sceneState = SceneState::LandingPage;
 }
@@ -163,6 +182,13 @@ void _Scene::drawScene()
             break;
         case SceneState::Help:
             drawHelpScreen();
+            break;
+        case SceneState::LevelEditor:
+            drawLevelEditor();
+            break;
+        case SceneState::EditorPaused:
+            drawLevelEditor();     // Draw editor in background
+            drawEditorPauseMenu(); // Draw overlay on top
             break;
         default:
             break;
@@ -207,6 +233,12 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case SceneState::Paused: 
             handlePauseMenuInput(uMsg, wParam, lParam);
             break;
+        case SceneState::LevelEditor:
+            handleLevelEditorInput(hWnd, uMsg, wParam, lParam);
+            break;
+        case SceneState::EditorPaused:
+            handleEditorPauseInput(hWnd, uMsg, wParam, lParam);
+            break; 
     }
     return 0;
 }
@@ -298,6 +330,74 @@ void _Scene::handleGameplayInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
     }
 }
 
+void _Scene::handleEditorPauseInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    if (uMsg == WM_KEYDOWN && wParam == VK_ESCAPE) {
+        m_sceneState = SceneState::LevelEditor; // Resume
+        return;
+    }
+
+    if (uMsg == WM_LBUTTONDOWN) {
+        int mouseX = LOWORD(lParam);
+        int mouseY = HIWORD(lParam);
+
+        if (m_editorResumeButton->isClicked(mouseX, mouseY)) {
+            m_sceneState = SceneState::LevelEditor;
+        }
+        else if (m_editorSaveButton->isClicked(mouseX, mouseY)) {
+            m_levelEditor->SaveLevel("saves/level_custom.txt");
+            m_sceneState = SceneState::LevelEditor;
+        }
+        else if (m_editorExitButton->isClicked(mouseX, mouseY)) {
+            m_sceneState = SceneState::MainMenu;
+            m_camera->isFreeCam=false;
+        }
+    }
+}
+
+void _Scene::handleLevelEditorInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch(uMsg)
+    {
+        case WM_KEYDOWN:
+             m_inputs->wParam = wParam;
+             m_inputs->keyPressed(m_camera); 
+             m_levelEditor->HandleKeyInput(wParam); // J, K, R
+             
+             // Go to Editor Pause Menu instead of Main Menu
+             if(wParam == VK_ESCAPE) {
+                 m_sceneState = SceneState::EditorPaused;
+             }
+
+             // --- Toggle Camera Lock on Enter ---
+             if(wParam == VK_RETURN || wParam == VK_CONTROL) {
+                 m_camera->isFreeCam = !m_camera->isFreeCam;
+                 
+                 // If we just re-enabled the camera, snap cursor to center immediately.
+                 // This prevents the camera from "jumping" due to the mouse being far from center.
+                 if (m_camera->isFreeCam) {
+                     POINT pt = { width / 2, height / 2 };
+                     ClientToScreen(hWnd, &pt);
+                     SetCursorPos(pt.x, pt.y);
+                 }
+             }
+             if(wParam == VK_SPACE){
+                m_camera->camReset();
+             }
+             break;
+        
+        case WM_MOUSEMOVE:
+             if(m_camera->isFreeCam) 
+                 m_camera->handleMouse(hWnd, LOWORD(lParam), HIWORD(lParam), width/2, height/2);
+             break;
+
+        case WM_LBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+             m_levelEditor->HandleMouseClick(uMsg, (lParam), HIWORD(lParam));
+             break;
+    }
+}
+
 void _Scene::handleMainMenuInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (uMsg == WM_LBUTTONDOWN)
@@ -310,6 +410,27 @@ void _Scene::handleMainMenuInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
             m_sceneState = SceneState::Playing;
             m_player->isFrozen = false; // unfreeze player when starting game
             m_showPauseHelp = false; // reset pause help flag
+
+            loadCampaignLevel();
+        }
+        else if (m_playCustomButton->isClicked(mouseX, mouseY)) {
+            m_sceneState = SceneState::Playing;
+            m_player->isFrozen = false;
+            m_showPauseHelp = false;
+
+            loadCustomLevel(); //Load the custom file!
+        }
+        else if (m_editorButton->isClicked(mouseX, mouseY)) {
+            m_sceneState = SceneState::LevelEditor;
+            m_player->isFrozen = false;
+            // Initialize editor only when entering, or in InitGL if preferred
+            //m_levelEditor->Init(width, height); // Ensure this is called at least once
+            m_camera->camReset();      // Snap back to origin (0, 5, 10)
+            m_camera->isFreeCam = true; // Allow WASD movement independent of player
+
+            // Optional: Set a specific starting height for a bird's eye view
+            // m_camera->eye.y = 20.0f; 
+            // m_camera->rotAngle.y = 45.0f; // Look down
         }
         else if (m_helpButton->isClicked(mouseX, mouseY)) {
             m_sceneState = SceneState::Help;
@@ -496,12 +617,31 @@ void _Scene::initGameplay()
     m_player->RegisterStaticCollider(m_halfpipeInstance);
 }
 
+void _Scene::initLevelEditor() {
+    // Only call this once usually, or check if already init
+    m_levelEditor->Init(width, height);
+
+    // Initialize Pause Menu Buttons centered on screen
+    int cX = width / 2;
+    int cY = height / 2;
+    
+    m_editorResumeButton->Init("images/play-btn.png", 200, 60, cX, cY - 60, 0, 1, 1);
+    m_editorSaveButton->Init("images/play-btn.png", 200, 60, cX, cY + 10, 0, 1, 1);
+    m_editorExitButton->Init("images/exit-btn.png", 200, 60, cX, cY + 80, 0, 1, 1);
+}
+
 void _Scene::initMainMenu()
 {
     // positions are 2d pixels, assumes (0,0) is top left
-    m_playButton->Init("images/play-btn.png", 200, 70, width/2, height/2 - 100, 0, 1, 1);
-    m_helpButton->Init("images/help-btn.png", 200, 70, width/2, height/2, 0, 1, 1); // Using play-btn as placeholder
-    m_exitButton->Init("images/exit-btn.png", 200, 70, width/2, height/2 + 100, 0, 1, 1); // Using play-btn as placeholder
+    m_playButton->Init("images/play-btn.png", 200, 70, width/2, height/2 - 120, 0, 1, 1);
+
+    // PLAY CUSTOM BUTTON
+    m_playCustomButton->Init("images/play-btn.png", 200, 70, width/2, height/2 - 40, 0, 1, 1);
+    // (You might need a new texture for this button, reusing play-btn for now)
+
+    m_editorButton->Init("images/play-btn.png", 200, 70, width/2, height/2 + 40, 0, 1, 1); 
+    m_helpButton->Init("images/help-btn.png", 200, 70, width/2, height/2 + 120, 0, 1, 1);
+    m_exitButton->Init("images/exit-btn.png", 200, 70, width/2, height/2 + 200, 0, 1, 1);
 }
 
 void _Scene::initHelpScreen()
@@ -571,6 +711,21 @@ void _Scene::drawGameplay()
     //m_bulletInstance->Draw();
     m_bulletManager->Draw();
 
+    if (m_isCustomGame) 
+    {
+        // Draw ONLY Custom Objects
+        for(auto* obj : m_customLevelObjects) {
+            obj->Draw();
+        }
+    }
+    else 
+    {
+        // Draw ONLY Campaign Objects
+        // TODO: (Eventually use a switch statement here for Level 1, 2, 3)
+        m_railInstance->Draw();
+        m_halfpipeInstance->Draw();
+    }
+
     // this used to be the gun area but could be used to
     // draw anything over the scene
 
@@ -590,6 +745,46 @@ void _Scene::drawGameplay()
     glScalef(0.7f, 0.7f, 0.7f);
    
 }
+
+void _Scene::drawLevelEditor()
+{
+    if(m_sceneState == SceneState::LevelEditor) glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+
+    m_camera->setUpCamera();
+    m_skybox->drawSkyBox(); // Ensure depth mask handling if needed
+
+    m_levelEditor->Update(GetActiveWindow(), m_camera);
+    m_levelEditor->Draw();
+}
+
+void _Scene::drawEditorPauseMenu()
+{
+    draw2DOverlay(); 
+
+    // Semi-transparent dark overlay
+    glEnable(GL_BLEND);
+    glColor4f(0.0f, 0.0f, 0.0f, 0.7f);
+    glBegin(GL_QUADS);
+        glVertex2f(0, 0);
+        glVertex2f(width, 0);
+        glVertex2f(width, height);
+        glVertex2f(0, height);
+    glEnd();
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    glDisable(GL_BLEND);
+
+    // Draw Buttons
+    m_editorResumeButton->Draw();
+    m_editorSaveButton->Draw();
+    m_editorExitButton->Draw();
+
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+}
+
+
 
 void _Scene::drawLandingPage()
 {
@@ -611,8 +806,10 @@ void _Scene::drawMainMenu()
 
     // draw the buttons
     m_playButton->Draw();
+    m_playCustomButton->Draw();
     m_helpButton->Draw();
     m_exitButton->Draw();
+    m_editorButton->Draw();
 
     // restore 3D projection
     glMatrixMode(GL_PROJECTION);
@@ -699,4 +896,79 @@ void _Scene::handleMouseMovement(HWND hWnd, LPARAM lParam)
     POINT centerPoint = { centerX, centerY };
     ClientToScreen(hWnd, &centerPoint);
     SetCursorPos(centerPoint.x, centerPoint.y);
+}
+
+void _Scene::loadCampaignLevel() {
+    // 1. Set Flag
+    m_isCustomGame = false;
+
+    // 2. Clear Custom Objects (Physics & Visuals)
+    for(auto* obj : m_customLevelObjects) delete obj;
+    m_customLevelObjects.clear();
+
+    // 3. Reset Player Physics
+    m_player->ClearColliders();
+    
+    // 4. Register Standard Level Colliders
+    m_player->RegisterStaticCollider(terrainInstance);
+    m_player->RegisterStaticCollider(m_railInstance);
+    m_player->RegisterStaticCollider(m_halfpipeInstance);
+
+    // 5. Reset Player Position
+    m_player->m_body->pos = Vector3(0, 5, 0);
+    m_player->ResetBoard();
+}
+
+void _Scene::loadCustomLevel() {
+    m_isCustomGame = true;
+    // 1. Clear existing custom objects if any
+    for(auto* obj : m_customLevelObjects) delete obj;
+    m_customLevelObjects.clear();
+
+    // 2. Reset Player Physics/Colliders
+    // We keep the basic Terrain (floor) but remove rails/pipes from the player's check list
+    m_player->ClearColliders();
+    m_player->RegisterStaticCollider(terrainInstance); // Re-add the main floor
+
+    // 3. Load File
+    ifstream file("saves/level_custom.txt");
+    if (!file.is_open()) {
+        cout << "No custom level found!" << endl;
+        return;
+    }
+
+    string type;
+    float x, y, z, rot, scale;
+    while (file >> type >> x >> y >> z >> rot >> scale) {
+        
+        // Determine blueprint based on type string
+        _StaticModel* blueprint = nullptr;
+        if(type == "rail") blueprint = m_railBlueprint;
+        else if(type == "halfpipe") blueprint = m_halfpipeBlueprint;
+        
+        if (blueprint) {
+            _StaticModelInstance* newObj = new _StaticModelInstance(blueprint);
+            newObj->pos = Vector3(x, y, z);
+            newObj->rotation.y = rot;
+            newObj->scale = Vector3(scale, scale, scale);
+            
+            // Add Colliders
+            if(type == "halfpipe") {
+                newObj->AddCollider(new _CubeHitbox(Vector3(-1,-1,-1),Vector3(1,1,1),COLLIDER_HALFPIPE));
+            } else {
+                newObj->AddCollider(new _CubeHitbox(Vector3(-1,-1,-1),Vector3(1,1,1),COLLIDER_RAIL));
+            }
+            
+            // Store in scene list for management
+            m_customLevelObjects.push_back(newObj);
+            
+            // Register with player for physics
+            m_player->RegisterStaticCollider(newObj);
+        }
+    }
+    file.close();
+    
+    // Reset player position to start
+    m_player->m_body->pos = Vector3(0, 5, 0);
+    m_player->ResetBoard();
 }

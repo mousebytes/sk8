@@ -32,6 +32,8 @@ class _Player{
     float m_jumpForce;      // Upward velocity applied when jumping
     PlayerState m_state;    // Current state (grounded, air, etc.)
 
+    float m_preGrindYaw;
+
     bool m_isOnBoard;
     Vector3 m_skateboardOffset;
 
@@ -70,6 +72,9 @@ class _Player{
 
     // helper to reset board pos
     void ResetBoard();
+
+    // helper to rotate the offset
+    Vector3 CalculateBoardOffset(Vector3 baseOffset, Vector3 rotation);
 };
 
 
