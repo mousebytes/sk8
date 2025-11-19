@@ -17,6 +17,7 @@ class _CubeHitbox : public _Collider{
     virtual bool CheckCollision(_Collider* other) override;
     virtual bool CheckCollisionWithCube(_CubeHitbox* cube) override;
     virtual bool CheckCollisionWithSphere(_SphereHitbox* sphere) override;
+    Vector3 GetSize();
 };
 
 

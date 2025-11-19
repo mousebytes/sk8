@@ -187,7 +187,8 @@ void _LevelEditor::Update(HWND hWnd, _camera* cam) {
         m_ghostObject->pos = m_cursorPos;
         //if(m_selectedType == "halfpipe") m_ghostObject->pos.y = 0.0f; 
         //else m_ghostObject->pos.y = 4.0f;
-        m_ghostObject->pos.y = m_ghostObject->scale.y/2;
+        if(m_selectedType == "rail") m_ghostObject->pos.y = m_ghostObject->scale.y/2;
+        else m_ghostObject->pos.y = m_ghostObject->scale.y;
         m_ghostObject->rotation.y = m_currentRotation;
     }
 }
