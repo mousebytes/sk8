@@ -125,6 +125,12 @@ class _Scene
         _StaticModel *m_halfpipeBlueprint;
         _StaticModelInstance *m_halfpipeInstance;
 
+        // --- NEW BLUEPRINTS FOR CUSTOM LEVEL ---
+        _StaticModel* m_scaffoldBlueprint;
+        _StaticModel* m_stairsBlueprint;
+        _StaticModel* m_woodFloorBlueprint;
+        _StaticModel* m_sideBlueprint;
+
 
         enum SceneState {LandingPage, MainMenu, Help, Playing, Paused, LevelEditor, EditorPaused};
         SceneState m_sceneState;

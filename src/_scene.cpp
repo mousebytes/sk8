@@ -47,6 +47,11 @@ _Scene::_Scene()
     m_playCustomButton = new _Button();
 
     m_customFloor = new _StaticModelInstance(terrainBlueprint);
+
+    m_scaffoldBlueprint = new _StaticModel();
+    m_stairsBlueprint = new _StaticModel();
+    m_woodFloorBlueprint = new _StaticModel();
+    m_sideBlueprint = new _StaticModel();
 }
 
 _Scene::~_Scene()
@@ -95,6 +100,11 @@ _Scene::~_Scene()
     delete m_editorButton;
 
     delete m_customFloor;
+
+    delete m_scaffoldBlueprint;
+    delete m_stairsBlueprint;
+    delete m_woodFloorBlueprint;
+    delete m_sideBlueprint;
 }
 
 void _Scene::reSizeScene(int width, int height)
@@ -629,6 +639,11 @@ void _Scene::initGameplay()
     m_halfpipeInstance->scale = Vector3(4,4,4);
     //m_halfpipeInstance->rotation = Vector3(0,90,0);
     m_player->RegisterStaticCollider(m_halfpipeInstance);
+
+    m_scaffoldBlueprint->LoadModel("models/skatepark assets/scaffold/scaffold.obj", "models/skatepark assets/colormap.png");
+    m_stairsBlueprint->LoadModel("models/skatepark assets/stairs/stairs.obj", "models/skatepark assets/colormap.png");
+    m_woodFloorBlueprint->LoadModel("models/skatepark assets/floor/floor.obj", "models/skatepark assets/colormap.png");
+    m_sideBlueprint->LoadModel("models/skatepark assets/side piece/side.obj", "models/skatepark assets/colormap.png");
 }
 
 void _Scene::initLevelEditor() {
@@ -937,14 +952,13 @@ void _Scene::loadCampaignLevel() {
 
 void _Scene::loadCustomLevel() {
     m_isCustomGame = true;
-    // 1. Clear existing custom objects if any
+    
+    // 1. Clear objects
     for(auto* obj : m_customLevelObjects) delete obj;
     m_customLevelObjects.clear();
 
-    // 2. Reset Player Physics/Colliders
-    // We keep the basic Terrain (floor) but remove rails/pipes from the player's check list
+    // 2. Reset Physics
     m_player->ClearColliders();
-    //m_player->RegisterStaticCollider(terrainInstance); // Re-add the main floor
     m_player->RegisterStaticCollider(m_customFloor);
 
     // 3. Load File
@@ -958,10 +972,15 @@ void _Scene::loadCustomLevel() {
     float x, y, z, rot, scale;
     while (file >> type >> x >> y >> z >> rot >> scale) {
         
-        // Determine blueprint based on type string
         _StaticModel* blueprint = nullptr;
+        
+        // --- SELECT BLUEPRINT ---
         if(type == "rail") blueprint = m_railBlueprint;
         else if(type == "halfpipe") blueprint = m_halfpipeBlueprint;
+        else if(type == "scaffold") blueprint = m_scaffoldBlueprint;
+        else if(type == "stairs") blueprint = m_stairsBlueprint;
+        else if(type == "wood_floor") blueprint = m_woodFloorBlueprint;
+        else if(type == "side") blueprint = m_sideBlueprint;
         
         if (blueprint) {
             _StaticModelInstance* newObj = new _StaticModelInstance(blueprint);
@@ -969,23 +988,34 @@ void _Scene::loadCustomLevel() {
             newObj->rotation.y = rot;
             newObj->scale = Vector3(scale, scale, scale);
             
-            // Add Colliders
+            // --- ASSIGN COLLIDERS (Must match Level Editor logic) ---
+            Vector3 cMin(-1,-1,-1);
+            Vector3 cMax(1,1,1);
+
             if(type == "halfpipe") {
-                newObj->AddCollider(new _CubeHitbox(Vector3(-1,-1,-1),Vector3(1,1,1),COLLIDER_HALFPIPE));
-            } else {
-                newObj->AddCollider(new _CubeHitbox(Vector3(-1,-1,-1),Vector3(1,1,1),COLLIDER_RAIL));
+                newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_HALFPIPE));
+            } 
+            else if(type == "rail") {
+                newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_RAIL));
+            }
+            else if(type == "stairs") {
+                newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_STAIRS));
+            }
+            else if(type == "wood_floor") {
+                // Thin Floor Logic
+                newObj->AddCollider(new _CubeHitbox(Vector3(-1, -0.1f, -1), Vector3(1, 0.1f, 1), COLLIDER_FLOOR));
+            }
+            else {
+                // Scaffolds and Sides are Walls
+                newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_WALL));
             }
             
-            // Store in scene list for management
             m_customLevelObjects.push_back(newObj);
-            
-            // Register with player for physics
             m_player->RegisterStaticCollider(newObj);
         }
     }
     file.close();
     
-    // Reset player position to start
     m_player->m_body->pos = Vector3(0, 5, 0);
     m_player->ResetBoard();
 }
