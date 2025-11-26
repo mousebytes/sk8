@@ -46,7 +46,7 @@ void _LevelEditor::SetReferenceBlueprint(_AnimatedModel* bp) {
 }
 
 void _LevelEditor::Init(int width, int height) {
-    // 1. Load Blueprints
+    // Load Blueprints
     _StaticModel* rail = new _StaticModel();
     rail->LoadModel("models/skatepark assets/rail/rail.obj", "models/skatepark assets/colormap.png");
     m_blueprints["rail"] = rail;
@@ -55,7 +55,7 @@ void _LevelEditor::Init(int width, int height) {
     halfpipe->LoadModel("models/skatepark assets/halfpipe/halfpipe.obj", "models/skatepark assets/colormap.png");
     m_blueprints["halfpipe"] = halfpipe;
     
-    // 2. Create the Huge Floor Plane
+    // Create the Huge Floor Plane
     _StaticModel* floorModel = new _StaticModel();
     floorModel->LoadModel("models/terrain.obj", "models/Terrain_Tex.png");
     m_blueprints["floor"] = floorModel;
@@ -81,13 +81,13 @@ void _LevelEditor::Init(int width, int height) {
     side->LoadModel("models/skatepark assets/side piece/side.obj", "models/skatepark assets/colormap.png");
     m_blueprints["side"] = side;
 
-    // 3. Create UI
+    // Create UI
     int startY = 60;
     int gapY = 60;
 
-    // 1. Rail
+    // Rail
     _Button* btnRail = new _Button();
-    btnRail->Init("images/play-btn.png", 80, 50, 60, startY, 0, 1, 1); 
+    btnRail->Init("images/rail-btn.png", 80, 50, 60, startY, 0, 1, 1); 
     m_itemButtons.push_back(btnRail);
     m_itemNames.push_back("rail");
 

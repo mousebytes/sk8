@@ -52,8 +52,10 @@
 		<Unit filename="include/_Collider.h" />
 		<Unit filename="include/_CubeHitbox.h" />
 		<Unit filename="include/_Hitbox.h" />
+		<Unit filename="include/_LevelEditor.h" />
 		<Unit filename="include/_ObjModel.h" />
 		<Unit filename="include/_Player.h" />
+		<Unit filename="include/_Rigidbody.h" />
 		<Unit filename="include/_SphereHitbox.h" />
 		<Unit filename="include/_StaticModel.h" />
 		<Unit filename="include/_StaticModelInstance.h" />
@@ -78,8 +80,10 @@
 		<Unit filename="src/_Button.cpp" />
 		<Unit filename="src/_CubeHitbox.cpp" />
 		<Unit filename="src/_Hitbox.cpp" />
+		<Unit filename="src/_LevelEditor.cpp" />
 		<Unit filename="src/_ObjModel.cpp" />
 		<Unit filename="src/_Player.cpp" />
+		<Unit filename="src/_Rigidbody.cpp" />
 		<Unit filename="src/_SphereHitbox.cpp" />
 		<Unit filename="src/_StaticModel.cpp" />
 		<Unit filename="src/_StaticModelInstance.cpp" />

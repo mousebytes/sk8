@@ -7,7 +7,7 @@
 	<gl/gl.h>
 	<_scene.h>
 
-1763591536 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
+1763601241 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
 	<_common.h>
 	<_light.h>
 	<_model.h>
@@ -123,7 +123,7 @@
 1762563177 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_collisioncheck.h
 	<_common.h>
 
-1763554379 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_inputs.cpp
+1763602145 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_inputs.cpp
 	"_inputs.h"
 
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_light.cpp
@@ -135,7 +135,7 @@
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_parallax.cpp
 	"_parallax.h"
 
-1763592668 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
+1763606205 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
 	"_scene.h"
 
 1762949818 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_skybox.cpp
@@ -284,6 +284,6 @@
 	"_SphereHitbox.h"
 	"_AnimatedModelInstance.h"
 
-1763592999 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_leveleditor.cpp
+1763605097 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_leveleditor.cpp
 	"_LevelEditor.h"
 

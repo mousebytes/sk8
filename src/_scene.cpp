@@ -52,6 +52,8 @@ _Scene::_Scene()
     m_stairsBlueprint = new _StaticModel();
     m_woodFloorBlueprint = new _StaticModel();
     m_sideBlueprint = new _StaticModel();
+
+    m_backgroundImageButton = new _Button();
 }
 
 _Scene::~_Scene()
@@ -105,6 +107,8 @@ _Scene::~_Scene()
     delete m_stairsBlueprint;
     delete m_woodFloorBlueprint;
     delete m_sideBlueprint;
+
+    delete m_backgroundImageButton;
 }
 
 void _Scene::reSizeScene(int width, int height)
@@ -311,7 +315,7 @@ void _Scene::handleGameplayInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
                 // fire from the camera's eye, in the camera's look direction
                 Vector3 startPos = m_camera->eye;
                 Vector3 direction = m_camera->des - m_camera->eye;
-                m_bulletManager->Fire(startPos, direction);
+                //m_bulletManager->Fire(startPos, direction);
              }
             
             break;
@@ -520,8 +524,9 @@ void _Scene::handlePauseMenuInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
 void _Scene::initLandingPage()
 {
     // positions are 2d pixels, assumes (0,0) is top left
-    m_landingTitle->Init("images/MidtermTitle.png", 400, 400, width/2, height/2, 0, 1, 1);
-    m_landingInstructions->Init("images/landing_instructions.png", 300, 300, width/2, height/1.2f, 0, 1, 1);
+    m_landingTitle->Init("images/sk8_logo.png", 400, 400, width/2, height/2, 0, 1, 1);
+    m_landingInstructions->Init("images/enterclick.png", 300, 300, width/2, height/1.2f, 0, 1, 1);
+    m_backgroundImageButton->Init("images/landing_bg.png",width,height,width/2,height/2,-1,1,1);
 }
 
 void _Scene::initGameplay()
@@ -659,7 +664,7 @@ void _Scene::initLevelEditor() {
     int cY = height / 2;
     
     m_editorResumeButton->Init("images/play-btn.png", 200, 60, cX, cY - 60, 0, 1, 1);
-    m_editorSaveButton->Init("images/play-btn.png", 200, 60, cX, cY + 10, 0, 1, 1);
+    m_editorSaveButton->Init("images/save-btn.png", 200, 60, cX, cY + 10, 0, 1, 1);
     m_editorExitButton->Init("images/exit-btn.png", 200, 60, cX, cY + 80, 0, 1, 1);
 }
 
@@ -669,10 +674,10 @@ void _Scene::initMainMenu()
     m_playButton->Init("images/play-btn.png", 200, 70, width/2, height/2 - 120, 0, 1, 1);
 
     // PLAY CUSTOM BUTTON
-    m_playCustomButton->Init("images/play-btn.png", 200, 70, width/2, height/2 - 40, 0, 1, 1);
+    m_playCustomButton->Init("images/custom-btn.png", 200, 70, width/2, height/2 - 40, 0, 1, 1);
     // (You might need a new texture for this button, reusing play-btn for now)
 
-    m_editorButton->Init("images/play-btn.png", 200, 70, width/2, height/2 + 40, 0, 1, 1); 
+    m_editorButton->Init("images/editor-btn.png", 200, 70, width/2, height/2 + 40, 0, 1, 1); 
     m_helpButton->Init("images/help-btn.png", 200, 70, width/2, height/2 + 120, 0, 1, 1);
     m_exitButton->Init("images/exit-btn.png", 200, 70, width/2, height/2 + 200, 0, 1, 1);
 }
@@ -826,8 +831,10 @@ void _Scene::drawLandingPage()
     draw2DOverlay(); // set up 2D drawing
 
     // draw the title
+    m_backgroundImageButton->Draw();
     m_landingTitle->Draw();
     m_landingInstructions->Draw();
+    
 
     // restore 3D projection
     glMatrixMode(GL_PROJECTION);
@@ -840,6 +847,7 @@ void _Scene::drawMainMenu()
     draw2DOverlay(); // set up 2D drawing
 
     // draw the buttons
+    m_backgroundImageButton->Draw();
     m_playButton->Draw();
     m_playCustomButton->Draw();
     m_helpButton->Draw();

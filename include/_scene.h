@@ -49,6 +49,7 @@ class _Scene
         // --- Landing Page Scene ---
         _Button *m_landingTitle;
         _Button *m_landingInstructions;
+        _Button *m_backgroundImageButton;
         void initLandingPage();
         void drawLandingPage();
         void handleLandingPageInput(UINT,WPARAM,LPARAM);
