@@ -23,6 +23,8 @@ class _Player{
     _AnimatedModelInstance* m_body;
     _AnimatedModelInstance* m_skateboard;
 
+    
+
     // --- Player Physics ---
     float m_playerYaw;      // The direction the player's body is facing (Y-axis rotation)
     float m_acceleration;   // How fast the player gains speed
@@ -31,6 +33,12 @@ class _Player{
     float m_friction;       // How much (or little) the player slows down naturally
     float m_jumpForce;      // Upward velocity applied when jumping
     PlayerState m_state;    // Current state (grounded, air, etc.)
+
+    // --- Walking Physics Vars
+    float m_walkSpeed;      // Max walking speed
+    float m_walkAccel;      // Walking acceleration (snappy)
+    float m_walkFriction;   // High friction to stop instantly
+    float m_walkTurnSpeed;  // Turning speed on foot
 
     float m_preGrindYaw;
 
@@ -64,6 +72,9 @@ class _Player{
 
     // handle gravity, collisions, apply velocity
     void UpdatePhysics();
+    void UpdatePhysicsBoard(); // skating physics
+    void UpdatePhysicsWalk();  // walking physics
+
     // set camera position and lookat
     void UpdateCamera(_camera* cam);
 

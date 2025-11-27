@@ -27,6 +27,12 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
     m_jumpForce = 8.0f;     // Initial upward velocity
     m_state = STATE_AIR;    // Start in air, will be set to grounded by physics
 
+    // --- WALK PHYSICS VARS ---
+    m_walkSpeed = 60.0f;         // Much slower than skating
+    m_walkAccel = 400.0f;        // High acceleration for instant start
+    m_walkFriction = 8.0f;       // High friction for instant stop
+    m_walkTurnSpeed = 800.0f;
+
     m_preGrindYaw = 0.0f;
 
     // --- CAMERA VARS ---
@@ -67,94 +73,111 @@ void _Player::HandleMouse(float deltaX, float deltaY)
     }*/
 }
 
+// In sk8-temp/src/_Player.cpp
+
 void _Player::HandleKeys(WPARAM wParam)
 {
     _Rigidbody *rb = m_body->GetRigidBody();
-    // calculate forward vector based on player's yaw
+    
+    // Calculate forward vector
     Vector3 fwd;
     fwd.x = -sin(m_playerYaw * PI / 180.0);
     fwd.z = -cos(m_playerYaw * PI / 180.0);
-    fwd.normalize(); // Ensure it's a unit vector
+    fwd.normalize();
 
-    // check which key was pressed
-    if (wParam == 'W') // Accelerate
+    // --- 1. WALKING INPUT (Bailed Mode) ---
+    if (!m_isOnBoard)
     {
-        // Add force in the forward direction
-        rb->velocity.x += fwd.x * m_acceleration * _Time::deltaTime;
-        rb->velocity.z += fwd.z * m_acceleration * _Time::deltaTime;
-    }
-    if (wParam == 'S') // Brake / Reverse
-    {
-         // Add force in the backward direction
-        rb->velocity.x -= fwd.x * m_acceleration * _Time::deltaTime;
-        rb->velocity.z -= fwd.z * m_acceleration * _Time::deltaTime;
-    }
-
-    // --- TURNING LOGIC ---
-    if (wParam == 'A') // Turn Left
-    {
-        float turnAmount = m_turnSpeed * _Time::deltaTime;
-        m_playerYaw += turnAmount;
-
-        // Convert angle change to radians
-        float rad = turnAmount * PI / 180.0f;
-        float cosTheta = cos(rad);
-        float sinTheta = sin(rad);
-
-        // Capture old velocity
-        float oldX = rb->velocity.x;
-        float oldZ = rb->velocity.z;
-
-        // Rotate velocity vector by +theta
-        // Formula: x' = x*cos - z*sin | z' = x*sin + z*cos
-        // Adapted for this coordinate system (Yaw 0 = -Z):
-        rb->velocity.x = oldX * cosTheta + oldZ * sinTheta;
-        rb->velocity.z = -oldX * sinTheta + oldZ * cosTheta;
-    }
-    if (wParam == 'D') // Turn Right
-    {
-        float turnAmount = m_turnSpeed * _Time::deltaTime;
-        m_playerYaw -= turnAmount;
-
-        // Convert angle change to radians (Negative for right turn)
-        float rad = -turnAmount * PI / 180.0f;
-        float cosTheta = cos(rad);
-        float sinTheta = sin(rad);
-
-        // Capture old velocity
-        float oldX = rb->velocity.x;
-        float oldZ = rb->velocity.z;
-
-        // Rotate velocity vector by -theta
-        rb->velocity.x = oldX * cosTheta + oldZ * sinTheta;
-        rb->velocity.z = -oldX * sinTheta + oldZ * cosTheta;
-    }
-
-    if (wParam == VK_SPACE) // Jump (Ollie)
-    {
-        // --- Allow jumping from ground or grind ---
-        if (m_state == STATE_GROUNDED || m_state == STATE_GRINDING || m_state == STATE_BAILED)
+        if (wParam == 'W') 
         {
-            // If we are jumping OUT of a grind, restore original rotation
-            if (m_state == STATE_GRINDING) {
-                m_playerYaw = m_preGrindYaw;
-            }
+            rb->velocity.x += fwd.x * m_walkAccel * _Time::deltaTime;
+            rb->velocity.z += fwd.z * m_walkAccel * _Time::deltaTime;
+        }
+        if (wParam == 'S') 
+        {
+            rb->velocity.x -= fwd.x * m_walkAccel * _Time::deltaTime;
+            rb->velocity.z -= fwd.z * m_walkAccel * _Time::deltaTime;
+        }
+        if (wParam == 'A') m_playerYaw += m_walkTurnSpeed * _Time::deltaTime;
+        if (wParam == 'D') m_playerYaw -= m_walkTurnSpeed * _Time::deltaTime;
 
-            rb->velocity.y = m_jumpForce;
-            m_state = STATE_AIR; // We are now in the air
-            rb->isGrounded = false; // manually set this
+        // Cap velocity immediately for "snappy" walking feel
+        float currentSpeed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
+        if(currentSpeed > m_walkSpeed) {
+             rb->velocity.x = (rb->velocity.x / currentSpeed) * m_walkSpeed;
+             rb->velocity.z = (rb->velocity.z / currentSpeed) * m_walkSpeed;
+        }
+
+        // Jump Logic (Walking)
+        if (wParam == VK_SPACE && rb->isGrounded)
+        {
+            rb->velocity.y = 5.0f; // Lower jump height when off board
+        }
+    }
+    // --- 2. SKATING INPUT (On Board Mode) ---
+    else 
+    {
+        // Existing Skating Controls
+        if (wParam == 'W') 
+        {
+            rb->velocity.x += fwd.x * m_acceleration * _Time::deltaTime;
+            rb->velocity.z += fwd.z * m_acceleration * _Time::deltaTime;
+        }
+        if (wParam == 'S') 
+        {
+            rb->velocity.x -= fwd.x * m_acceleration * _Time::deltaTime;
+            rb->velocity.z -= fwd.z * m_acceleration * _Time::deltaTime;
+        }
+        if (wParam == 'A') 
+        {
+            // Existing Tank Control Turning Logic
+            float turnAmount = m_turnSpeed * _Time::deltaTime;
+            m_playerYaw += turnAmount;
+            
+            // Rotate velocity vector
+            float rad = turnAmount * PI / 180.0f;
+            float cosTheta = cos(rad);
+            float sinTheta = sin(rad);
+            float oldX = rb->velocity.x;
+            float oldZ = rb->velocity.z;
+            rb->velocity.x = oldX * cosTheta + oldZ * sinTheta;
+            rb->velocity.z = -oldX * sinTheta + oldZ * cosTheta;
+        }
+        if (wParam == 'D') 
+        {
+            // Same as 'A' but negative turnAmount...
+            float turnAmount = m_turnSpeed * _Time::deltaTime;
+            m_playerYaw -= turnAmount;
+            
+            float rad = -turnAmount * PI / 180.0f;
+            float cosTheta = cos(rad);
+            float sinTheta = sin(rad);
+            float oldX = rb->velocity.x;
+            float oldZ = rb->velocity.z;
+            rb->velocity.x = oldX * cosTheta + oldZ * sinTheta;
+            rb->velocity.z = -oldX * sinTheta + oldZ * cosTheta;
+        }
+
+        if (wParam == VK_SPACE) 
+        {
+            if (m_state == STATE_GROUNDED || m_state == STATE_GRINDING || m_state == STATE_BAILED)
+            {
+                if (m_state == STATE_GRINDING) m_playerYaw = m_preGrindYaw;
+                rb->velocity.y = m_jumpForce;
+                m_state = STATE_AIR;
+                rb->isGrounded = false;
+            }
         }
     }
 
-    // --- BAIL / RECALL MECHANIC ---
+    // --- SHARED INPUTS ---
+    // Toggle Board/Bailed State
     if (wParam == 'F') {
         if (m_isOnBoard) {
-            // Fall off: Player hops, board stays behind
             m_isOnBoard = false;
             m_state = STATE_BAILED;
-            rb->velocity.y = 5.0f; // Hop off
+            rb->velocity.y = 5.0f; 
         } else {
-            // Recall: Board teleports back to player
             ResetBoard();
             m_state = STATE_AIR;
         }
@@ -177,408 +200,381 @@ void _Player::ClearColliders()
     m_collidableAnimatedModels.clear();
 }
 
+// In sk8-temp/src/_Player.cpp
+
+// ---------------------------------------------------------
+// MAIN PHYSICS DISPATCHER
+// ---------------------------------------------------------
 void _Player::UpdatePhysics()
 {
-    if(isFrozen) return;
+    if (isFrozen) return;
 
-    // --- Wall Collision & Sliding Logic ---
+    if (m_isOnBoard) {
+        UpdatePhysicsBoard();
+    } else {
+        UpdatePhysicsWalk();
+    }
+}
+
+// ---------------------------------------------------------
+// WALKING PHYSICS (Bailed Mode)
+// ---------------------------------------------------------
+void _Player::UpdatePhysicsWalk()
+{
     if (m_body->colliders.empty()) return; // safety check
+    if (isFrozen) return;
 
     _Rigidbody *rb = m_body->GetRigidBody();
-    m_currentRail = nullptr;
 
+    // 1. WALL COLLISION
+    // ------------------------------------------------------------------
     _Collider* playerMainCollider = m_body->colliders[0];
-    
-    // check x axis movement
     bool hitX = false;
+    bool hitZ = false;
+
+    // Check X Axis
     Vector3 predictedPosX = m_body->pos;
     predictedPosX.x += rb->velocity.x * _Time::deltaTime;
-    _Collider* playerPredictedColliderX = playerMainCollider->GetWorldSpaceCollider(predictedPosX, m_body->scale, m_body->rotation);
+    _Collider* colX = playerMainCollider->GetWorldSpaceCollider(predictedPosX, m_body->scale, m_body->rotation);
     
-    if(playerPredictedColliderX)
-    {
+    if(colX) {
         for(_StaticModelInstance* staticModel : m_collidableStaticModels) {
             for (_Collider* staticCollider : staticModel->colliders) {
-                _Collider* staticWorldCollider = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
-                if(staticWorldCollider) {
-                    // --- ignore rails for wall collision ---
-                    if (playerPredictedColliderX->CheckCollision(staticWorldCollider) && staticCollider->m_type == COLLIDER_WALL) {
-                        hitX = true;
+                // Walk mode interacts with walls
+                if (staticCollider->m_type == COLLIDER_WALL) {
+                    _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
+                    if(worldCol) {
+                        if(colX->CheckCollision(worldCol)) hitX = true;
+                        delete worldCol;
                     }
-                    delete staticWorldCollider; 
                 }
                 if(hitX) break;
             }
             if(hitX) break;
         }
-        delete playerPredictedColliderX; 
+        delete colX;
     }
 
-    // check z axis movement
-    bool hitZ = false;
+    // Check Z Axis
     Vector3 predictedPosZ = m_body->pos;
     predictedPosZ.z += rb->velocity.z * _Time::deltaTime;
-    _Collider* playerPredictedColliderZ = playerMainCollider->GetWorldSpaceCollider(predictedPosZ, m_body->scale, m_body->rotation);
+    _Collider* colZ = playerMainCollider->GetWorldSpaceCollider(predictedPosZ, m_body->scale, m_body->rotation);
     
-    if(playerPredictedColliderZ)
-    {
+    if(colZ) {
         for(_StaticModelInstance* staticModel : m_collidableStaticModels) {
             for (_Collider* staticCollider : staticModel->colliders) {
-                _Collider* staticWorldCollider = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
-                if(staticWorldCollider) {
-                    // --- ignore rails for wall collision ---
-                    if (playerPredictedColliderZ->CheckCollision(staticWorldCollider) && staticCollider->m_type == COLLIDER_WALL) {
-                        hitZ = true;
+                if (staticCollider->m_type == COLLIDER_WALL) {
+                    _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
+                    if(worldCol) {
+                        if(colZ->CheckCollision(worldCol)) hitZ = true;
+                        delete worldCol;
                     }
-                    delete staticWorldCollider;
                 }
                 if(hitZ) break;
             }
-            if(hitX) break; // Already hit X, no need to keep checking Z
+            if(hitZ) break;
         }
-        delete playerPredictedColliderZ; 
+        delete colZ;
     }
 
-    // zero out velocity for the axis that hit
+    // Stop velocity on hit
     if (hitX) rb->velocity.x = 0;
     if (hitZ) rb->velocity.z = 0;
 
+    // 2. GROUND DETECTION (Simple Floor & Stairs)
+    // ------------------------------------------------------------------
+    rb->isGrounded = false;
+    
+    _Collider* playerCurrent = playerMainCollider->GetWorldSpaceCollider(m_body->pos, m_body->scale, m_body->rotation);
+    
+    if (playerCurrent) {
+        for(_StaticModelInstance* staticModel : m_collidableStaticModels) {
+            for (_Collider* staticCollider : staticModel->colliders) {
+                // Walking interacts with Floors and Stairs
+                if (staticCollider->m_type == COLLIDER_FLOOR || staticCollider->m_type == COLLIDER_STAIRS) {
+                    
+                    _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
+                    if (worldCol) {
+                        if (playerCurrent->CheckCollision(worldCol)) {
+                            // Standard Ground Check
+                            rb->isGrounded = true; 
+                            
+                            // Prevent falling through floor
+                            if(rb->velocity.y < 0) rb->velocity.y = 0;
+                            
+                            // Basic stair step-up logic (if needed, or just treat as slope/floor)
+                            // For this simple walk mode, treating stairs as floor usually works fine 
+                            // if the collider boxes are ramped or small enough.
+                        }
+                        delete worldCol;
+                    }
+                }
+            }
+        }
+        delete playerCurrent;
+    }
 
-    // --- unified Ground & Rail Check Logic ---
-    rb->isGrounded = false; // Reset at the start of the check
+    // 3. MOVEMENT PHYSICS (Snappy, High Friction)
+    // ------------------------------------------------------------------
+    m_state = STATE_BAILED;
+
+    // Force Upright Rotation (No tilting while walking)
+    m_body->rotation.x = 0;
+    m_body->rotation.z = 0;
+
+    if (rb->isGrounded) 
+    {
+        // High Friction for instant stopping
+        float frictionAmount = m_walkFriction * _Time::deltaTime;
+        rb->velocity.x -= rb->velocity.x * frictionAmount;
+        rb->velocity.z -= rb->velocity.z * frictionAmount;
+        
+        // Hard stop if slow enough (prevents micro-sliding)
+        if(abs(rb->velocity.x) < 0.1f) rb->velocity.x = 0;
+        if(abs(rb->velocity.z) < 0.1f) rb->velocity.z = 0;
+    }
+    
+    // 4. ANIMATION & UPDATE
+    // ------------------------------------------------------------------
+    if(rb->velocity.x != 0 || rb->velocity.z != 0) {
+        m_body->PlayAnimation("walk", 1.0f);
+    } else {
+        m_body->PlayAnimation("idle", 1.0f);
+    }
+
+    // Apply rotation based on camera/input direction
+    m_body->rotation.y = m_playerYaw;
+    m_body->Update();
+}
+
+// ---------------------------------------------------------
+// SKATING PHYSICS
+// ---------------------------------------------------------
+void _Player::UpdatePhysicsBoard()
+{
+    if (m_body->colliders.empty()) return;
+    _Rigidbody *rb = m_body->GetRigidBody();
+    m_currentRail = nullptr;
+
+    // 1. WALL COLLISION (Ignore Rails)
+    // ------------------------------------------------------------------
+    bool hitX = false;
+    bool hitZ = false;
+    _Collider* playerMainCollider = m_body->colliders[0];
+
+    // Check X
+    Vector3 predictedPosX = m_body->pos;
+    predictedPosX.x += rb->velocity.x * _Time::deltaTime;
+    _Collider* colX = playerMainCollider->GetWorldSpaceCollider(predictedPosX, m_body->scale, m_body->rotation);
+    if(colX) {
+        for(_StaticModelInstance* staticModel : m_collidableStaticModels) {
+            for (_Collider* staticCollider : staticModel->colliders) {
+                // Ignore rails and stairs for stopping velocity when skating
+                if (staticCollider->m_type == COLLIDER_WALL) { 
+                    _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
+                    if(worldCol && colX->CheckCollision(worldCol)) hitX = true;
+                    delete worldCol;
+                }
+            }
+        }
+        delete colX;
+    }
+
+    // Check Z
+    Vector3 predictedPosZ = m_body->pos;
+    predictedPosZ.z += rb->velocity.z * _Time::deltaTime;
+    _Collider* colZ = playerMainCollider->GetWorldSpaceCollider(predictedPosZ, m_body->scale, m_body->rotation);
+    if(colZ) {
+        for(_StaticModelInstance* staticModel : m_collidableStaticModels) {
+            for (_Collider* staticCollider : staticModel->colliders) {
+                if (staticCollider->m_type == COLLIDER_WALL) {
+                    _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
+                    if(worldCol && colZ->CheckCollision(worldCol)) hitZ = true;
+                    delete worldCol;
+                }
+            }
+        }
+        delete colZ;
+    }
+
+    if (hitX) rb->velocity.x = 0;
+    if (hitZ) rb->velocity.z = 0;
+
+    // 2. COMPLEX GROUND DETECTION (Floor, Rails, Vert)
+    // ------------------------------------------------------------------
+    rb->isGrounded = false;
     bool isOnRail = false;
     bool isOnVert = false;
-    
-    _Collider* playerCurrentCollider = playerMainCollider->GetWorldSpaceCollider(m_body->pos, m_body->scale, m_body->rotation);
-    
-    if (playerCurrentCollider)
-    {
-        for(_StaticModelInstance* staticModel : m_collidableStaticModels)
-        {
-            for (_Collider* staticCollider : staticModel->colliders)
-            {
-                _Collider* staticWorldCollider = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
-                if (staticWorldCollider)
-                {
-                    if (playerCurrentCollider->CheckCollision(staticWorldCollider))
-                    {
-                        if (staticCollider->m_type == COLLIDER_FLOOR)
-                        {
-                            rb->isGrounded = true; // We are on the floor
+
+    _Collider* playerCurrent = playerMainCollider->GetWorldSpaceCollider(m_body->pos, m_body->scale, m_body->rotation);
+
+    if (playerCurrent) {
+        for(_StaticModelInstance* staticModel : m_collidableStaticModels) {
+            for (_Collider* staticCollider : staticModel->colliders) {
+                _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
+                if (worldCol) {
+                    if (playerCurrent->CheckCollision(worldCol)) {
+                        
+                        // A. Floor
+                        if (staticCollider->m_type == COLLIDER_FLOOR) {
+                            rb->isGrounded = true;
                         }
-                        else if (staticCollider->m_type == COLLIDER_RAIL)
-                        {
-                            if (rb->velocity.y <= 0.1) 
-                            {
-                                isOnRail = true; // we are on rail
-                                m_currentRail = staticModel; // store rail
+                        // B. Rail
+                        else if (staticCollider->m_type == COLLIDER_RAIL) {
+                            if (rb->velocity.y <= 0.1) {
+                                isOnRail = true;
+                                m_currentRail = staticModel;
                             }
                         }
-                        // halfpipe logic
-                        else if (staticCollider->m_type == COLLIDER_HALFPIPE)
-                        {
-                            // --- 1. ROBUST LOCAL SPACE TRANSFORMATION ---
+                        // C. Halfpipe (Vert Logic)
+                        else if (staticCollider->m_type == COLLIDER_HALFPIPE) {
+                            // Local Space Transform
                             Vector3 relPos = m_body->pos - staticModel->pos;
-                        
-                            // Convert rotation to radians
                             float rad = staticModel->rotation.y * PI / 180.0f;
                             float c = cos(rad);
                             float s = sin(rad);
-                        
-                            // Apply Inverse Rotation (World -> Local)
                             float localX = relPos.x * c - relPos.z * s;
                             float localZ = relPos.x * s + relPos.z * c;
                         
-                            // --- 2. DIMENSIONS & BOUNDS ---
                             float halfWidth = staticModel->scale.x;
                             float halfDepth = staticModel->scale.z; 
                             float halfHeight = staticModel->scale.y;
                         
-                            // Check Width (Side to side)
-                            if (localX < -halfWidth - 0.5f || localX > halfWidth + 0.5f) continue;
-                        
-                            // --- 3. CURVE LOGIC ---
-                            float radius = halfHeight * 2.0f;
-                            float wallZ = -halfDepth;
-                            float distFromWall = localZ - wallZ;
-                        
-                            // Prevent going through the back
-                            if (distFromWall < -0.5f) continue;
-                            // Clamp flat ground
-                            if (distFromWall > radius) distFromWall = radius;
-                        
-                            // Circle Math: xCircle is 0 at bottom, R at top
-                            float xCircle = radius - distFromWall;
-                            if (xCircle < 0) xCircle = 0;
-                        
-                            // Calculate raw surface height at this position
-                            float circleY = radius - sqrt(pow(radius, 2) - pow(xCircle, 2));
-                            float pipeBottomY = staticModel->pos.y - halfHeight;
-                        
-                            // --- 4. OFFSET CALCULATIONS (THE FIX) ---
-
-                            // A. Calculate Slope Angle
-                            float slopeRad = asin(xCircle / radius); // 0 at bottom, PI/2 at top
-                        
-                            // B. Geometry Correction: 
-                            // To keep a sphere on a slope, we divide radius by cos(theta).
-                            // As the wall gets vertical, this value gets huge, so we clamp it.
-                            float cosTheta = cos(slopeRad);
-                            if(cosTheta < 0.3f) cosTheta = 0.3f; // Clamp to prevent shooting to space
-
-                            float geometryOffset = 1.0f / cosTheta; 
-                        
-                            // C. Manual Visual Offset:
-                            // Tweak this value to push the model further out visually!
-                            float visualTweak = 2.5f; 
-                        
-                            float finalY = pipeBottomY + circleY + geometryOffset + visualTweak;
-                        
-                            // --- 5. APPLY PHYSICS ---
-                            if (m_body->pos.y <= finalY + 2.0f && m_body->pos.y >= pipeBottomY - 1.0f)
-                            {
-                                isOnVert = true;
-                                rb->isGrounded = true;
-                                m_body->pos.y = finalY;
-
-                                // Stop falling
-                                if(rb->velocity.y < 0) rb->velocity.y = 0;
+                            // Check bounds
+                            if (localX >= -halfWidth - 0.5f && localX <= halfWidth + 0.5f) {
+                                float radius = halfHeight * 2.0f;
+                                float wallZ = -halfDepth;
+                                float distFromWall = localZ - wallZ;
                             
-                                // Apply Pitch Rotation
-                                // Convert radians to degrees for rotation
-                                float slopeDeg = slopeRad * (180.0f / PI);
-
-                                m_body->rotation.x = slopeDeg;
-                                m_body->rotation.z = 0;
+                                if (distFromWall >= -0.5f) {
+                                    if (distFromWall > radius) distFromWall = radius;
+                                
+                                    float xCircle = radius - distFromWall;
+                                    if (xCircle < 0) xCircle = 0;
+                                
+                                    float circleY = radius - sqrt(pow(radius, 2) - pow(xCircle, 2));
+                                    float pipeBottomY = staticModel->pos.y - halfHeight;
+                                
+                                    // Calculate Visual & Geometry Offsets
+                                    float slopeRad = asin(xCircle / radius);
+                                    float cosTheta = cos(slopeRad);
+                                    if(cosTheta < 0.3f) cosTheta = 0.3f; 
+                                    float geometryOffset = 1.0f / cosTheta; 
+                                    float visualTweak = 2.5f; 
+                                    float finalY = pipeBottomY + circleY + geometryOffset + visualTweak;
+                                
+                                    // Check Height threshold
+                                    if (m_body->pos.y <= finalY + 2.0f && m_body->pos.y >= pipeBottomY - 1.0f)
+                                    {
+                                        isOnVert = true;
+                                        rb->isGrounded = true;
+                                        m_body->pos.y = finalY;
+                                        if(rb->velocity.y < 0) rb->velocity.y = 0;
+                                    
+                                        // Apply rotation
+                                        float slopeDeg = slopeRad * (180.0f / PI);
+                                        m_body->rotation.x = slopeDeg;
+                                        m_body->rotation.z = 0;
+                                    }
+                                }
                             }
                         }
-                        else if (staticCollider->m_type == COLLIDER_STAIRS)
-                        {
-                            // --- 1. LOCAL SPACE TRANSFORM (Standard) ---
-                            Vector3 relPos = m_body->pos - staticModel->pos;
-                            float rad = staticModel->rotation.y * PI / 180.0f;
-                            float c = cos(rad);
-                            float s = sin(rad);
-                            float localX = relPos.x * c - relPos.z * s;
-                            float localZ = relPos.x * s + relPos.z * c;
-                        
-                            // --- 2. BOUNDS CHECK ---
-                            float halfWidth = staticModel->scale.x;
-                            float halfDepth = staticModel->scale.z;
-                            float halfHeight = staticModel->scale.y;
-                        
-                            // Check Width (Side to side)
-                            if (localX < -halfWidth - 0.5f || localX > halfWidth + 0.5f) continue;
-                            // Check Depth (Front to back)
-                            if (localZ < -halfDepth - 0.5f || localZ > halfDepth + 0.5f) continue;
-                        
-                            // --- 3. LINEAR SLOPE LOGIC ---
-                            // Map localZ (-halfDepth to +halfDepth) to Height (0 to 2*halfHeight)
-
-                            // Normalize Z to 0.0 - 1.0 range
-                            // Assuming Front of stairs is at -halfDepth and Top is at +halfDepth
-                            float totalDepth = halfDepth * 2.0f;
-                            float distFromFront = localZ - (-halfDepth); // 0 at front
-                            float t = distFromFront / totalDepth;
-                        
-                            // Clamp t (so we have a flat spot at top and bottom)
-                            if (t < 0.0f) t = 0.0f;
-                            if (t > 1.0f) t = 1.0f;
-                        
-                            // Calculate target height (Linear interpolation)
-                            float rampHeight = t * (halfHeight * 2.0f);
-
-                            float pipeBottomY = staticModel->pos.y - halfHeight;
-                            float targetWorldY = pipeBottomY + rampHeight;
-                        
-                            // --- 4. SNAP TO STAIRS ---
-                            // Check if player is close enough to the surface to snap
-                            if (m_body->pos.y <= targetWorldY + 2.0f && m_body->pos.y >= pipeBottomY - 0.5f)
-                            {
-                                rb->isGrounded = true;
-                                m_body->pos.y = targetWorldY + 1.0f; // +1.0 offset for player center
-
-                                if(rb->velocity.y < 0) rb->velocity.y = 0;
-                            
-                                // --- 5. VISUAL TILT (Optional) ---
-                                // Calculate slope angle: tan(theta) = height / length
-                                float slopeAngle = atan2(halfHeight * 2.0f, totalDepth) * (180.0f / PI);
-
-                                // If we are facing up the stairs, tilt up. If down, tilt down.
-                                // For now, just simple pitch based on object rotation
-                                // m_body->rotation.x = -slopeAngle; 
-                            }
+                        // D. Stairs
+                        else if (staticCollider->m_type == COLLIDER_STAIRS) {
+                             // Simplified Stairs collision (treat as ramp for now)
+                             rb->isGrounded = true;
+                             if(rb->velocity.y < 0) rb->velocity.y = 0;
                         }
                     }
-                    delete staticWorldCollider;
+                    delete worldCol;
                 }
-                //if (rb->isGrounded) break; // Ground check is highest priority
             }
-            //if (rb->isGrounded) break;
         }
-        delete playerCurrentCollider;
+        delete playerCurrent;
     }
 
-    // --- unified State Machine & Friction ---
-    if (rb->isGrounded) // This is true only if we hit a COLLIDER_FLOOR
-    {   
-        // If we are on vert, use specific state, otherwise standard grounded
-        if (m_isOnBoard) {
-            // Standard skating logic
-            m_state = isOnVert ? STATE_VERT : STATE_GROUNDED;
-        } else {
-            // Walking logic: force state to BAILED (or WALKING) so we know we are on foot
-            m_state = STATE_BAILED;
-        }
-        if(rb->velocity.y < 0) { 
-            rb->velocity.y = 0; 
-        }
+    // 3. STATE MACHINE & MOMENTUM
+    // ------------------------------------------------------------------
+    if (rb->isGrounded) {
+        m_state = isOnVert ? STATE_VERT : STATE_GROUNDED;
+        if(rb->velocity.y < 0) rb->velocity.y = 0;
 
-        // --- Apply Friction & Speed Cap (Only on Ground) ---
+        // Low Friction (Momentum-based)
         float horizSpeed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
-        if (horizSpeed > 0.01f) // If we are moving
-        {
+        if (horizSpeed > 0.01f) {
             float frictionAmount = m_friction * _Time::deltaTime;
             rb->velocity.x -= rb->velocity.x * frictionAmount;
             rb->velocity.z -= rb->velocity.z * frictionAmount;
 
-            if (horizSpeed > m_maxSpeed)
-            {
+            if (horizSpeed > m_maxSpeed) {
                 rb->velocity.x = (rb->velocity.x / horizSpeed) * m_maxSpeed;
                 rb->velocity.z = (rb->velocity.z / horizSpeed) * m_maxSpeed;
             }
         }
-        else // Stop micro-movements
-        {
-            rb->velocity.x = 0;
-            rb->velocity.z = 0;
-        }
 
-        // RESET VISUAL ROTATION IF NOT ON VERT
-        if(!isOnVert) {
-            m_body->rotation.x = 0.0f;
-            // Rotate back to flat slowly in air
-            m_body->rotation.x *= 0.95f;
-        }
+        // Return rotation to flat if not on vert
+        if(!isOnVert) m_body->rotation.x *= 0.95f;
     }
-    else if (isOnRail) // This is true if we hit a rail AND NOT the floor
-    {
-        // 1. Capture Entry Angle Only Once
-        if (m_state != STATE_GRINDING) {
-            m_preGrindYaw = m_playerYaw; // Save the direction we were facing
-        }
+    else if (isOnRail) {
+        // Rail Snapping Logic
+        if (m_state != STATE_GRINDING) m_preGrindYaw = m_playerYaw;
         m_state = STATE_GRINDING;
-
-        // --- Calculate Rail Direction Vectors ---
-        // Convert degrees to radians
+        
         float railYawRad = m_currentRail->rotation.y * PI / 180.0f;
-
-        // Calculate the rail's forward unit vector 
-        Vector3 railDir;
-        railDir.x = -sin(railYawRad); 
-        railDir.y = 0;
-        railDir.z = -cos(railYawRad);
+        Vector3 railDir(-sin(railYawRad), 0, -cos(railYawRad));
         railDir.normalize();
-
-        // --- Determine Direction based on INTENT (Entry Angle) ---
-        // We use m_preGrindYaw instead of current velocity to prevent jitter
-        //float preYawRad = m_preGrindYaw * PI / 180.0f;
-        //Vector3 intentDir;
-        //intentDir.x = -sin(preYawRad);
-        //intentDir.y = 0;
-        //intentDir.z = -cos(preYawRad);
 
         Vector3 intentDir = rb->velocity;
         intentDir.normalize();
 
-        // Check if our entry angle was with or against the rail
-        float dot = (intentDir.x * railDir.x) + (intentDir.z * railDir.z);
-
-        // If we entered 'backwards', flip the rail direction for the duration of the grind
-        if (dot < 0) {
+        if ((intentDir.x * railDir.x) + (intentDir.z * railDir.z) < 0) {
             railDir = railDir * -1.0f;
         }
 
-        // --- Snap Velocity (Preserve Momentum) ---
         float speed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
-        
-        // Apply speed along the stabilized rail direction
         rb->velocity.x = railDir.x * speed;
         rb->velocity.z = railDir.z * speed;
         rb->velocity.y = 0; 
 
-        // --- Snap Position (Top-Center Logic) ---
+        // Snap Position
         Vector3 diff = m_body->pos - m_currentRail->pos;
         float distAlongRail = (diff.x * railDir.x) + (diff.z * railDir.z);
         Vector3 newPos = m_currentRail->pos + (railDir * distAlongRail);
-        
         float railTopY = m_currentRail->pos.y + (m_currentRail->scale.y * 1.0f);
         newPos.y = railTopY + 0.9f; 
-
         m_body->pos = newPos;
 
-        // --- Visual Rotation (Grind Stance) ---
-        // Calculate rotation based on the MOVEMENT direction (railDir), not the static rail
-        // This ensures if we grind 'backwards', we face the correct perpendicular direction
-        // atan2(sin, cos) -> atan2(-x, -z) because x=-sin, z=-cos
+        // Visual Rotation
         float moveAngle = atan2(-railDir.x, -railDir.z) * 180.0f / PI;
         m_playerYaw = moveAngle + 90.0f;
         
         rb->isGrounded = true;
     }
-    else // Not on floor, not on rail
-    {
-        if (m_state == STATE_GRINDING) {
-            m_playerYaw = m_preGrindYaw;
-        }
-
-        m_state = STATE_AIR; 
-        // rb->isGrounded is already false, so gravity will be applied
-        // in m_body->Update()
+    else {
+        m_state = STATE_AIR;
     }
-    // ---------------------------------
 
-
-    // Apply the player's turning rotation to the model
+    // 4. ANIMATION & SYNC
+    // ------------------------------------------------------------------
     m_body->rotation.y = m_playerYaw;
-
-    // applies gravity (if in STATE_AIR)
-    // and movement velocity (now corrected for walls, friction, and speed)
     m_body->Update();
 
-    // --- BOARD PHYSICS SYNC ---
     if(m_isOnBoard){
-        // Calculate rotated offset so board orbits the player pivot
         Vector3 rotatedOffset = CalculateBoardOffset(m_skateboardOffset, m_body->rotation);
-        
         m_skateboard->pos = m_body->pos + rotatedOffset;
         m_skateboard->rotation = m_body->rotation;
-    } else {
-        // TODO: add roll away logic, for now it stays in place
-        // add a rigidbody to the board
     }
 
-    // ---- UNIFIED ANIMATION STATE SELECTION ----
-    float currentSpeed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
-
-    if (m_state == STATE_AIR) {
-        // m_body->PlayAnimation("jump", 1.0f); // TODO: Add jump/air animation
-        m_body->PlayAnimation("idle", 1.0f); // Placeholder
-    }
-    else if (m_state == STATE_GRINDING)
-    {
-        // m_body->PlayAnimation("grind", 1.0f); // TODO: Add grind animation
-        m_body->PlayAnimation("idle", 1.0f); // Placeholder
-    }
-    else if (currentSpeed > 0.1f) { // Grounded and moving
-        // m_body->PlayAnimation("push", 1.0f); // TODO: Add pushing/rolling animation
-        m_body->PlayAnimation("walk", 1.0f); // Placeholder
-    } 
-    else { // Grounded and not moving
-        // player is on the ground and not moving
-        m_body->PlayAnimation("idle", 1.0f);
-    }
+    // Choose Animation
+    float speed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
+    
+    if (m_state == STATE_GRINDING) m_body->PlayAnimation("idle", 1.0f); 
+    else if (m_state == STATE_AIR) m_body->PlayAnimation("idle", 1.0f); 
+    else if (speed > 0.1f) m_body->PlayAnimation("walk", 1.0f); 
+    else m_body->PlayAnimation("idle", 1.0f);
 }
+
+
 
 void _Player::UpdateCamera(_camera* cam)
 {
