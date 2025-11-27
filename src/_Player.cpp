@@ -46,7 +46,7 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
 
     isFrozen = false;
 
-    m_skateboardOffset = Vector3(0,-1.0,0);
+    m_skateboardOffset = Vector3(0,-1.05,0);
     m_skateboard->scale = Vector3(0.5,0.5,0.5);
 }
 

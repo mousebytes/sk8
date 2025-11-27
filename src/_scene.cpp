@@ -609,10 +609,13 @@ void _Scene::initGameplay()
     m_skybox->tex[4] = m_skybox->textures->loadTexture("images/skybox/right.jpg");
     m_skybox->tex[5] = m_skybox->textures->loadTexture("images/skybox/left.jpg");
 
-    m_player_blueprint->LoadTexture("models/player/Human_Atlas.png");
-    m_player_blueprint->RegisterAnimation("idle","models/player/idle",1);
-    m_player_blueprint->RegisterAnimation("walk", "models/player/walk",2);
-    //m_player_blueprint->RegisterAnimation("walk","models/player/walk",2);
+    //m_player_blueprint->LoadTexture("models/player/Human_Atlas.png");
+    //m_player_blueprint->RegisterAnimation("idle","models/player/idle",1);
+    //m_player_blueprint->RegisterAnimation("walk", "models/player/walk",2);
+
+    m_player_blueprint->LoadTexture("models/alternatePlayers/man1/man_tex.png");
+    m_player_blueprint->RegisterAnimation("idle","models/alternatePlayers/man1/idle",1);
+    m_player_blueprint->RegisterAnimation("walk", "models/alternatePlayers/man1/kick",2);
 
 
     m_skateboardBlueprint->LoadTexture("models/skateboard/colormap.png");
