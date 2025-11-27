@@ -43,6 +43,8 @@ public:
     // Setup for Level 2: "Tag X Spots"
     void SetTagObjective(int totalTags, float timeLimit);
 
+    void SetFreePlay(); // Resets everything for custom/sandbox mode
+
     void CollectTag(); // Call this when player touches a graffiti spot
 
     GameState GetState() { return m_gameState; }

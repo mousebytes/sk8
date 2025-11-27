@@ -265,3 +265,26 @@ void _ScoreManager::SpawnPopup(Vector3 pos, string text, int points) {
     p->floatSpeed = 0.5f; 
     m_popups.push_back(p);
 }
+
+void _ScoreManager::SetFreePlay() {
+    // Reset Scores
+    m_totalScore = 0;
+    m_currentComboScore = 0;
+    m_multiplier = 1;
+    
+    // Clear Timers and Objectives
+    m_timeLimit = 0.0f;
+    m_currentTime = 0.0f;
+    m_targetScore = 0;
+    m_tagsCollected = 0;
+    m_tagsTarget = 0;
+    
+    // Disable Flags
+    m_isTimed = false;      // No timer
+    m_isTagMode = false;    // No tag collecting
+    m_gameState = GAME_PLAYING; // Ensure we aren't stuck in "Game Won/Lost"
+    
+    // Clear old popups (optional, stops "Time Up" from lingering)
+    for (auto p : m_popups) delete p;
+    m_popups.clear();
+}

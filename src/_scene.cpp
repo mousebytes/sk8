@@ -615,7 +615,9 @@ void _Scene::initGameplay()
 
     m_player_blueprint->LoadTexture("models/alternatePlayers/man1/man_tex.png");
     m_player_blueprint->RegisterAnimation("idle","models/alternatePlayers/man1/idle",1);
-    m_player_blueprint->RegisterAnimation("walk", "models/alternatePlayers/man1/kick",2);
+    m_player_blueprint->RegisterAnimation("kick", "models/alternatePlayers/man1/kick",2);
+    m_player_blueprint->RegisterAnimation("walk", "models/alternatePlayers/man1/walk",2);
+    m_player_blueprint->RegisterAnimation("idleWalk","models/alternatePlayers/man1/idleWalk",1);
 
 
     m_skateboardBlueprint->LoadTexture("models/skateboard/colormap.png");
@@ -977,6 +979,8 @@ void _Scene::loadCampaignLevel() {
 
 void _Scene::loadCustomLevel() {
     m_isCustomGame = true;
+
+    m_scoreManager->SetFreePlay();
     
     // 1. Clear objects
     for(auto* obj : m_customLevelObjects) delete obj;

@@ -320,7 +320,7 @@ void _Player::UpdatePhysicsWalk()
     if(rb->velocity.x != 0 || rb->velocity.z != 0) {
         m_body->PlayAnimation("walk", 1.0f);
     } else {
-        m_body->PlayAnimation("idle", 1.0f);
+        m_body->PlayAnimation("idleWalk", 1.0f);
     }
 
     m_body->rotation.y = m_playerYaw;
@@ -579,7 +579,7 @@ void _Player::UpdatePhysicsBoard()
     
     if (m_state == STATE_GRINDING) m_body->PlayAnimation("idle", 1.0f); 
     else if (m_state == STATE_AIR) m_body->PlayAnimation("idle", 1.0f); 
-    else if (speed > 0.1f) m_body->PlayAnimation("walk", 1.0f); 
+    else if (speed > 0.1f) m_body->PlayAnimation("kick", 1.0f); 
     else m_body->PlayAnimation("idle", 1.0f);
 }
 
