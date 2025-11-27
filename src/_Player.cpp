@@ -53,6 +53,9 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
 
     m_skateboardOffset = Vector3(0,-1.05,0);
     m_skateboard->scale = Vector3(0.5,0.5,0.5);
+
+    m_isKickflipping = false;
+    m_kickflipProgress = 0.0f;
 }
 
 _Player::~_Player()
@@ -101,6 +104,10 @@ void _Player::HandleKeys(WPARAM wParam)
              m_state = STATE_AIR;
              m_body->GetRigidBody()->isGrounded = false;
              m_body->GetRigidBody()->velocity.y = m_jumpForce;
+             
+             // Restore rotation on jump
+             m_playerYaw = m_preGrindYaw;
+
              if(m_scoreMgr) m_scoreMgr->SetBalanceValue(0, false); // Hide meter
         }
     }
@@ -185,6 +192,15 @@ void _Player::HandleKeys(WPARAM wParam)
                     rb->velocity.y = m_jumpForce;
                     m_state = STATE_AIR;
                     rb->isGrounded = false;
+                }
+                // Kickflip Logic (Trigger in Air)
+                else if (m_state == STATE_AIR && !m_isKickflipping) 
+                {
+                    m_isKickflipping = true;
+                    m_kickflipProgress = 0.0f;
+                    
+                    // Give score for the trick
+                    if(m_scoreMgr) m_scoreMgr->AddTrickScore(100); 
                 }
             }
         }
@@ -499,11 +515,21 @@ void _Player::UpdatePhysicsBoard()
         // check if we just landed from air or grind
         if (m_state == STATE_AIR || m_state == STATE_GRINDING) {
             
+            // --- FIX: Restore Yaw if coming from grind ---
+            if(m_state == STATE_GRINDING) {
+                 m_playerYaw = m_preGrindYaw;
+            }
+
             // --- NEW AIR TIME SCORING ---
             if(m_state == STATE_AIR && m_scoreMgr) {
                 m_scoreMgr->RegisterAirTime(m_airTime);
             }
             m_airTime = 0.0f; // Reset
+
+            // --- KICKFLIP RESET ---
+            // Reset kickflip state on landing
+            m_isKickflipping = false;
+            m_kickflipProgress = 0.0f;
 
             if(m_scoreMgr) {
                 m_scoreMgr->LandCombo();
@@ -547,6 +573,11 @@ void _Player::UpdatePhysicsBoard()
 
             m_state = STATE_GRINDING;
             
+            // --- KICKFLIP RESET ---
+            // Reset kickflip state on grind
+            m_isKickflipping = false;
+            m_kickflipProgress = 0.0f;
+
             // Reset Balance logic
             m_grindBalance = 0.0f;
             m_grindBalanceVel = 0.002f; // Give a tiny initial push so it doesn't sit perfect
@@ -627,6 +658,11 @@ void _Player::UpdatePhysicsBoard()
         }
     }
     else {
+        // --- FIX: Restore Yaw if falling off rail ---
+        if (m_state == STATE_GRINDING) {
+            m_playerYaw = m_preGrindYaw;
+        }
+
         m_state = STATE_AIR;
         // --- TRACK AIR TIME ---
         m_airTime += _Time::deltaTime;
@@ -644,6 +680,19 @@ void _Player::UpdatePhysicsBoard()
         Vector3 rotatedOffset = CalculateBoardOffset(m_skateboardOffset, m_body->rotation);
         m_skateboard->pos = m_body->pos + rotatedOffset;
         m_skateboard->rotation = m_body->rotation;
+
+        // --- KICKFLIP ANIMATION LOGIC ---
+        if (m_isKickflipping) {
+            float spinSpeed = 720.0f; // degrees per second
+            m_kickflipProgress += spinSpeed * _Time::deltaTime;
+
+            if (m_kickflipProgress >= 360.0f) {
+                m_kickflipProgress = 0.0f;
+                m_isKickflipping = false;
+            }
+            // Apply spin to Roll (Z axis)
+            m_skateboard->rotation.z += m_kickflipProgress;
+        }
     }
 
     // Choose Animation

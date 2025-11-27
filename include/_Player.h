@@ -67,6 +67,10 @@ class _Player{
 
     bool isFrozen;
 
+    // --- Kickflip Vars ---
+    bool m_isKickflipping;
+    float m_kickflipProgress;
+
     // takes raw input deltas
     void HandleMouse(float deltaX, float deltaY);
 
