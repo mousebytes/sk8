@@ -13,6 +13,12 @@ struct ScorePopup {
     float floatSpeed;
 };
 
+enum GameState {
+    GAME_PLAYING,
+    GAME_WON,
+    GAME_LOST
+};
+
 class _ScoreManager {
 public:
     _ScoreManager();
@@ -20,14 +26,26 @@ public:
 
     void Init();
     void Update();
-    void Draw(_camera* cam); // Needs camera to make popups face user/billboard
+    void Draw(_camera* cam); 
 
     // --- Gameplay Methods ---
-    void AddScore(int points);            // Instant points (pickups)
-    void AddTrickScore(int points);       // Accumulates in "current combo"
-    void AddMultiplier(int amount = 1);   // Increases combo multiplier
-    void LandCombo();                     // Banks the combo score
-    void Bail();                          // Loses the combo score
+    void AddScore(int points);            
+    void AddTrickScore(int points);       
+    void AddMultiplier(int amount = 1);   
+    void RegisterAirTime(float time);
+    void LandCombo();                     
+    void Bail();                          
+    
+    // --- Level Objectives (New Mechanics) ---
+    // Setup for Level 1: "Reach X Score in Y Seconds"
+    void SetScoreObjective(int targetScore, float timeLimit);
+    
+    // Setup for Level 2: "Tag X Spots"
+    void SetTagObjective(int totalTags, float timeLimit);
+
+    void CollectTag(); // Call this when player touches a graffiti spot
+
+    GameState GetState() { return m_gameState; }
 
 private:
     // Scoring State
@@ -35,15 +53,33 @@ private:
     int m_currentComboScore;
     int m_multiplier;
 
+    // Objectives State
+    float m_timeLimit;
+    float m_currentTime;
+    
+    int m_targetScore;       // For Score Attack
+    int m_tagsCollected;     // For Tag Attack
+    int m_tagsTarget;        // Total tags needed
+    
+    bool m_isTimed;
+    bool m_isTagMode;
+    
+    GameState m_gameState;
+
     // Resources
-    _fonts* m_hudFont;     // For the main score
-    _fonts* m_popupFont;   // For floating text
+    _fonts* m_hudFont;     
+    _fonts* m_popupFont;   
 
     // Active Popups
     vector<ScorePopup*> m_popups;
 
     // Helper to spawn text
     void SpawnPopup(Vector3 pos, string text, int points = 0);
+    
+    // Helpers for HUD
+    void DrawTimer();
+    void DrawObjectives();
+    void DrawWinLoss();
 };
 
 #endif

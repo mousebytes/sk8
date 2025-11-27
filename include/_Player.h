@@ -35,6 +35,8 @@ class _Player{
     float m_jumpForce;      // Upward velocity applied when jumping
     PlayerState m_state;    // Current state (grounded, air, etc.)
 
+    float m_airTime;        // Tracks duration in STATE_AIR
+
     // --- Walking Physics Vars
     float m_walkSpeed;      // Max walking speed
     float m_walkAccel;      // Walking acceleration (snappy)

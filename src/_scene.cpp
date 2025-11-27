@@ -950,6 +950,8 @@ void _Scene::handleMouseMovement(HWND hWnd, LPARAM lParam)
 }
 
 void _Scene::loadCampaignLevel() {
+    // DEBUG
+    m_scoreManager->SetScoreObjective(5000, 60.0f); // 5000 points in 2 minutes
     // 1. Set Flag
     m_isCustomGame = false;
 

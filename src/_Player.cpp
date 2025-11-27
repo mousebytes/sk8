@@ -26,6 +26,7 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
     m_friction = 0.3f;      // Damping factor (higher = stops faster)
     m_jumpForce = 8.0f;     // Initial upward velocity
     m_state = STATE_AIR;    // Start in air, will be set to grounded by physics
+    m_airTime = 0.0f;
 
     // --- WALK PHYSICS VARS ---
     m_walkSpeed = 60.0f;         // Much slower than skating
@@ -69,12 +70,7 @@ void _Player::HandleMouse(float deltaX, float deltaY)
     if(m_cameraPitch > 89.0f) {
         m_cameraPitch = 89.0f;
     }
-    /*if(m_cameraPitch < 5.0f) { // Don't let camera go below the ground
-        m_cameraPitch = 5.0f;
-    }*/
 }
-
-// In sk8-temp/src/_Player.cpp
 
 void _Player::HandleKeys(WPARAM wParam)
 {
@@ -146,7 +142,6 @@ void _Player::HandleKeys(WPARAM wParam)
         }
         if (wParam == 'D') 
         {
-            // Same as 'A' but negative turnAmount...
             float turnAmount = m_turnSpeed * _Time::deltaTime;
             m_playerYaw -= turnAmount;
             
@@ -201,8 +196,6 @@ void _Player::ClearColliders()
     m_collidableAnimatedModels.clear();
 }
 
-// In sk8-temp/src/_Player.cpp
-
 // ---------------------------------------------------------
 // MAIN PHYSICS DISPATCHER
 // ---------------------------------------------------------
@@ -243,7 +236,6 @@ void _Player::UpdatePhysicsWalk()
     if(colX) {
         for(_StaticModelInstance* staticModel : m_collidableStaticModels) {
             for (_Collider* staticCollider : staticModel->colliders) {
-                // Walk mode interacts with walls
                 if (staticCollider->m_type == COLLIDER_WALL) {
                     _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
                     if(worldCol) {
@@ -280,7 +272,6 @@ void _Player::UpdatePhysicsWalk()
         delete colZ;
     }
 
-    // Stop velocity on hit
     if (hitX) rb->velocity.x = 0;
     if (hitZ) rb->velocity.z = 0;
 
@@ -293,21 +284,13 @@ void _Player::UpdatePhysicsWalk()
     if (playerCurrent) {
         for(_StaticModelInstance* staticModel : m_collidableStaticModels) {
             for (_Collider* staticCollider : staticModel->colliders) {
-                // Walking interacts with Floors and Stairs
                 if (staticCollider->m_type == COLLIDER_FLOOR || staticCollider->m_type == COLLIDER_STAIRS) {
                     
                     _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
                     if (worldCol) {
                         if (playerCurrent->CheckCollision(worldCol)) {
-                            // Standard Ground Check
                             rb->isGrounded = true; 
-                            
-                            // Prevent falling through floor
                             if(rb->velocity.y < 0) rb->velocity.y = 0;
-                            
-                            // Basic stair step-up logic (if needed, or just treat as slope/floor)
-                            // For this simple walk mode, treating stairs as floor usually works fine 
-                            // if the collider boxes are ramped or small enough.
                         }
                         delete worldCol;
                     }
@@ -320,32 +303,26 @@ void _Player::UpdatePhysicsWalk()
     // 3. MOVEMENT PHYSICS (Snappy, High Friction)
     // ------------------------------------------------------------------
     m_state = STATE_BAILED;
-
-    // Force Upright Rotation (No tilting while walking)
     m_body->rotation.x = 0;
     m_body->rotation.z = 0;
 
     if (rb->isGrounded) 
     {
-        // High Friction for instant stopping
         float frictionAmount = m_walkFriction * _Time::deltaTime;
         rb->velocity.x -= rb->velocity.x * frictionAmount;
         rb->velocity.z -= rb->velocity.z * frictionAmount;
         
-        // Hard stop if slow enough (prevents micro-sliding)
         if(abs(rb->velocity.x) < 0.1f) rb->velocity.x = 0;
         if(abs(rb->velocity.z) < 0.1f) rb->velocity.z = 0;
     }
     
     // 4. ANIMATION & UPDATE
-    // ------------------------------------------------------------------
     if(rb->velocity.x != 0 || rb->velocity.z != 0) {
         m_body->PlayAnimation("walk", 1.0f);
     } else {
         m_body->PlayAnimation("idle", 1.0f);
     }
 
-    // Apply rotation based on camera/input direction
     m_body->rotation.y = m_playerYaw;
     m_body->Update();
 }
@@ -431,7 +408,6 @@ void _Player::UpdatePhysicsBoard()
                         }
                         // C. Halfpipe (Vert Logic)
                         else if (staticCollider->m_type == COLLIDER_HALFPIPE) {
-                            // Local Space Transform
                             Vector3 relPos = m_body->pos - staticModel->pos;
                             float rad = staticModel->rotation.y * PI / 180.0f;
                             float c = cos(rad);
@@ -458,7 +434,6 @@ void _Player::UpdatePhysicsBoard()
                                     float circleY = radius - sqrt(pow(radius, 2) - pow(xCircle, 2));
                                     float pipeBottomY = staticModel->pos.y - halfHeight;
                                 
-                                    // Calculate Visual & Geometry Offsets
                                     float slopeRad = asin(xCircle / radius);
                                     float cosTheta = cos(slopeRad);
                                     if(cosTheta < 0.3f) cosTheta = 0.3f; 
@@ -466,7 +441,6 @@ void _Player::UpdatePhysicsBoard()
                                     float visualTweak = 2.5f; 
                                     float finalY = pipeBottomY + circleY + geometryOffset + visualTweak;
                                 
-                                    // Check Height threshold
                                     if (m_body->pos.y <= finalY + 2.0f && m_body->pos.y >= pipeBottomY - 1.0f)
                                     {
                                         isOnVert = true;
@@ -474,7 +448,6 @@ void _Player::UpdatePhysicsBoard()
                                         m_body->pos.y = finalY;
                                         if(rb->velocity.y < 0) rb->velocity.y = 0;
                                     
-                                        // Apply rotation
                                         float slopeDeg = slopeRad * (180.0f / PI);
                                         m_body->rotation.x = slopeDeg;
                                         m_body->rotation.z = 0;
@@ -484,7 +457,6 @@ void _Player::UpdatePhysicsBoard()
                         }
                         // D. Stairs
                         else if (staticCollider->m_type == COLLIDER_STAIRS) {
-                             // Simplified Stairs collision (treat as ramp for now)
                              rb->isGrounded = true;
                              if(rb->velocity.y < 0) rb->velocity.y = 0;
                         }
@@ -500,10 +472,18 @@ void _Player::UpdatePhysicsBoard()
     // ------------------------------------------------------------------
     if (rb->isGrounded) {
         
-        // check if we just landed
+        // check if we just landed from air or grind
         if (m_state == STATE_AIR || m_state == STATE_GRINDING) {
+            
+            // --- NEW AIR TIME SCORING ---
+            if(m_state == STATE_AIR && m_scoreMgr) {
+                m_scoreMgr->RegisterAirTime(m_airTime);
+            }
+            m_airTime = 0.0f; // Reset
+
             if(m_scoreMgr) m_scoreMgr->LandCombo();
         }
+
         m_state = isOnVert ? STATE_VERT : STATE_GROUNDED;
         if(rb->velocity.y < 0) rb->velocity.y = 0;
 
@@ -524,16 +504,21 @@ void _Player::UpdatePhysicsBoard()
         if(!isOnVert) m_body->rotation.x *= 0.95f;
     }
     else if (isOnRail) {
-        // Rail Snapping Logic
+        
+        // --- NEW AIR TIME SCORING (Landing on Rail) ---
         if (m_state != STATE_GRINDING) {
+            if (m_state == STATE_AIR && m_scoreMgr) {
+                m_scoreMgr->RegisterAirTime(m_airTime);
+            }
+            m_airTime = 0.0f; 
+            
             m_preGrindYaw = m_playerYaw;
-        if(m_scoreMgr) m_scoreMgr->AddMultiplier(1);
-
+            if(m_scoreMgr) m_scoreMgr->AddMultiplier(1);
         }
+        
         m_state = STATE_GRINDING;
 
-        // Add points while grinding (e.g., 100 points per second)
-        // FIX: Use Accumulator Logic to prevent integer truncation at high FPS
+        // Add points while grinding 
         if(m_scoreMgr) {
             m_scoreAccumulator += 100.0f * _Time::deltaTime;
             if (m_scoreAccumulator >= 1.0f) {
@@ -567,7 +552,6 @@ void _Player::UpdatePhysicsBoard()
         newPos.y = railTopY + 0.9f; 
         m_body->pos = newPos;
 
-        // Visual Rotation
         float moveAngle = atan2(-railDir.x, -railDir.z) * 180.0f / PI;
         m_playerYaw = moveAngle + 90.0f;
         
@@ -575,6 +559,8 @@ void _Player::UpdatePhysicsBoard()
     }
     else {
         m_state = STATE_AIR;
+        // --- TRACK AIR TIME ---
+        m_airTime += _Time::deltaTime;
     }
 
     // 4. ANIMATION & SYNC
@@ -601,16 +587,12 @@ void _Player::UpdatePhysicsBoard()
 
 void _Player::UpdateCamera(_camera* cam)
 {
-    // don't force the cam into pos if it's in free cam
     if(cam->isFreeCam) {isFrozen=true; return;}
     else {isFrozen=false;}
     
-    // Set the "look at" point (the target)
-    // This is a point slightly above the player's body
     cam->des = m_body->pos;
     cam->des.y += m_camHeight; 
 
-    // Calculate camera's eye position using spherical coordinates (orbit)
     float pitchRad = m_cameraPitch * PI / 180.0;
     float yawRad = m_cameraYaw * PI / 180.0;
 
@@ -618,7 +600,6 @@ void _Player::UpdateCamera(_camera* cam)
     cam->eye.z = cam->des.z - cos(yawRad) * cos(pitchRad) * m_camDistance;
     cam->eye.y = cam->des.y + sin(pitchRad) * m_camDistance;
     
-    // Set the up vector (always Y-up)
     cam->up = Vector3(0, 1, 0);
 
     cam->rotAngle.x = m_cameraYaw;
@@ -627,48 +608,41 @@ void _Player::UpdateCamera(_camera* cam)
 
 void _Player::Draw()
 {
-    // ... existing draw calls ...
     m_body->Draw();
     m_skateboard->Draw();
 
-    // === DEBUG DRAWING FOR HALF-PIPE ===
-    if (isDebug) // Only draw if debug mode is on (Press '1')
+    if (isDebug) 
     {
         glDisable(GL_TEXTURE_2D);
         glDisable(GL_LIGHTING);
-        glLineWidth(3.0f); // Make lines thick
+        glLineWidth(3.0f); 
 
         for (auto* staticModel : m_collidableStaticModels)
         {
-            // 1. Setup Vectors (Match Physics)
-    float radY = staticModel->rotation.y * PI / 180.0f;
-    Vector3 fwdVec(sin(radY), 0, cos(radY)); 
-    Vector3 relPos = m_body->pos - staticModel->pos;
-    float localZ = (relPos.x * fwdVec.x) + (relPos.z * fwdVec.z);
+            float radY = staticModel->rotation.y * PI / 180.0f;
+            Vector3 fwdVec(sin(radY), 0, cos(radY)); 
+            Vector3 relPos = m_body->pos - staticModel->pos;
+            float localZ = (relPos.x * fwdVec.x) + (relPos.z * fwdVec.z);
 
-    // 2. Calc T
-    float halfDepth = staticModel->scale.z;
-    float rampStart = halfDepth + 1.0f; 
-    float totalLen = (halfDepth * 2.0f) + 1.0f; 
-    float distFromFront = rampStart - localZ;
-    float t = distFromFront / totalLen;
+            float halfDepth = staticModel->scale.z;
+            float rampStart = halfDepth + 1.0f; 
+            float totalLen = (halfDepth * 2.0f) + 1.0f; 
+            float distFromFront = rampStart - localZ;
+            float t = distFromFront / totalLen;
 
-    // Skip drawing if out of bounds (matches physics continue)
-    if (t > 1.0f || t < -0.1f) continue; 
-    if (t < 0.0f) t = 0.0f;
+            if (t > 1.0f || t < -0.1f) continue; 
+            if (t < 0.0f) t = 0.0f;
 
-    // 3. Height (Pivot Fix)
-    float halfHeight = staticModel->scale.y;
-    float pipeBottomY = staticModel->pos.y - halfHeight; 
-    float curveHeight = (t * t) * (halfHeight * 2.0f); 
-    float targetWorldY = pipeBottomY + curveHeight; // Raw surface height
+            float halfHeight = staticModel->scale.y;
+            float pipeBottomY = staticModel->pos.y - halfHeight; 
+            float curveHeight = (t * t) * (halfHeight * 2.0f); 
+            float targetWorldY = pipeBottomY + curveHeight; 
 
-    // 4. Draw
-    glColor3f(1.0f, 1.0f, 0.0f); 
-    glBegin(GL_LINES);
-        glVertex3f(m_body->pos.x, m_body->pos.y, m_body->pos.z);
-        glVertex3f(m_body->pos.x, targetWorldY, m_body->pos.z);
-    glEnd();
+            glColor3f(1.0f, 1.0f, 0.0f); 
+            glBegin(GL_LINES);
+                glVertex3f(m_body->pos.x, m_body->pos.y, m_body->pos.z);
+                glVertex3f(m_body->pos.x, targetWorldY, m_body->pos.z);
+            glEnd();
         }
         
         glEnable(GL_LIGHTING);
@@ -677,34 +651,23 @@ void _Player::Draw()
 }
 
 Vector3 _Player::CalculateBoardOffset(Vector3 baseOffset, Vector3 rotation) {
-    // Convert to Radians
     float radX = rotation.x * PI / 180.0f;
     float radY = rotation.y * PI / 180.0f;
 
-    // 1. Apply Pitch (Rotation around X)
-    // Original offset is (0, -1, 0)
-    // y' = y*cos(x) - z*sin(x)
-    // z' = y*sin(x) + z*cos(x)
     float y1 = baseOffset.y * cos(radX) - baseOffset.z * sin(radX);
     float z1 = baseOffset.y * sin(radX) + baseOffset.z * cos(radX);
-    float x1 = baseOffset.x; // unchanged by X rot
+    float x1 = baseOffset.x; 
 
-    // 2. Apply Yaw (Rotation around Y)
-    // x'' = x'*cos(y) + z'*sin(y)
-    // z'' = -x'*sin(y) + z'*cos(y)
     float x2 = x1 * cos(radY) + z1 * sin(radY);
     float z2 = -x1 * sin(radY) + z1 * cos(radY);
-    float y2 = y1; // unchanged by Y rot
+    float y2 = y1; 
 
     return Vector3(x2, y2, z2);
 }
 
 void _Player::ResetBoard(){
     m_isOnBoard = true;
-    
-    // Calculate rotated offset
     Vector3 rotatedOffset = CalculateBoardOffset(m_skateboardOffset, m_body->rotation);
-    
     m_skateboard->pos = m_body->pos + rotatedOffset;
     m_skateboard->rotation = m_body->rotation;
 }
