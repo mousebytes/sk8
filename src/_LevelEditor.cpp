@@ -4,6 +4,7 @@
 static float GetHalfHeight(string type, float scaleY) {
     if (type == "wood_floor") return 0.1f * scaleY; // Thin floor
     if (type == "rail") return 0.5f * scaleY;       // Rails are lower
+    if (type == "tag") return 0.5f * scaleY;        // Tags are small
     return 1.0f * scaleY;                           // Standard blocks (Scaffold, Ramp, etc)
 }
 
@@ -81,6 +82,11 @@ void _LevelEditor::Init(int width, int height) {
     side->LoadModel("models/skatepark assets/side piece/side.obj", "models/skatepark assets/colormap.png");
     m_blueprints["side"] = side;
 
+    // --- ADD TAG BLUEPRINT ---
+    _StaticModel* tag = new _StaticModel();
+    tag->LoadModel("models/spraycan/spraycan.obj", "models/spraycan/map.png");
+    m_blueprints["tag"] = tag;
+
     // Create UI
     int startY = 60;
     int gapY = 60;
@@ -120,6 +126,12 @@ void _LevelEditor::Init(int width, int height) {
     btnSide->Init("images/play-btn.png", 80, 50, 60, startY + gapY*5, 0, 1, 1); 
     m_itemButtons.push_back(btnSide);
     m_itemNames.push_back("side");
+
+    // 7. TAG BUTTON
+    _Button* btnTag = new _Button();
+    btnTag->Init("images/play-btn.png", 80, 50, 60, startY + gapY*6, 0, 1, 1); 
+    m_itemButtons.push_back(btnTag);
+    m_itemNames.push_back("tag");
 
     SetGhost("scaffold");
     
@@ -355,6 +367,11 @@ bool _LevelEditor::HandleMouseClick(UINT uMsg, int mouseX, int mouseY) {
         else if(m_selectedType == "wood_floor") {
              newObj->AddCollider(new _CubeHitbox(Vector3(-1, -0.1f, -1), Vector3(1, 0.1f, 1), COLLIDER_FLOOR));
         }
+        else if(m_selectedType == "tag") {
+             // Tag has no physical collider for physics, but we give it a trigger volume 
+             // (or just a small hitbox so we can select it in editor)
+             newObj->AddCollider(new _SphereHitbox(Vector3(0,0,0), 1.0f, COLLIDER_GENERAL));
+        }
         else {
              // Scaffolds and Side pieces are Walls (Solid blocks)
              newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_WALL));
@@ -498,6 +515,9 @@ void _LevelEditor::LoadLevel(string filename) {
             }
             else if(type == "stairs") {
                  newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_STAIRS));
+            }
+            else if(type == "tag") {
+                 newObj->AddCollider(new _SphereHitbox(Vector3(0,0,0), 1.0f, COLLIDER_GENERAL));
             }
             else {
                  newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_WALL));

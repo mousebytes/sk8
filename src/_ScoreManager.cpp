@@ -62,11 +62,11 @@ void _ScoreManager::CollectTag() {
     if (m_gameState != GAME_PLAYING) return;
     
     m_tagsCollected++;
-    SpawnPopup(Vector3(0,0,0), "TAGGED! " + to_string(m_tagsCollected) + "/" + to_string(m_tagsTarget));
+    SpawnPopup(Vector3(0,0,0), "TAGGED! " + to_string(m_tagsCollected) + " of " + to_string(m_tagsTarget));
     
     if (m_tagsCollected >= m_tagsTarget) {
         m_gameState = GAME_WON;
-        SpawnPopup(Vector3(0,0,0), "LEVEL COMPLETE!");
+        SpawnPopup(Vector3(0,-1,0), "LEVEL COMPLETE!");
     }
 }
 
@@ -177,10 +177,10 @@ void _ScoreManager::DrawTimer() {
 
 void _ScoreManager::DrawObjectives() {
     m_hudFont->setSize(0.08f, 0.08f); // Slightly smaller
-    m_hudFont->setPosition(1.0f, -1.0f, -3.0f); // Top Right
+    m_hudFont->setPosition(0.8f, -1.0f, -3.0f); // Top Right
     
     if (m_isTagMode) {
-        string tagStr = "Tags: " + to_string(m_tagsCollected) + "/" + to_string(m_tagsTarget);
+        string tagStr = "Tags: " + to_string(m_tagsCollected) + " of " + to_string(m_tagsTarget);
         m_hudFont->drawText(tagStr);
     } 
     else if (m_targetScore > 0) {

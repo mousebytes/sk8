@@ -23,6 +23,7 @@
 #include"_Player.h"
 #include"_Bullets.h"
 #include"_LevelEditor.h"
+#include"_ScoreManager.h"
 
 class _Scene
 {
@@ -89,7 +90,13 @@ class _Scene
         vector<_StaticModelInstance*> m_customLevelObjects;
 
         bool m_isCustomGame;
-        void loadCampaignLevel();
+        
+        // --- LEVEL LOADING FUNCTIONS ---
+        void loadCampaignLevel(); // Defaults to Level 1
+        void loadCampaignLevel1(); // Tutorial / Score Attack
+        void loadCampaignLevel2(); // Tag the City
+        void loadCampaignLevel3(); // Downhill Rush (Race)
+        
         void loadCustomLevel();
 
         _StaticModelInstance* m_customFloor;
@@ -131,6 +138,9 @@ class _Scene
         _StaticModel* m_stairsBlueprint;
         _StaticModel* m_woodFloorBlueprint;
         _StaticModel* m_sideBlueprint;
+        
+        // --- NEW SPRAYCAN BLUEPRINT ---
+        _StaticModel* m_sprayCanBlueprint;
 
 
         enum SceneState {LandingPage, MainMenu, Help, Playing, Paused, LevelEditor, EditorPaused};
@@ -142,6 +152,16 @@ class _Scene
 
         void draw2DOverlay();
         void handleMouseMovement(HWND hWnd, LPARAM lParam);
+
+        // --- Tagging Mechanic ---
+        vector<_StaticModelInstance*> m_activeTags;
+        void SpawnTagsLevel2();
+        void CheckTagCollisions();
+
+        // --- Level Progression ---
+        int m_currentLevelIndex;        // 1, 2, or 3
+        float m_levelTransitionTimer;   // Delay before loading next level
+        bool m_levelCompleteTriggered;  // Flag to start the timer
 };
 
 #endif // _SCENE_H
