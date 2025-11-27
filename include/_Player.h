@@ -5,6 +5,7 @@
 #include"_common.h"
 #include"_AnimatedModelInstance.h"
 #include"_StaticModelInstance.h"
+#include"_ScoreManager.h"
 
 enum PlayerState {
     STATE_GROUNDED,
@@ -86,6 +87,13 @@ class _Player{
 
     // helper to rotate the offset
     Vector3 CalculateBoardOffset(Vector3 baseOffset, Vector3 rotation);
+
+    _ScoreManager* m_scoreMgr; 
+    float m_scoreAccumulator; // Used to track partial points during grinds
+
+    
+    // Update Set Function
+    void SetScoreManager(_ScoreManager* mgr) { m_scoreMgr = mgr; }
 };
 
 

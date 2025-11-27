@@ -54,6 +54,8 @@ _Scene::_Scene()
     m_sideBlueprint = new _StaticModel();
 
     m_backgroundImageButton = new _Button();
+
+    m_scoreManager = new _ScoreManager();
 }
 
 _Scene::~_Scene()
@@ -109,6 +111,8 @@ _Scene::~_Scene()
     delete m_sideBlueprint;
 
     delete m_backgroundImageButton;
+
+    delete m_scoreManager;
 }
 
 void _Scene::reSizeScene(int width, int height)
@@ -649,6 +653,9 @@ void _Scene::initGameplay()
     m_stairsBlueprint->LoadModel("models/skatepark assets/stairs/stairs.obj", "models/skatepark assets/colormap.png");
     m_woodFloorBlueprint->LoadModel("models/skatepark assets/floor/floor.obj", "models/skatepark assets/colormap.png");
     m_sideBlueprint->LoadModel("models/skatepark assets/side piece/side.obj", "models/skatepark assets/colormap.png");
+
+    m_scoreManager->Init();
+    m_player->SetScoreManager(m_scoreManager);
 }
 
 void _Scene::initLevelEditor() {
@@ -702,6 +709,7 @@ void _Scene::draw2DOverlay()
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
+
     glMatrixMode(GL_PROJECTION);
     // should be popped in the calling function
     glPushMatrix();
@@ -716,6 +724,7 @@ void _Scene::updateGameplay()
 {
     m_player->UpdatePhysics();
     m_bulletManager->Update();
+    m_scoreManager->Update(); // Updates popup positions/lifetimes
 
     // update cam set eye/des/up based on player
     m_player->UpdateCamera(m_camera);
@@ -727,6 +736,7 @@ void _Scene::drawGameplay()
     glEnable(GL_LIGHTING);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE); // reenable culling for 3D
+    glEnable(GL_BLEND);
 
     // update cam set eye/des/up based on player
     m_player->UpdateCamera(m_camera);
@@ -766,6 +776,9 @@ void _Scene::drawGameplay()
         m_halfpipeInstance->Draw();
     }
 
+    // Draw this LAST (after player, map, etc) so text appears on top
+    m_scoreManager->Draw(m_camera);
+
     // this used to be the gun area but could be used to
     // draw anything over the scene
 
@@ -777,12 +790,7 @@ void _Scene::drawGameplay()
     // looking down the  zaxis.
     glLoadIdentity();
 
-    // move the gun to its static position on the screen
-    // X = Left/Right, Y = Up/Down, Z = Forward/Backward
-    glTranslatef(0.3f, -0.2f, -0.7f);
-
-    // scale the gun to the right size
-    glScalef(0.7f, 0.7f, 0.7f);
+    
    
 }
 
@@ -888,7 +896,7 @@ void _Scene::drawPauseMenu()
         glVertex2f(0, height);
     glEnd();
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    glDisable(GL_BLEND);
+    
 
 
     if (m_showPauseHelp)

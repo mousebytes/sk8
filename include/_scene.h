@@ -138,6 +138,8 @@ class _Scene
 
         _LevelEditor* m_levelEditor;
 
+        _ScoreManager* m_scoreManager;
+
         void draw2DOverlay();
         void handleMouseMovement(HWND hWnd, LPARAM lParam);
 };

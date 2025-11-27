@@ -34,6 +34,7 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
     m_walkTurnSpeed = 800.0f;
 
     m_preGrindYaw = 0.0f;
+    m_scoreAccumulator = 0.0f; // Init accumulator
 
     // --- CAMERA VARS ---
     m_camDistance = 8.0f;   // 8 units away from player
@@ -223,6 +224,8 @@ void _Player::UpdatePhysicsWalk()
 {
     if (m_body->colliders.empty()) return; // safety check
     if (isFrozen) return;
+    
+    if (m_scoreMgr) m_scoreMgr->Bail();
 
     _Rigidbody *rb = m_body->GetRigidBody();
 
@@ -496,6 +499,11 @@ void _Player::UpdatePhysicsBoard()
     // 3. STATE MACHINE & MOMENTUM
     // ------------------------------------------------------------------
     if (rb->isGrounded) {
+        
+        // check if we just landed
+        if (m_state == STATE_AIR || m_state == STATE_GRINDING) {
+            if(m_scoreMgr) m_scoreMgr->LandCombo();
+        }
         m_state = isOnVert ? STATE_VERT : STATE_GROUNDED;
         if(rb->velocity.y < 0) rb->velocity.y = 0;
 
@@ -517,8 +525,23 @@ void _Player::UpdatePhysicsBoard()
     }
     else if (isOnRail) {
         // Rail Snapping Logic
-        if (m_state != STATE_GRINDING) m_preGrindYaw = m_playerYaw;
+        if (m_state != STATE_GRINDING) {
+            m_preGrindYaw = m_playerYaw;
+        if(m_scoreMgr) m_scoreMgr->AddMultiplier(1);
+
+        }
         m_state = STATE_GRINDING;
+
+        // Add points while grinding (e.g., 100 points per second)
+        // FIX: Use Accumulator Logic to prevent integer truncation at high FPS
+        if(m_scoreMgr) {
+            m_scoreAccumulator += 100.0f * _Time::deltaTime;
+            if (m_scoreAccumulator >= 1.0f) {
+                int pointsToAdd = (int)m_scoreAccumulator;
+                m_scoreMgr->AddTrickScore(pointsToAdd);
+                m_scoreAccumulator -= pointsToAdd;
+            }
+        }
         
         float railYawRad = m_currentRail->rotation.y * PI / 180.0f;
         Vector3 railDir(-sin(railYawRad), 0, -cos(railYawRad));

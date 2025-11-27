@@ -7,7 +7,7 @@
 	<gl/gl.h>
 	<_scene.h>
 
-1763601241 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
+1764202343 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
 	<_common.h>
 	<_light.h>
 	<_model.h>
@@ -135,10 +135,10 @@
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_parallax.cpp
 	"_parallax.h"
 
-1763606205 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
+1764204237 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
 	"_scene.h"
 
-1762949818 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_skybox.cpp
+1764203831 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_skybox.cpp
 	"_skybox.h"
 
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_sprite.cpp
@@ -235,12 +235,13 @@
 	"_SphereHitbox.h"
 	"_Rigidbody.h"
 
-1764200124 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
+1764204555 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
 	"_camera.h"
 	"_inputs.h"
 	"_common.h"
 	"_AnimatedModelInstance.h"
 	"_StaticModelInstance.h"
+	"_ScoreManager.h"
 
 1762858827 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_targetmanager.h
 	"_AnimatedModel.h"
@@ -259,7 +260,7 @@
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
 
-1763586742 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
+1764204606 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
 	"_Player.h"
 
 1762998150 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_spherehitbox.cpp
@@ -286,4 +287,19 @@
 
 1763605097 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_leveleditor.cpp
 	"_LevelEditor.h"
+
+1764205213 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scoremanager.h
+	"_common.h"
+	"_fonts.h"
+	"_camera.h"
+
+1764201863 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_fonts.h
+	"_common.h"
+	"_textureloader.h"
+
+1764203317 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_fonts.cpp
+	"_fonts.h"
+
+1764203161 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scoremanager.cpp
+	"_ScoreManager.h"
 
