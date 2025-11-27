@@ -43,6 +43,11 @@ class _Player{
     float m_walkFriction;   // High friction to stop instantly
     float m_walkTurnSpeed;  // Turning speed on foot
 
+    // --- Grind Physics ---
+    float m_grindBalance;       // Current balance (-1.0 to 1.0)
+    float m_grindBalanceVel;    // How fast balance is slipping
+    float m_grindInstability;   // How hard it is to balance (increases over time)
+
     float m_preGrindYaw;
 
     bool m_isOnBoard;

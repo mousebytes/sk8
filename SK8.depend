@@ -235,7 +235,7 @@
 	"_SphereHitbox.h"
 	"_Rigidbody.h"
 
-1764207109 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
+1764219081 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
 	"_camera.h"
 	"_inputs.h"
 	"_common.h"
@@ -260,7 +260,7 @@
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
 
-1764218474 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
+1764220594 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
 	"_Player.h"
 
 1762998150 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_spherehitbox.cpp
@@ -285,10 +285,10 @@
 	"_SphereHitbox.h"
 	"_AnimatedModelInstance.h"
 
-1763605097 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_leveleditor.cpp
+1764218647 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_leveleditor.cpp
 	"_LevelEditor.h"
 
-1764218113 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scoremanager.h
+1764218959 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scoremanager.h
 	"_common.h"
 	"_fonts.h"
 	"_camera.h"
@@ -300,6 +300,6 @@
 1764203317 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_fonts.cpp
 	"_fonts.h"
 
-1764218143 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scoremanager.cpp
+1764219053 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scoremanager.cpp
 	"_ScoreManager.h"
 

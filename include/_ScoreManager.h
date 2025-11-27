@@ -49,6 +49,8 @@ public:
 
     GameState GetState() { return m_gameState; }
 
+    void SetBalanceValue(float val, bool show); // val is -1.0 to 1.0
+
 private:
     // Scoring State
     int m_totalScore;
@@ -82,6 +84,10 @@ private:
     void DrawTimer();
     void DrawObjectives();
     void DrawWinLoss();
+
+    float m_balanceValue;
+    bool m_showBalanceMeter;
+    void DrawBalanceMeter();
 };
 
 #endif

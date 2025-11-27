@@ -16,6 +16,9 @@ _ScoreManager::_ScoreManager() {
     m_isTimed = false;
     m_isTagMode = false;
     m_gameState = GAME_PLAYING;
+
+    m_balanceValue = 0.0f;
+    m_showBalanceMeter = false;
 }
 
 _ScoreManager::~_ScoreManager() {
@@ -142,6 +145,9 @@ void _ScoreManager::Draw(_camera* cam) {
         m_popupFont->setSize(scale, scale); 
         m_popupFont->drawText(p->text);
     }
+
+    // draw the balance meter for grinding
+    DrawBalanceMeter();
     
     glEnable(GL_LIGHTING);
     glEnable(GL_DEPTH_TEST);
@@ -287,4 +293,48 @@ void _ScoreManager::SetFreePlay() {
     // Clear old popups (optional, stops "Time Up" from lingering)
     for (auto p : m_popups) delete p;
     m_popups.clear();
+}
+
+void _ScoreManager::SetBalanceValue(float val, bool show) {
+    m_balanceValue = val;
+    m_showBalanceMeter = show;
+}
+
+// Add this helper function
+void _ScoreManager::DrawBalanceMeter() {
+    if (!m_showBalanceMeter) return;
+
+    // Dimensions
+    float barWidth = 0.6f;
+    float barHeight = 0.05f;
+    float yPos = -0.5f; // Near bottom of screen
+
+    glDisable(GL_TEXTURE_2D); // Draw solid colors
+    
+    // 1. Draw Background (Black)
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glBegin(GL_QUADS);
+        glVertex3f(-barWidth/2 - 0.02f, yPos - barHeight, -3.0f);
+        glVertex3f( barWidth/2 + 0.02f, yPos - barHeight, -3.0f);
+        glVertex3f( barWidth/2 + 0.02f, yPos + barHeight, -3.0f);
+        glVertex3f(-barWidth/2 - 0.02f, yPos + barHeight, -3.0f);
+    glEnd();
+
+    // 2. Draw The Needle/Marker
+    // Map -1..1 to screen X coords
+    float needleX = m_balanceValue * (barWidth / 2.0f);
+    
+    // Color changes based on danger (Green -> Red)
+    float danger = abs(m_balanceValue);
+    glColor3f(danger, 1.0f - danger, 0.0f); 
+
+    glBegin(GL_QUADS);
+        glVertex3f(needleX - 0.02f, yPos - barHeight, -3.0f);
+        glVertex3f(needleX + 0.02f, yPos - barHeight, -3.0f);
+        glVertex3f(needleX + 0.02f, yPos + barHeight, -3.0f);
+        glVertex3f(needleX - 0.02f, yPos + barHeight, -3.0f);
+    glEnd();
+
+    glEnable(GL_TEXTURE_2D);
+    glColor3f(1,1,1);
 }
