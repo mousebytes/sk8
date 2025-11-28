@@ -311,9 +311,12 @@ void _Scene::handleGameplayInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             }
 
             m_inputs->wParam = wParam;
-            // for free cam
-            m_inputs->keyPressed(m_camera);
-            // for player movement & doing eye cam stuff
+            // Removed m_inputs->keyPressed(m_camera);
+            
+            // Pass input to camera
+            m_camera->HandleKeys(uMsg, wParam);
+
+            // Pass input to player
             m_player->HandleKeys(uMsg, wParam);
 
             if(wParam == '1'){
@@ -334,8 +337,10 @@ void _Scene::handleGameplayInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
             break;
         case WM_KEYUP:
-            // ADDED THIS LINE: Pass key release events to the player!
+            // Pass key release events to the player
             m_player->HandleKeys(uMsg, wParam);
+            // Pass key release to camera
+            m_camera->HandleKeys(uMsg, wParam);
             break;
 
         case WM_LBUTTONDOWN:
@@ -408,7 +413,10 @@ void _Scene::handleLevelEditorInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
     {
         case WM_KEYDOWN:
              m_inputs->wParam = wParam;
-             m_inputs->keyPressed(m_camera); 
+             
+             // Removed m_inputs->keyPressed(m_camera);
+             m_camera->HandleKeys(uMsg, wParam);
+
              m_levelEditor->HandleKeyInput(wParam); // J, K, R
              
              // Go to Editor Pause Menu instead of Main Menu
@@ -421,7 +429,6 @@ void _Scene::handleLevelEditorInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
                  m_camera->isFreeCam = !m_camera->isFreeCam;
                  
                  // If we just re-enabled the camera, snap cursor to center immediately.
-                 // This prevents the camera from "jumping" due to the mouse being far from center.
                  if (m_camera->isFreeCam) {
                      POINT pt = { width / 2, height / 2 };
                      ClientToScreen(hWnd, &pt);
@@ -431,6 +438,9 @@ void _Scene::handleLevelEditorInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
              if(wParam == VK_SPACE){
                 m_camera->camReset();
              }
+             break;
+        case WM_KEYUP:
+             m_camera->HandleKeys(uMsg, wParam);
              break;
         
         case WM_MOUSEMOVE:
@@ -691,6 +701,10 @@ void _Scene::draw2DOverlay()
 void _Scene::updateGameplay()
 {
     m_player->UpdatePhysics();
+    
+    // Update Camera (Free Cam logic runs here if active)
+    m_camera->Update();
+
     m_bulletManager->Update();
     m_scoreManager->Update(); // Updates popup positions/lifetimes
 
@@ -703,6 +717,7 @@ void _Scene::updateGameplay()
     }
 
     // update cam set eye/des/up based on player
+    // Note: If FreeCam is active, Player::UpdateCamera returns early
     m_player->UpdateCamera(m_camera);
     
     // --- LEVEL PROGRESSION LOGIC ---
@@ -805,6 +820,9 @@ void _Scene::drawLevelEditor()
 {
     if(m_sceneState == SceneState::LevelEditor) glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+
+    // Update Camera Movement in Editor Loop
+    m_camera->Update();
 
     m_camera->setUpCamera();
     m_skybox->drawSkyBox(); // Ensure depth mask handling if needed

@@ -403,7 +403,7 @@
 	<_common.h>
 	<_textureloader.h>
 
-1764292604 d:\fresno state stuff\csci 191\sk8\include\_camera.h
+1764294833 d:\fresno state stuff\csci 191\sk8\include\_camera.h
 	<_common.h>
 
 1764121804 d:\fresno state stuff\csci 191\sk8\include\_staticmodelinstance.h
@@ -535,7 +535,7 @@
 1763535789 source:d:\fresno state stuff\csci 191\sk8\src\_rigidbody.cpp
 	"_Rigidbody.h"
 
-1764294246 source:d:\fresno state stuff\csci 191\sk8\src\_scene.cpp
+1764294892 source:d:\fresno state stuff\csci 191\sk8\src\_scene.cpp
 	"_scene.h"
 
 1764291412 source:d:\fresno state stuff\csci 191\sk8\src\_scoremanager.cpp

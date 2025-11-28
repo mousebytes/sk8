@@ -4,6 +4,10 @@ _camera::_camera()
 {
     //ctor
     isFreeCam=false;
+    
+    // Init Flags
+    inputW = inputS = inputA = inputD = false;
+    inputZ = inputX = false;
 }
 
 _camera::~_camera()
@@ -45,6 +49,34 @@ void _camera::camReset()
     mouseSensitivity = 0.1f;
 }
 
+void _camera::HandleKeys(UINT uMsg, WPARAM wParam)
+{
+    bool isDown = (uMsg == WM_KEYDOWN);
+
+    switch(wParam)
+    {
+        case 'W': inputW = isDown; break;
+        case 'S': inputS = isDown; break;
+        case 'A': inputA = isDown; break;
+        case 'D': inputD = isDown; break;
+        case 'Z': inputZ = isDown; break;
+        case 'X': inputX = isDown; break;
+    }
+}
+
+void _camera::Update()
+{
+    if(!isFreeCam) return;
+
+    // Apply movement based on flags
+    if(inputW) camMoveFdBd(1);
+    if(inputS) camMoveFdBd(-1);
+    if(inputA) camMoveLtRt(-1); // Left
+    if(inputD) camMoveLtRt(1);  // Right
+    if(inputZ) camMoveUpDown(-1); // Down
+    if(inputX) camMoveUpDown(1);  // Up
+}
+
 void _camera::rotateXY()
 {
     // This logic is for orbiting the *destination* (des)
@@ -61,7 +93,10 @@ void _camera::rotateUP()
 
 void _camera::camMoveFdBd(int dir)
 {
+    // Note: No need to check isFreeCam here since Update() checks it, 
+    // but keeping it safe anyway.
     if(!isFreeCam) return;
+    
     float moveStep = step * _Time::deltaTime;
     
     // calc the "forward" direction vector on the XZ plane
@@ -105,10 +140,10 @@ void _camera::camMoveUpDown(int dir){
 
     float moveStep = step * _Time::deltaTime;
 
-    if(eye.y > 0.1f) {
-        eye.y += moveStep * dir;
-        des.y+=moveStep * dir;
-    }
+    // removed the floor clamp cuz y not
+
+    eye.y += moveStep * dir;
+    des.y += moveStep * dir;
 }
 
 void _camera::setUpCamera()

@@ -23,10 +23,19 @@ class _camera
 
         bool isFreeCam;
 
+        // --- INPUT FLAGS ---
+        bool inputW, inputA, inputS, inputD; // Plane Movement
+        bool inputZ, inputX;                 // Elevation (Down/Up)
+
         enum{FORWARD,BACKWARD,LEFT,RIGHT};
 
         void camInit(); //initilize the camera
         void camReset();// reset to original settings
+
+        // Process inputs (called every frame)
+        void Update(); 
+        // Handle key state (called from WinMsg)
+        void HandleKeys(UINT uMsg, WPARAM wParam);
 
         void rotateXY(); // rotate around in xy directions
         void rotateUP(); // rotate up and down
