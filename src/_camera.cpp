@@ -100,6 +100,17 @@ void _camera::camMoveLtRt(int dir)
     des.z += rightZ * moveAmount;
 }
 
+void _camera::camMoveUpDown(int dir){
+    if(!isFreeCam) return;
+
+    float moveStep = step * _Time::deltaTime;
+
+    if(eye.y > 0.1f) {
+        eye.y += moveStep * dir;
+        des.y+=moveStep * dir;
+    }
+}
+
 void _camera::setUpCamera()
 {
     gluLookAt(eye.x,eye.y,eye.z,

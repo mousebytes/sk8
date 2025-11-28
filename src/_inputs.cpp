@@ -142,6 +142,14 @@ void _inputs::keyPressed(_camera* cm)
      case 's':
             cm->camMoveFdBd(-1);
         break;
+     case 'Z':
+     case 'z':
+            cm->camMoveUpDown(-1);
+        break;
+     case 'X':
+     case 'x':
+            cm->camMoveUpDown(1);
+        break;
 
      case 73:    //i
             //cm->rotAngle.y +=1.0;

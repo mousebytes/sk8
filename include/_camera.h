@@ -33,6 +33,7 @@ class _camera
 
         void camMoveFdBd(int dir); // cam move back and forth
         void camMoveLtRt(int dir); // cam move left and right
+        void camMoveUpDown(int dir); // move up down (z-axis)
 
         void setUpCamera();  // set the cam using gluLookat
         
