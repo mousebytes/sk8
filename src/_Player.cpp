@@ -20,9 +20,9 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
     m_cameraYaw = 0.0f;     // Camera starts directly behind player
     
     // --- SKATE PHYSICS VARS ---
-    m_acceleration = 150.0f; // units per second^2
-    m_maxSpeed = 300.0f;     // units per second
-    m_turnSpeed = 1080.0f;   // degrees per second
+    m_acceleration = 15.0f; // units per second^2
+    m_maxSpeed = 30.0f;     // units per second
+    m_turnSpeed = 360.0f;   // degrees per second
     m_friction = 0.3f;      // Damping factor (higher = stops faster)
     m_jumpForce = 8.0f;     // Initial upward velocity
     m_state = STATE_AIR;    // Start in air, will be set to grounded by physics
@@ -30,9 +30,9 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
 
     // --- WALK PHYSICS VARS ---
     m_walkSpeed = 60.0f;         // Much slower than skating
-    m_walkAccel = 400.0f;        // High acceleration for instant start
+    m_walkAccel = 60.0f;        // High acceleration for instant start
     m_walkFriction = 8.0f;       // High friction for instant stop
-    m_walkTurnSpeed = 800.0f;
+    m_walkTurnSpeed = 360.0f;
 
     m_preGrindYaw = 0.0f;
     m_scoreAccumulator = 0.0f; // Init accumulator
@@ -56,6 +56,12 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
 
     m_isKickflipping = false;
     m_kickflipProgress = 0.0f;
+
+    // Init Inputs
+    inputW = false;
+    inputA = false;
+    inputS = false;
+    inputD = false;
 }
 
 _Player::~_Player()
@@ -80,142 +86,69 @@ void _Player::HandleMouse(float deltaX, float deltaY)
     }
 }
 
-void _Player::HandleKeys(WPARAM wParam)
+void _Player::HandleKeys(UINT uMsg, WPARAM wParam)
 {
-    _Rigidbody *rb = m_body->GetRigidBody();
-    
-    // Calculate forward vector
-    Vector3 fwd;
-    fwd.x = -sin(m_playerYaw * PI / 180.0);
-    fwd.z = -cos(m_playerYaw * PI / 180.0);
-    fwd.normalize();
+    // Determine if key is being pressed or released
+    bool isDown = (uMsg == WM_KEYDOWN);
 
-    // --- GRIND BALANCE CONTROLS ---
-    if (m_state == STATE_GRINDING) {
-        // OVERRIDE CONTROLS FOR GRINDING
-        float correctionForce = 1.0f * _Time::deltaTime;
-
-        // Counteract the drift
-        if (wParam == 'A') m_grindBalanceVel -= correctionForce;
-        if (wParam == 'D') m_grindBalanceVel += correctionForce;
-
-        // Jump out of grind
-        if (wParam == VK_SPACE) {
-             m_state = STATE_AIR;
-             m_body->GetRigidBody()->isGrounded = false;
-             m_body->GetRigidBody()->velocity.y = m_jumpForce;
-             
-             // Restore rotation on jump
-             m_playerYaw = m_preGrindYaw;
-
-             if(m_scoreMgr) m_scoreMgr->SetBalanceValue(0, false); // Hide meter
-        }
+    // 1. UPDATE STATE FLAGS (For Continuous Movement)
+    switch(wParam)
+    {
+        case 'W': inputW = isDown; break;
+        case 'S': inputS = isDown; break;
+        case 'A': inputA = isDown; break;
+        case 'D': inputD = isDown; break;
     }
-    else {
-        // --- 1. WALKING INPUT (Bailed Mode) ---
-        if (!m_isOnBoard)
+
+    // 2. HANDLE ONE-SHOT ACTIONS (Instant Triggers)
+    // We only want these to happen ONCE when the key is pressed down
+    if (uMsg == WM_KEYDOWN) 
+    {
+        _Rigidbody *rb = m_body->GetRigidBody();
+
+        // --- JUMP / GRIND JUMP ---
+        if (wParam == VK_SPACE) 
         {
-            if (wParam == 'W') 
-            {
-                rb->velocity.x += fwd.x * m_walkAccel * _Time::deltaTime;
-                rb->velocity.z += fwd.z * m_walkAccel * _Time::deltaTime;
+            if (m_state == STATE_GRINDING) {
+                 // Jump out of grind
+                 m_state = STATE_AIR;
+                 m_body->GetRigidBody()->isGrounded = false;
+                 m_body->GetRigidBody()->velocity.y = m_jumpForce;
+                 m_playerYaw = m_preGrindYaw; // Restore rotation
+                 if(m_scoreMgr) m_scoreMgr->SetBalanceValue(0, false);
             }
-            if (wParam == 'S') 
-            {
-                rb->velocity.x -= fwd.x * m_walkAccel * _Time::deltaTime;
-                rb->velocity.z -= fwd.z * m_walkAccel * _Time::deltaTime;
-            }
-            if (wParam == 'A') m_playerYaw += m_walkTurnSpeed * _Time::deltaTime;
-            if (wParam == 'D') m_playerYaw -= m_walkTurnSpeed * _Time::deltaTime;
-
-            // Cap velocity immediately for "snappy" walking feel
-            float currentSpeed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
-            if(currentSpeed > m_walkSpeed) {
-                rb->velocity.x = (rb->velocity.x / currentSpeed) * m_walkSpeed;
-                rb->velocity.z = (rb->velocity.z / currentSpeed) * m_walkSpeed;
-            }
-
-            // Jump Logic (Walking)
-            if (wParam == VK_SPACE && rb->isGrounded)
-            {
-                rb->velocity.y = 5.0f; // Lower jump height when off board
-            }
-        }
-        // --- 2. SKATING INPUT (On Board Mode) ---
-        else 
-        {
-            // Existing Skating Controls
-            if (wParam == 'W') 
-            {
-                rb->velocity.x += fwd.x * m_acceleration * _Time::deltaTime;
-                rb->velocity.z += fwd.z * m_acceleration * _Time::deltaTime;
-            }
-            if (wParam == 'S') 
-            {
-                rb->velocity.x -= fwd.x * m_acceleration * _Time::deltaTime;
-                rb->velocity.z -= fwd.z * m_acceleration * _Time::deltaTime;
-            }
-            if (wParam == 'A') 
-            {
-                // Existing Tank Control Turning Logic
-                float turnAmount = m_turnSpeed * _Time::deltaTime;
-                m_playerYaw += turnAmount;
-                
-                // Rotate velocity vector
-                float rad = turnAmount * PI / 180.0f;
-                float cosTheta = cos(rad);
-                float sinTheta = sin(rad);
-                float oldX = rb->velocity.x;
-                float oldZ = rb->velocity.z;
-                rb->velocity.x = oldX * cosTheta + oldZ * sinTheta;
-                rb->velocity.z = -oldX * sinTheta + oldZ * cosTheta;
-            }
-            if (wParam == 'D') 
-            {
-                float turnAmount = m_turnSpeed * _Time::deltaTime;
-                m_playerYaw -= turnAmount;
-                
-                float rad = -turnAmount * PI / 180.0f;
-                float cosTheta = cos(rad);
-                float sinTheta = sin(rad);
-                float oldX = rb->velocity.x;
-                float oldZ = rb->velocity.z;
-                rb->velocity.x = oldX * cosTheta + oldZ * sinTheta;
-                rb->velocity.z = -oldX * sinTheta + oldZ * cosTheta;
-            }
-
-            if (wParam == VK_SPACE) 
-            {
-                if (m_state == STATE_GROUNDED || m_state == STATE_GRINDING || m_state == STATE_BAILED)
+            else if (m_isOnBoard) {
+                // Skating Jump
+                if (m_state == STATE_GROUNDED || m_state == STATE_BAILED)
                 {
-                    if (m_state == STATE_GRINDING) m_playerYaw = m_preGrindYaw;
                     rb->velocity.y = m_jumpForce;
                     m_state = STATE_AIR;
                     rb->isGrounded = false;
                 }
-                // Kickflip Logic (Trigger in Air)
+                // Kickflip (In Air)
                 else if (m_state == STATE_AIR && !m_isKickflipping) 
                 {
                     m_isKickflipping = true;
                     m_kickflipProgress = 0.0f;
-                    
-                    // Give score for the trick
                     if(m_scoreMgr) m_scoreMgr->AddTrickScore(100); 
                 }
             }
+            else {
+                // Walking Jump
+                if (rb->isGrounded) rb->velocity.y = 5.0f;
+            }
         }
-    }
 
-    // --- SHARED INPUTS ---
-    // Toggle Board/Bailed State
-    if (wParam == 'F') {
-        if (m_isOnBoard) {
-            m_isOnBoard = false;
-            m_state = STATE_BAILED;
-            rb->velocity.y = 5.0f; 
-        } else {
-            ResetBoard();
-            m_state = STATE_AIR;
+        // --- TOGGLE BOARD ---
+        if (wParam == 'F') {
+            if (m_isOnBoard) {
+                m_isOnBoard = false;
+                m_state = STATE_BAILED;
+                rb->velocity.y = 5.0f; 
+            } else {
+                ResetBoard();
+                m_state = STATE_AIR;
+            }
         }
     }
 }
@@ -242,6 +175,76 @@ void _Player::ClearColliders()
 void _Player::UpdatePhysics()
 {
     if (isFrozen) return;
+
+    // =========================================================
+    // APPLY CONTINUOUS INPUT FORCES
+    // This logic runs every frame, properly scaled by DeltaTime
+    // =========================================================
+    
+    _Rigidbody *rb = m_body->GetRigidBody();
+
+    // Calculate forward vector
+    Vector3 fwd;
+    fwd.x = -sin(m_playerYaw * PI / 180.0);
+    fwd.z = -cos(m_playerYaw * PI / 180.0);
+    fwd.normalize();
+
+    if (m_state == STATE_GRINDING) {
+        // --- GRIND BALANCE CONTROLS ---
+        float correctionForce = 0.05f * _Time::deltaTime;
+        
+        // Use A/D to correct balance
+        if (inputA) m_grindBalanceVel -= correctionForce;
+        if (inputD) m_grindBalanceVel += correctionForce;
+    }
+    else if (!m_isOnBoard) {
+        // --- WALKING MOVEMENT ---
+        if (inputW) {
+            rb->velocity.x += fwd.x * m_walkAccel * _Time::deltaTime;
+            rb->velocity.z += fwd.z * m_walkAccel * _Time::deltaTime;
+        }
+        if (inputS) {
+            rb->velocity.x -= fwd.x * m_walkAccel * _Time::deltaTime;
+            rb->velocity.z -= fwd.z * m_walkAccel * _Time::deltaTime;
+        }
+        if (inputA) m_playerYaw += m_walkTurnSpeed * _Time::deltaTime;
+        if (inputD) m_playerYaw -= m_walkTurnSpeed * _Time::deltaTime;
+
+        // Cap walking speed
+        float currentSpeed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
+        if(currentSpeed > m_walkSpeed) {
+            rb->velocity.x = (rb->velocity.x / currentSpeed) * m_walkSpeed;
+            rb->velocity.z = (rb->velocity.z / currentSpeed) * m_walkSpeed;
+        }
+    }
+    else {
+        // --- SKATING MOVEMENT ---
+        if (inputW) {
+            rb->velocity.x += fwd.x * m_acceleration * _Time::deltaTime;
+            rb->velocity.z += fwd.z * m_acceleration * _Time::deltaTime;
+        }
+        if (inputS) {
+            rb->velocity.x -= fwd.x * m_acceleration * _Time::deltaTime;
+            rb->velocity.z -= fwd.z * m_acceleration * _Time::deltaTime;
+        }
+        
+        // Turning (Tank Controls)
+        if (inputA || inputD) {
+            float turnDir = (inputA ? 1.0f : -1.0f);
+            float turnAmount = m_turnSpeed * turnDir * _Time::deltaTime;
+            m_playerYaw += turnAmount;
+
+            // Rotate velocity vector
+            float rad = turnAmount * PI / 180.0f;
+            float cosTheta = cos(rad);
+            float sinTheta = sin(rad);
+            float oldX = rb->velocity.x;
+            float oldZ = rb->velocity.z;
+            rb->velocity.x = oldX * cosTheta + oldZ * sinTheta;
+            rb->velocity.z = -oldX * sinTheta + oldZ * cosTheta;
+        }
+    }
+    // =========================================================
 
     if (m_isOnBoard) {
         UpdatePhysicsBoard();

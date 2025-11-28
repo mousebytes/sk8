@@ -75,7 +75,11 @@ class _Player{
     void HandleMouse(float deltaX, float deltaY);
 
     // take key presses
-    void HandleKeys(WPARAM wParam);
+    bool inputW, inputA, inputS, inputD;
+    bool inputSpace;
+
+    // HandleKeys accepts the message type (to distinguish Up/Down)
+    void HandleKeys(UINT uMsg, WPARAM wParam);
 
     // public methods to register colliders
     void RegisterStaticCollider(_StaticModelInstance* model);

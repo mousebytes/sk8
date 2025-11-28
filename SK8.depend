@@ -453,7 +453,7 @@
 	<_common.h>
 	"_ObjModel.h"
 
-1764291411 d:\fresno state stuff\csci 191\sk8\include\_player.h
+1764293710 d:\fresno state stuff\csci 191\sk8\include\_player.h
 	"_camera.h"
 	"_inputs.h"
 	"_common.h"
@@ -529,13 +529,13 @@
 1763175933 source:d:\fresno state stuff\csci 191\sk8\src\_parallax.cpp
 	"_parallax.h"
 
-1764291412 source:d:\fresno state stuff\csci 191\sk8\src\_player.cpp
+1764294601 source:d:\fresno state stuff\csci 191\sk8\src\_player.cpp
 	"_Player.h"
 
 1763535789 source:d:\fresno state stuff\csci 191\sk8\src\_rigidbody.cpp
 	"_Rigidbody.h"
 
-1764291412 source:d:\fresno state stuff\csci 191\sk8\src\_scene.cpp
+1764294246 source:d:\fresno state stuff\csci 191\sk8\src\_scene.cpp
 	"_scene.h"
 
 1764291412 source:d:\fresno state stuff\csci 191\sk8\src\_scoremanager.cpp
@@ -568,4 +568,7 @@
 
 1764292617 source:d:\fresno state stuff\csci 191\sk8\src\_inputs.cpp
 	"_inputs.h"
+
+1764292742 source:d:\fresno state stuff\csci 191\sk8\src\_camera.cpp
+	"_camera.h"
 

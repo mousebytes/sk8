@@ -314,7 +314,7 @@ void _Scene::handleGameplayInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             // for free cam
             m_inputs->keyPressed(m_camera);
             // for player movement & doing eye cam stuff
-            m_player->HandleKeys(wParam);
+            m_player->HandleKeys(uMsg, wParam);
 
             if(wParam == '1'){
                 isDebug=!isDebug;
@@ -334,8 +334,9 @@ void _Scene::handleGameplayInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
             break;
         case WM_KEYUP:
-
-        break;
+            // ADDED THIS LINE: Pass key release events to the player!
+            m_player->HandleKeys(uMsg, wParam);
+            break;
 
         case WM_LBUTTONDOWN:
             mouseMapping(LOWORD(lParam), HIWORD(lParam));
