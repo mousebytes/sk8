@@ -64,10 +64,17 @@ void _ScoreManager::CollectTag() {
     m_tagsCollected++;
     SpawnPopup(Vector3(0,0,0), "TAGGED! " + to_string(m_tagsCollected) + " of " + to_string(m_tagsTarget));
     
-    if (m_tagsCollected >= m_tagsTarget) {
-        m_gameState = GAME_WON;
-        SpawnPopup(Vector3(0,-1,0), "LEVEL COMPLETE!");
+    if(m_isTagMode){
+        if (m_tagsCollected >= m_tagsTarget) {
+            m_gameState = GAME_WON;
+            SpawnPopup(Vector3(0,-1,0), "LEVEL COMPLETE!");
+        }
     }
+    else{
+        SpawnPopup(Vector3(0,0,0), "TAGGED! " + to_string(m_tagsCollected) + " of " + to_string(m_tagsTarget));
+    }
+
+    
 }
 
 void _ScoreManager::Update() {
