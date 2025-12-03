@@ -95,7 +95,7 @@
 	<_common.h>
 	<_textureloader.h>
 
-1762821709 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_camera.h
+1764313086 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_camera.h
 	<_common.h>
 
 1762563177 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_3dmodelloader.h
@@ -115,7 +115,7 @@
 	"_SphereHitbox.h"
 	"_CubeHitbox.h"
 
-1763018563 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_camera.cpp
+1764313086 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_camera.cpp
 	"_camera.h"
 
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_collisioncheck.cpp
@@ -124,7 +124,7 @@
 1762563177 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_collisioncheck.h
 	<_common.h>
 
-1763602145 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_inputs.cpp
+1764313086 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_inputs.cpp
 	"_inputs.h"
 
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_light.cpp
@@ -136,7 +136,7 @@
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_parallax.cpp
 	"_parallax.h"
 
-1764235076 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
+1764313086 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
 	"_scene.h"
 
 1764203831 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_skybox.cpp
@@ -236,7 +236,7 @@
 	"_SphereHitbox.h"
 	"_Rigidbody.h"
 
-1764227018 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
+1764313086 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
 	"_camera.h"
 	"_inputs.h"
 	"_common.h"
@@ -261,7 +261,7 @@
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
 
-1764228226 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
+1764313086 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
 	"_Player.h"
 
 1762998150 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_spherehitbox.cpp
@@ -301,7 +301,7 @@
 1764203317 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_fonts.cpp
 	"_fonts.h"
 
-1764219053 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scoremanager.cpp
+1764235414 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scoremanager.cpp
 	"_ScoreManager.h"
 
 1763175933 source:d:\fresno state stuff\csci 191\sk8\main.cpp

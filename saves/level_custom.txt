@@ -22,3 +22,17 @@ halfpipe -7 9 -27 0 3
 halfpipe -1 9 -27 0 3
 halfpipe 5 9 -27 0 3
 halfpipe 11 9 -27 0 3
+scaffold 27 1 -7 0 1
+scaffold 29 1 -7 0 1
+scaffold 31 1 -7 0 1
+scaffold 31 3 -7 0 1
+scaffold 31 5 -7 0 1
+wood_floor 31 6.1 -7 0 1
+halfpipe 27 3 -7 0 1
+halfpipe 29 3 -7 0 1
+halfpipe 25 1 -7 270 1
+stairs 20 1 -13 180 1
+stairs 22 1 -13 180 1
+stairs 24 1 -13 180 1
+stairs 18 1 -13 180 1
+stairs 41 7.1 -15 180 7.1
