@@ -334,6 +334,14 @@ void _Player::UpdatePhysicsWalk()
                         if (playerCurrent->CheckCollision(worldCol)) {
                             rb->isGrounded = true; 
                             if(rb->velocity.y < 0) rb->velocity.y = 0;
+
+                            // --- STAIR CLIMBING LOGIC ---
+                            // If walking and hitting stairs, snap to top
+                            if (staticCollider->m_type == COLLIDER_STAIRS) {
+                                float stairTop = staticModel->pos.y + staticModel->scale.y;
+                                // Snap player center to 1.0 unit above surface
+                                m_body->pos.y = stairTop + 1.0f;
+                            }
                         }
                         delete worldCol;
                     }
@@ -392,8 +400,9 @@ void _Player::UpdatePhysicsBoard()
     if(colX) {
         for(_StaticModelInstance* staticModel : m_collidableStaticModels) {
             for (_Collider* staticCollider : staticModel->colliders) {
-                // Ignore rails and stairs for stopping velocity when skating
-                if (staticCollider->m_type == COLLIDER_WALL) { 
+                // Ignore rails for stopping velocity when skating
+                // BUT treat STAIRS as a wall when skating!
+                if (staticCollider->m_type == COLLIDER_WALL || staticCollider->m_type == COLLIDER_STAIRS) { 
                     _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
                     if(worldCol && colX->CheckCollision(worldCol)) hitX = true;
                     delete worldCol;
@@ -410,7 +419,7 @@ void _Player::UpdatePhysicsBoard()
     if(colZ) {
         for(_StaticModelInstance* staticModel : m_collidableStaticModels) {
             for (_Collider* staticCollider : staticModel->colliders) {
-                if (staticCollider->m_type == COLLIDER_WALL) {
+                if (staticCollider->m_type == COLLIDER_WALL || staticCollider->m_type == COLLIDER_STAIRS) {
                     _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
                     if(worldCol && colZ->CheckCollision(worldCol)) hitZ = true;
                     delete worldCol;
