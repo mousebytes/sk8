@@ -199,14 +199,25 @@ void _Player::UpdatePhysics()
     }
     else if (!m_isOnBoard) {
         // --- WALKING MOVEMENT ---
-        if (inputW) {
+        if (inputW && rb->isGrounded) {
             rb->velocity.x += fwd.x * m_walkAccel * _Time::deltaTime;
             rb->velocity.z += fwd.z * m_walkAccel * _Time::deltaTime;
         }
-        if (inputS) {
+        if (inputS && rb->isGrounded) {
             rb->velocity.x -= fwd.x * m_walkAccel * _Time::deltaTime;
             rb->velocity.z -= fwd.z * m_walkAccel * _Time::deltaTime;
         }
+
+        // if off ground and walking then dampen the strength of forward accel
+        if(inputW && !rb->isGrounded){
+            rb->velocity.x += fwd.x * m_walkAccel * _Time::deltaTime * 0.3f;
+            rb->velocity.z += fwd.z * m_walkAccel * _Time::deltaTime * 0.3f;
+        }
+        if(inputS && !rb->isGrounded){
+            rb->velocity.x -= fwd.x * m_walkAccel * _Time::deltaTime * 0.3f;
+            rb->velocity.z -= fwd.z * m_walkAccel * _Time::deltaTime * 0.3f;
+        }
+
         if (inputA) m_playerYaw += m_walkTurnSpeed * _Time::deltaTime;
         if (inputD) m_playerYaw -= m_walkTurnSpeed * _Time::deltaTime;
 
@@ -219,16 +230,32 @@ void _Player::UpdatePhysics()
     }
     else {
         // --- SKATING MOVEMENT ---
-        if (inputW) {
-            rb->velocity.x += fwd.x * m_acceleration * _Time::deltaTime;
-            rb->velocity.z += fwd.z * m_acceleration * _Time::deltaTime;
+        
+        // --- Acceleration only allowed when grounded ---
+        if (rb->isGrounded) {
+            if (inputW) {
+                rb->velocity.x += fwd.x * m_acceleration * _Time::deltaTime;
+                rb->velocity.z += fwd.z * m_acceleration * _Time::deltaTime;
+            }
+            if (inputS) {
+                rb->velocity.x -= fwd.x * m_acceleration * _Time::deltaTime;
+                rb->velocity.z -= fwd.z * m_acceleration * _Time::deltaTime;
+            }
         }
-        if (inputS) {
-            rb->velocity.x -= fwd.x * m_acceleration * _Time::deltaTime;
-            rb->velocity.z -= fwd.z * m_acceleration * _Time::deltaTime;
+
+        // acceleration when not grounded is dampened
+        if (!rb->isGrounded) {
+            if (inputW) {
+                rb->velocity.x += fwd.x * m_acceleration * _Time::deltaTime * 0.3f;
+                rb->velocity.z += fwd.z * m_acceleration * _Time::deltaTime * 0.3f;
+            }
+            if (inputS) {
+                rb->velocity.x -= fwd.x * m_acceleration * _Time::deltaTime * 0.3f;
+                rb->velocity.z -= fwd.z * m_acceleration * _Time::deltaTime * 0.3f;
+            }
         }
         
-        // Turning (Tank Controls)
+        // Turning (Tank Controls) - Allowed in Air
         if (inputA || inputD) {
             float turnDir = (inputA ? 1.0f : -1.0f);
             float turnAmount = m_turnSpeed * turnDir * _Time::deltaTime;

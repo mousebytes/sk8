@@ -36,3 +36,16 @@ stairs 22 1 -13 180 1
 stairs 24 1 -13 180 1
 stairs 18 1 -13 180 1
 stairs 41 7.1 -15 180 7.1
+tag -2 0.25 9 0 0.5
+tag -4 0.25 5 0 0.5
+tag -0 0.25 6 0 0.5
+tag -9 0.25 8 0 0.5
+tag -1 0.25 12 0 0.5
+tag 4 0.25 4 0 0.5
+tag 3 0.25 9 0 0.5
+stairs 13 1 12 180 1
+scaffold 13 1 10 180 1
+scaffold 13 1 8 180 1
+scaffold 13 3 8 180 1
+stairs 13 3 10 180 1
+stairs 13 5 8 180 1

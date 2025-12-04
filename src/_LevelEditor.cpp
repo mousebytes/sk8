@@ -93,31 +93,31 @@ void _LevelEditor::Init(int width, int height) {
 
     // Rail
     _Button* btnRail = new _Button();
-    btnRail->Init("images/rail-btn.png", 80, 50, 60, startY, 0, 1, 1); 
+    btnRail->Init("images/editorItems/rail.png", 80, 50, 60, startY, 0, 1, 1); 
     m_itemButtons.push_back(btnRail);
     m_itemNames.push_back("rail");
 
     // 2. Halfpipe
     _Button* btnPipe = new _Button();
-    btnPipe->Init("images/play-btn.png", 80, 50, 60, startY + gapY, 0, 1, 1); 
+    btnPipe->Init("images/editorItems/ramp.png", 80, 50, 60, startY + gapY, 0, 1, 1); 
     m_itemButtons.push_back(btnPipe);
     m_itemNames.push_back("halfpipe");
 
     // 3. Scaffold
     _Button* btnScaff = new _Button();
-    btnScaff->Init("images/play-btn.png", 80, 50, 60, startY + gapY*2, 0, 1, 1); 
+    btnScaff->Init("images/editorItems/scaffolding.png", 80, 50, 60, startY + gapY*2, 0, 1, 1); 
     m_itemButtons.push_back(btnScaff);
     m_itemNames.push_back("scaffold");
 
     // 4. Stairs
     _Button* btnStairs = new _Button();
-    btnStairs->Init("images/play-btn.png", 80, 50, 60, startY + gapY*3, 0, 1, 1); 
+    btnStairs->Init("images/editorItems/stairs.png", 80, 50, 60, startY + gapY*3, 0, 1, 1); 
     m_itemButtons.push_back(btnStairs);
     m_itemNames.push_back("stairs");
 
     // 5. Wood Floor
     _Button* btnWFloor = new _Button();
-    btnWFloor->Init("images/play-btn.png", 80, 50, 60, startY + gapY*4, 0, 1, 1); 
+    btnWFloor->Init("images/editorItems/floor.png", 80, 50, 60, startY + gapY*4, 0, 1, 1); 
     m_itemButtons.push_back(btnWFloor);
     m_itemNames.push_back("wood_floor");
 

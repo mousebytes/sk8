@@ -261,7 +261,7 @@
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
 
-1764313086 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
+1764728051 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
 	"_Player.h"
 
 1762998150 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_spherehitbox.cpp
@@ -277,7 +277,7 @@
 1763508283 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_rigidbody.cpp
 	"_Rigidbody.h"
 
-1763592484 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_leveleditor.h
+1764726789 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_leveleditor.h
 	"_common.h"
 	"_StaticModelInstance.h"
 	"_Button.h"
@@ -286,7 +286,7 @@
 	"_SphereHitbox.h"
 	"_AnimatedModelInstance.h"
 
-1764234370 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_leveleditor.cpp
+1764731308 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_leveleditor.cpp
 	"_LevelEditor.h"
 
 1764218959 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scoremanager.h
@@ -301,7 +301,7 @@
 1764203317 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_fonts.cpp
 	"_fonts.h"
 
-1764235414 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scoremanager.cpp
+1764727020 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scoremanager.cpp
 	"_ScoreManager.h"
 
 1763175933 source:d:\fresno state stuff\csci 191\sk8\main.cpp
