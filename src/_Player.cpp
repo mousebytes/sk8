@@ -93,7 +93,7 @@ void _Player::HandleKeys(UINT uMsg, WPARAM wParam)
     // Determine if key is being pressed or released
     bool isDown = (uMsg == WM_KEYDOWN);
 
-    // 1. UPDATE STATE FLAGS (For Continuous Movement)
+    //UPDATE STATE FLAGS (For Continuous Movement)
     switch(wParam)
     {
         case 'W': inputW = isDown; break;
@@ -102,7 +102,7 @@ void _Player::HandleKeys(UINT uMsg, WPARAM wParam)
         case 'D': inputD = isDown; break;
     }
 
-    // 2. HANDLE ONE-SHOT ACTIONS (Instant Triggers)
+    //HANDLE ONE-SHOT ACTIONS (Instant Triggers)
     // We only want these to happen ONCE when the key is pressed down
     if (uMsg == WM_KEYDOWN) 
     {
@@ -294,7 +294,7 @@ void _Player::UpdatePhysicsWalk()
 
     _Rigidbody *rb = m_body->GetRigidBody();
 
-    // 1. WALL COLLISION
+    //WALL COLLISION
     // ------------------------------------------------------------------
     _Collider* playerMainCollider = m_body->colliders[0];
     bool hitX = false;
@@ -347,7 +347,7 @@ void _Player::UpdatePhysicsWalk()
     if (hitX) rb->velocity.x = 0;
     if (hitZ) rb->velocity.z = 0;
 
-    // 2. GROUND DETECTION (Simple Floor & Stairs)
+    //GROUND DETECTION (Simple Floor & Stairs)
     // ------------------------------------------------------------------
     rb->isGrounded = false;
     
@@ -380,7 +380,7 @@ void _Player::UpdatePhysicsWalk()
         delete playerCurrent;
     }
 
-    // 3. MOVEMENT PHYSICS (Snappy, High Friction)
+    //MOVEMENT PHYSICS (Snappy, High Friction)
     // ------------------------------------------------------------------
     m_state = STATE_BAILED;
     m_body->rotation.x = 0;
@@ -396,7 +396,7 @@ void _Player::UpdatePhysicsWalk()
         if(abs(rb->velocity.z) < 0.1f) rb->velocity.z = 0;
     }
     
-    // 4. ANIMATION & UPDATE
+    //ANIMATION & UPDATE
     if(rb->velocity.x != 0 || rb->velocity.z != 0) {
         m_body->PlayAnimation("walk", 1.0f);
     } else {
@@ -416,7 +416,7 @@ void _Player::UpdatePhysicsBoard()
     _Rigidbody *rb = m_body->GetRigidBody();
     m_currentRail = nullptr;
 
-    // 1. WALL COLLISION (Ignore Rails)
+    //WALL COLLISION (Ignore Rails)
     // ------------------------------------------------------------------
     bool hitX = false;
     bool hitZ = false;
@@ -461,7 +461,7 @@ void _Player::UpdatePhysicsBoard()
     if (hitX) rb->velocity.x = 0;
     if (hitZ) rb->velocity.z = 0;
 
-    // 2. COMPLEX GROUND DETECTION (Floor, Rails, Vert)
+    //COMPLEX GROUND DETECTION (Floor, Rails, Vert)
     // ------------------------------------------------------------------
     rb->isGrounded = false;
     bool isOnRail = false;
@@ -549,7 +549,7 @@ void _Player::UpdatePhysicsBoard()
         delete playerCurrent;
     }
 
-    // 3. STATE MACHINE & MOMENTUM
+    //STATE MACHINE & MOMENTUM
     // ------------------------------------------------------------------
     if (rb->isGrounded) {
         
@@ -640,22 +640,22 @@ void _Player::UpdatePhysicsBoard()
 
         // --- GRIND MINIGAME PHYSICS ---
         
-        // 1. Instability grows over time
+        //Instability grows over time
         m_grindInstability += 0.05f * _Time::deltaTime;
 
-        // 2. Apply "Inverted Pendulum" force
+        //Apply "Inverted Pendulum" force
         m_grindBalanceVel += m_grindBalance * 0.1f * m_grindInstability * _Time::deltaTime;
         
-        // 3. Apply Velocity
+        //Apply Velocity
         m_grindBalance += m_grindBalanceVel;
 
-        // 4. Update Visuals
+        //Update Visuals
         if(m_scoreMgr) m_scoreMgr->SetBalanceValue(m_grindBalance, true);
         
         // Rotate player model to show leaning
         m_body->rotation.x = m_grindBalance * -45.0f; 
 
-        // 5. FAIL CONDITION (Bail)
+        //FAIL CONDITION (Bail)
         if (abs(m_grindBalance) > 1.0f) {
             m_state = STATE_BAILED;
             m_isOnBoard = false; // Force player off board
@@ -729,7 +729,7 @@ void _Player::UpdatePhysicsBoard()
         if(m_scoreMgr) m_scoreMgr->SetBalanceValue(0, false);
     }
 
-    // 4. ANIMATION & SYNC
+    //ANIMATION & SYNC
     // ------------------------------------------------------------------
     m_body->rotation.y = m_playerYaw;
     m_body->Update();

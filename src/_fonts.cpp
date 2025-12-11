@@ -106,25 +106,25 @@ bool _fonts::getFontFrame(char c, int& fx, int& fy)
     // Convert generic text to spritesheet grid coordinates
     // Based on standard 15x8 grid logic found in your previous uploads
     
-    // 1. Handle Uppercase conversion
+    //Handle Uppercase conversion
     if (c >= 'a' && c <= 'z') c -= 32; 
 
-    // 2. Numbers '0' - '9'
+    //Numbers '0' - '9'
     if(c >= '0' && c <= '9') {
         fx = 1 + (c - '0');
         fy = 6;
     }
-    // 3. Letters 'A' - 'L'
+    //Letters 'A' - 'L'
     else if(c >= 'A' && c <= 'L') {
         fx = 3 + (c - 'A');
         fy = 5;
     }
-    // 4. Letters 'M' - 'Z'
+    //Letters 'M' - 'Z'
     else if(c >= 'M' && c <= 'Z') {
         fx = (c - 'M');
         fy = 4;
     }
-    // 5. Special Chars
+    //Special Chars
     else if(c == ' ') {
         fx = 0; fy = 7; // Blank space
     }

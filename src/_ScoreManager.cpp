@@ -78,7 +78,7 @@ void _ScoreManager::CollectTag() {
 }
 
 void _ScoreManager::Update() {
-    // 1. Update Timer
+    //Update Timer
     if (m_gameState == GAME_PLAYING && m_isTimed) {
         m_currentTime -= _Time::deltaTime;
         
@@ -89,7 +89,7 @@ void _ScoreManager::Update() {
         }
     }
 
-    // 2. Check Score Win Condition
+    //Check Score Win Condition
     if (m_gameState == GAME_PLAYING && !m_isTagMode && m_targetScore > 0) {
         if (m_totalScore >= m_targetScore) {
             m_gameState = GAME_WON;
@@ -97,7 +97,7 @@ void _ScoreManager::Update() {
         }
     }
 
-    // 3. Update Popups
+    //Update Popups
     for (auto it = m_popups.begin(); it != m_popups.end();) {
         ScorePopup* p = *it;
         p->pos.y += p->floatSpeed * _Time::deltaTime;
@@ -121,7 +121,7 @@ void _ScoreManager::Draw(_camera* cam) {
     
     // --- DRAW HUD ---
     
-    // 1. Score (Top Left)
+    //Score (Top Left)
     m_hudFont->setPosition(-2.1f, 1.0f, -3.0f); 
     m_hudFont->setSize(0.1f, 0.1f); 
     
@@ -132,16 +132,16 @@ void _ScoreManager::Draw(_camera* cam) {
     }
     m_hudFont->drawText(scoreStr);
 
-    // 2. Timer (Top Center)
+    //Timer (Top Center)
     if (m_isTimed) DrawTimer();
 
-    // 3. Objectives (Top Right)
+    //Objectives (Top Right)
     DrawObjectives();
 
-    // 4. Win/Loss Messages (Center Screen)
+    //Win/Loss Messages (Center Screen)
     if (m_gameState != GAME_PLAYING) DrawWinLoss();
     
-    // 5. Popups (Center Screen Overlay)
+    //Popups (Center Screen Overlay)
     for (auto p : m_popups) {
         float scale = 0.1f;
         float spacing = scale * 1.5f;
@@ -318,7 +318,7 @@ void _ScoreManager::DrawBalanceMeter() {
 
     glDisable(GL_TEXTURE_2D); // Draw solid colors
     
-    // 1. Draw Background (Black)
+    //Draw Background (Black)
     glColor3f(0.0f, 0.0f, 0.0f);
     glBegin(GL_QUADS);
         glVertex3f(-barWidth/2 - 0.02f, yPos - barHeight, -3.0f);
@@ -327,7 +327,7 @@ void _ScoreManager::DrawBalanceMeter() {
         glVertex3f(-barWidth/2 - 0.02f, yPos + barHeight, -3.0f);
     glEnd();
 
-    // 2. Draw The Needle/Marker
+    //Draw The Needle/Marker
     // Map -1..1 to screen X coords
     float needleX = m_balanceValue * (barWidth / 2.0f);
     

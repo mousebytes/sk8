@@ -97,45 +97,47 @@ void _LevelEditor::Init(int width, int height) {
     m_itemButtons.push_back(btnRail);
     m_itemNames.push_back("rail");
 
-    // 2. Halfpipe
+    //Halfpipe
     _Button* btnPipe = new _Button();
     btnPipe->Init("images/editorItems/ramp.png", 80, 50, 60, startY + gapY, 0, 1, 1); 
     m_itemButtons.push_back(btnPipe);
     m_itemNames.push_back("halfpipe");
 
-    // 3. Scaffold
+    //Scaffold
     _Button* btnScaff = new _Button();
     btnScaff->Init("images/editorItems/scaffolding.png", 80, 50, 60, startY + gapY*2, 0, 1, 1); 
     m_itemButtons.push_back(btnScaff);
     m_itemNames.push_back("scaffold");
 
-    // 4. Stairs
+    //Stairs
     _Button* btnStairs = new _Button();
     btnStairs->Init("images/editorItems/stairs.png", 80, 50, 60, startY + gapY*3, 0, 1, 1); 
     m_itemButtons.push_back(btnStairs);
     m_itemNames.push_back("stairs");
 
-    // 5. Wood Floor
+    //Wood Floor
     _Button* btnWFloor = new _Button();
     btnWFloor->Init("images/editorItems/floor.png", 80, 50, 60, startY + gapY*4, 0, 1, 1); 
     m_itemButtons.push_back(btnWFloor);
     m_itemNames.push_back("wood_floor");
 
-    // 6. Side Piece
+    /*
+    //Side Piece
     _Button* btnSide = new _Button();
     btnSide->Init("images/play-btn.png", 80, 50, 60, startY + gapY*5, 0, 1, 1); 
     m_itemButtons.push_back(btnSide);
     m_itemNames.push_back("side");
+    */
 
-    // 7. TAG BUTTON
+    //TAG BUTTON
     _Button* btnTag = new _Button();
-    btnTag->Init("images/play-btn.png", 80, 50, 60, startY + gapY*6, 0, 1, 1); 
+    btnTag->Init("images/editorItems/spraycan.png", 80, 50, 60, startY + gapY*5, 0, 1, 1); 
     m_itemButtons.push_back(btnTag);
     m_itemNames.push_back("tag");
 
     SetGhost("scaffold");
     
-    // 4. AUTO LOAD ON START
+    //AUTO LOAD ON START
     LoadLevel("saves/level_custom.txt");
 }
 
@@ -187,7 +189,7 @@ bool RayAABBIntersection(Vector3 rayOrigin, Vector3 rayDir, Vector3 boxMin, Vect
 }
 
 _StaticModelInstance* _LevelEditor::RaycastCheck(HWND hWnd, _camera* cam) {
-    // 1. Get Ray
+    //Get Ray
     POINT mousePos;
     GetCursorPos(&mousePos);
     ScreenToClient(hWnd, &mousePos);
@@ -212,7 +214,7 @@ _StaticModelInstance* _LevelEditor::RaycastCheck(HWND hWnd, _camera* cam) {
     Vector3 rayDir = rayEnd - rayStart;
     rayDir.normalize();
 
-    // 2. Check against all placed objects
+    //Check against all placed objects
     _StaticModelInstance* closestObj = nullptr;
     float closestDist = 99999.0f;
 
@@ -296,7 +298,7 @@ void _LevelEditor::HandleKeyInput(WPARAM wParam) {
 
 bool _LevelEditor::HandleMouseClick(UINT uMsg, int mouseX, int mouseY) {
     
-    // 1. UI INTERACTION
+    //UI INTERACTION
     if (uMsg == WM_LBUTTONDOWN) {
         for(size_t i=0; i<m_itemButtons.size(); i++) {
             if(m_itemButtons[i]->isClicked(mouseX, mouseY)) {
@@ -306,7 +308,7 @@ bool _LevelEditor::HandleMouseClick(UINT uMsg, int mouseX, int mouseY) {
         }
     }
 
-    // 2. RIGHT CLICK DELETE
+    //RIGHT CLICK DELETE
     if (uMsg == WM_RBUTTONDOWN) {
         if (m_hoveredObject) {
             for (auto it = m_placedObjects.begin(); it != m_placedObjects.end(); ++it) {
@@ -321,7 +323,7 @@ bool _LevelEditor::HandleMouseClick(UINT uMsg, int mouseX, int mouseY) {
         }
     }
 
-    // 3. PLACEMENT & STACKING (Left Click)
+    //PLACEMENT & STACKING (Left Click)
     if (uMsg == WM_LBUTTONDOWN && m_ghostObject) {
         
         _StaticModelInstance* newObj = new _StaticModelInstance(m_blueprints[m_selectedType]);
@@ -494,13 +496,13 @@ void _LevelEditor::LoadLevel(string filename) {
             
             _StaticModelInstance* newObj = new _StaticModelInstance(m_blueprints[type]);
             
-            // 1. Restore Properties
+            //Restore Properties
             newObj->pos = Vector3(x, y, z);
             newObj->rotation.y = rot;
             newObj->scale = Vector3(scale, scale, scale);
             newObj->modelName = type;
 
-            // 2. Restore Physics
+            //Restore Physics
             Vector3 cMin(-1, -1, -1);
             Vector3 cMax(1, 1, 1);
 

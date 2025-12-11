@@ -1144,25 +1144,25 @@ void _Scene::loadCampaignLevel1() {
     m_currentLevelIndex = 1;
     m_levelCompleteTriggered = false;
 
-    // 1. Clear old objects
+    //Clear old objects
     for(auto* obj : m_customLevelObjects) delete obj;
     m_customLevelObjects.clear();
     for(auto* tag : m_activeTags) delete tag;
     m_activeTags.clear();
 
-    // 2. Set Objective
+    //Set Objective
     m_scoreManager->SetScoreObjective(5000, 60.0f);
 
-    // 3. Register Standard Physics (Unified Floor)
+    //Register Standard Physics (Unified Floor)
     m_player->ClearColliders();
     m_player->RegisterStaticCollider(m_customFloor); // Use unified floor
 
-    // 4. LOAD FROM FILE
+    //LOAD FROM FILE
     LoadLevelFromFile("saves/level1.txt", m_customLevelObjects, m_activeTags, m_player,
                       m_railBlueprint, m_halfpipeBlueprint, m_scaffoldBlueprint,
                       m_stairsBlueprint, m_woodFloorBlueprint, m_sideBlueprint, m_sprayCanBlueprint);
 
-    // 5. Reset Player
+    //Reset Player
     m_player->m_body->pos = Vector3(0, 5, 0);
     m_player->ResetBoard();
 }
