@@ -4,6 +4,7 @@
 #include "_common.h"
 #include "_fonts.h"
 #include "_camera.h"
+#include "_sounds.h"
 
 // Simple struct for floating text data
 struct ScorePopup {
@@ -51,6 +52,7 @@ public:
     GameState GetState() { return m_gameState; }
 
     void SetBalanceValue(float val, bool show); // val is -1.0 to 1.0
+    void SetSoundManager(_sounds* mgr);
 
 private:
     // Scoring State
@@ -93,6 +95,8 @@ private:
     float m_balanceValue;
     bool m_showBalanceMeter;
     void DrawBalanceMeter();
+
+    _sounds* m_soundMgr;
 };
 
 #endif

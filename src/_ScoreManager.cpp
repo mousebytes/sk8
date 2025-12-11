@@ -23,6 +23,8 @@ _ScoreManager::_ScoreManager() {
 
     m_balanceValue = 0.0f;
     m_showBalanceMeter = false;
+
+    m_soundMgr = nullptr;
 }
 
 _ScoreManager::~_ScoreManager() {
@@ -305,7 +307,21 @@ void _ScoreManager::AddTrickScore(int points) {
 
 void _ScoreManager::AddMultiplier(int amount) {
     if(m_gameState != GAME_PLAYING) return;
+
     m_multiplier += amount;
+
+    // --- SOUND LOGIC ---
+    if (m_soundMgr) {
+        int soundIndex = m_multiplier - 1;
+
+        if(soundIndex >= 1){
+            // Cap at combo_6.wav if you don't have more files
+            if(soundIndex > 6) soundIndex = 6; 
+
+            string filename = "sounds/combo_" + to_string(soundIndex) + ".wav";
+            m_soundMgr->playSFX(filename.c_str(), 0.5f);
+        }
+    }
 }
 
 void _ScoreManager::RegisterAirTime(float time) {
@@ -329,6 +345,11 @@ void _ScoreManager::LandCombo() {
         return;
     }
     if (m_currentComboScore > 0) {
+
+        if(m_multiplier > 6 && m_soundMgr){
+            m_soundMgr->playSFX("sounds/final_combo.wav",0.7f);
+        }
+
         int final = m_currentComboScore * m_multiplier;
         m_totalScore += final;
         SpawnPopup(Vector3(0,0,0), "COMBO: " + to_string(final));
@@ -419,4 +440,9 @@ void _ScoreManager::DrawBalanceMeter() {
 
     glEnable(GL_TEXTURE_2D);
     glColor3f(1,1,1);
+}
+
+void _ScoreManager::SetSoundManager(_sounds* mgr)
+{
+    m_soundMgr = mgr;
 }

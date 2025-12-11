@@ -7,6 +7,7 @@
 #include"_StaticModelInstance.h"
 #include"_ScoreManager.h"
 #include"_ParticleSystem.h"
+#include"_sounds.h"
 
 enum PlayerState {
     STATE_GROUNDED,
@@ -114,6 +115,14 @@ class _Player{
     
     // Update Set Function
     void SetScoreManager(_ScoreManager* mgr) { m_scoreMgr = mgr; }
+
+    _sounds *m_soundMgr;
+    irrklang::ISound* m_skateLoop;
+    irrklang::ISound* m_grindLoop;
+
+    void SetSoundManager(_sounds* mgr);
+    void StopSkateSound();
+    void PauseSkateSound();
 };
 
 

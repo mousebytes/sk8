@@ -17,13 +17,31 @@ _sounds::~_sounds()
 void _sounds::playMusic(const char* fileName)
 {
     if(sndEng)
-    sndEng->play2D(fileName, true);
+    {
+      // Play 2D, loop = true, startPaused = false, track = true
+      ISound* music = sndEng->play2D(fileName, true, false, true);
+
+      if(music)
+      {
+          music->setVolume(0.25f); // Lowered background music volume
+          music->drop();
+      }
+    }
 }
 
-void _sounds::playSFX(const char* fileName)
+void _sounds::playSFX(const char* fileName, float volume)
 {
     if(sndEng)
-    sndEng->play2D(fileName, false);
+    {
+        // Play 2D, loop = false, startPaused = false, track = true
+        ISound* sfx = sndEng->play2D(fileName, false, false, true);
+
+        if (sfx)
+        {
+            sfx->setVolume(volume);
+            sfx->drop();
+        }
+    }
 }
 
 void _sounds::pauseSounds()

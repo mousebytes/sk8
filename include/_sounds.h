@@ -14,7 +14,7 @@ class _sounds
         virtual ~_sounds();
 
         void playMusic(const char* ); //Playing background music
-        void playSFX(const char *); // Playing sound effects
+        void playSFX(const char *, float volume = 1.0f); // Playing sound effects
         void pauseSounds(); // Pausing sound effects
         void initSounds();
 

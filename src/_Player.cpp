@@ -65,10 +65,18 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
     inputH = false;
 
     m_particleSystem = nullptr;
+
+    // sounds
+    m_soundMgr = NULL;
+    m_skateLoop = NULL;
+    m_grindLoop = NULL;
 }
 
 _Player::~_Player()
 {
+    if (m_skateLoop) {m_skateLoop->stop(); m_skateLoop->drop();}
+    if (m_grindLoop) {m_grindLoop->stop(); m_grindLoop->drop();}
+
     delete m_body;
     delete m_skateboard;
 }
@@ -135,6 +143,8 @@ void _Player::HandleKeys(UINT uMsg, WPARAM wParam)
                     m_isKickflipping = true;
                     m_kickflipProgress = 0.0f;
                     if(m_scoreMgr) m_scoreMgr->AddTrickScore(100); 
+
+                    if(m_soundMgr) m_soundMgr->playSFX("sounds/kickflip.wav", 0.7f);
                 }
             }
             else {
@@ -291,6 +301,8 @@ void _Player::UpdatePhysicsWalk()
 {
     if (m_body->colliders.empty()) return; // safety check
     if (isFrozen) return;
+    if (m_skateLoop && !m_skateLoop->getIsPaused()) m_skateLoop->setIsPaused(true);
+    if (m_grindLoop && !m_grindLoop->getIsPaused()) m_grindLoop->setIsPaused(true);
     
     if (m_scoreMgr) m_scoreMgr->Bail();
 
@@ -773,6 +785,30 @@ void _Player::UpdatePhysicsBoard()
     else if (m_state == STATE_AIR) m_body->PlayAnimation("idle", 1.0f); 
     else if (speed > 0.1f) m_body->PlayAnimation("kick", 1.0f); 
     else m_body->PlayAnimation("idle", 1.0f);
+
+    // Skate sound logic
+    if (m_skateLoop) {
+        bool shouldPlay = m_isOnBoard && (m_state == STATE_GROUNDED) && (speed > 1.0f) && !isFrozen;
+
+        if (shouldPlay) {
+            if (m_skateLoop->getIsPaused()) m_skateLoop->setIsPaused(false);
+            // Optional: Pitch shift based on speed for realism
+            m_skateLoop->setPlaybackSpeed(0.5f + (speed / m_maxSpeed));
+        } else {
+            if (!m_skateLoop->getIsPaused()) m_skateLoop->setIsPaused(true);
+        }
+    }
+
+    // Grind sound logic
+    if (m_grindLoop) {
+        bool shouldGrind = (m_state == STATE_GRINDING) && !isFrozen;
+
+        if (shouldGrind) {
+            if (m_grindLoop->getIsPaused()) m_grindLoop->setIsPaused(false);
+        } else {
+            if (!m_grindLoop->getIsPaused()) m_grindLoop->setIsPaused(true);
+        }
+    }
 }
 
 
@@ -868,4 +904,36 @@ void _Player::ResetBoard(){
     Vector3 rotatedOffset = CalculateBoardOffset(m_skateboardOffset, m_body->rotation);
     m_skateboard->pos = m_body->pos + rotatedOffset;
     m_skateboard->rotation = m_body->rotation;
+}
+
+void _Player::SetSoundManager(_sounds* mgr)
+{
+    m_soundMgr = mgr;
+    if(m_soundMgr && m_soundMgr->sndEng){
+        // Initialize loops as paused
+        m_skateLoop = m_soundMgr->sndEng->play2D("sounds/Rolling.wav", true, true, true);
+        if(m_skateLoop) m_skateLoop->setVolume(0.6f);
+
+        m_grindLoop = m_soundMgr->sndEng->play2D("sounds/Rails.wav", true, true, true);
+        if(m_grindLoop){
+            m_grindLoop->setVolume(1.0f);
+        }
+    }
+}
+
+void _Player::StopSkateSound()
+{
+    if (m_skateLoop) m_skateLoop->setIsPaused(true);
+    if (m_grindLoop) m_grindLoop->setIsPaused(true);
+
+    // Optional: Kill momentum so you don't start the next level moving
+    if (m_body && m_body->GetRigidBody()) {
+        m_body->GetRigidBody()->velocity = Vector3(0,0,0);
+    }
+}
+
+void _Player::PauseSkateSound()
+{
+    if (m_skateLoop) m_skateLoop->setIsPaused(true);
+    if (m_grindLoop) m_grindLoop->setIsPaused(true);
 }
