@@ -26,7 +26,7 @@ class _Player{
     _AnimatedModelInstance* m_body;
     _AnimatedModelInstance* m_skateboard;
 
-    
+
 
     // --- Player Physics ---
     float m_playerYaw;      // The direction the player's body is facing (Y-axis rotation)
@@ -109,20 +109,24 @@ class _Player{
     // helper to rotate the offset
     Vector3 CalculateBoardOffset(Vector3 baseOffset, Vector3 rotation);
 
-    _ScoreManager* m_scoreMgr; 
+    _ScoreManager* m_scoreMgr;
     float m_scoreAccumulator; // Used to track partial points during grinds
 
-    
+
     // Update Set Function
     void SetScoreManager(_ScoreManager* mgr) { m_scoreMgr = mgr; }
 
-    _sounds *m_soundMgr;
+    // Sound integration
+    _sounds* m_soundMgr;
     irrklang::ISound* m_skateLoop;
     irrklang::ISound* m_grindLoop;
 
     void SetSoundManager(_sounds* mgr);
+
     void StopSkateSound();
     void PauseSkateSound();
+
+
 };
 
 

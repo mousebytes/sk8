@@ -4,12 +4,12 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
 {
     m_body = new _AnimatedModelInstance(modelBlueprint);
     m_skateboard = new _AnimatedModelInstance(boardBlueprint);
-    
+
     // set up the player's physics collider
     // add sphere collider centered at (0,0,0) local space & r=1.0
     // note: model is norm -1 to +1
     m_body->AddCollider(new _SphereHitbox(Vector3(0,0,0), 1.0f));
-    
+
     // set initial position
     m_body->pos = Vector3(0, 1, 0); // start slightly above ground
     ResetBoard();
@@ -18,7 +18,7 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
     m_cameraPitch = 20.0f;  // Start camera slightly angled down
     m_playerYaw = 0.0f;     // Player starts facing forward
     m_cameraYaw = 0.0f;     // Camera starts directly behind player
-    
+
     // --- SKATE PHYSICS VARS ---
     m_acceleration = 10.0f; // units per second^2
     m_maxSpeed = 15.0f;     // units per second
@@ -66,7 +66,6 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
 
     m_particleSystem = nullptr;
 
-    // sounds
     m_soundMgr = NULL;
     m_skateLoop = NULL;
     m_grindLoop = NULL;
@@ -84,7 +83,7 @@ _Player::~_Player()
 void _Player::HandleMouse(float deltaX, float deltaY)
 {
     if(isFrozen) return;
-    
+
     // Mouse X controls the camera's YAW (horizontal orbit)
     m_cameraYaw -= deltaX * m_mouseSensitivity;
 
@@ -114,12 +113,12 @@ void _Player::HandleKeys(UINT uMsg, WPARAM wParam)
 
     //HANDLE ONE-SHOT ACTIONS (Instant Triggers)
     // We only want these to happen ONCE when the key is pressed down
-    if (uMsg == WM_KEYDOWN) 
+    if (uMsg == WM_KEYDOWN)
     {
         _Rigidbody *rb = m_body->GetRigidBody();
 
         // --- JUMP / GRIND JUMP ---
-        if (wParam == VK_SPACE) 
+        if (wParam == VK_SPACE)
         {
             if (m_state == STATE_GRINDING) {
                  // Jump out of grind
@@ -138,7 +137,7 @@ void _Player::HandleKeys(UINT uMsg, WPARAM wParam)
                     rb->isGrounded = false;
                 }
                 // Kickflip (In Air)
-                else if (m_state == STATE_AIR && !m_isKickflipping) 
+                else if (m_state == STATE_AIR && !m_isKickflipping)
                 {
                     m_isKickflipping = true;
                     m_kickflipProgress = 0.0f;
@@ -158,7 +157,7 @@ void _Player::HandleKeys(UINT uMsg, WPARAM wParam)
             if (m_isOnBoard) {
                 m_isOnBoard = false;
                 m_state = STATE_BAILED;
-                rb->velocity.y = 5.0f; 
+                rb->velocity.y = 5.0f;
             } else {
                 ResetBoard();
                 m_state = STATE_AIR;
@@ -194,7 +193,7 @@ void _Player::UpdatePhysics()
     // APPLY CONTINUOUS INPUT FORCES
     // This logic runs every frame, properly scaled by DeltaTime
     // =========================================================
-    
+
     _Rigidbody *rb = m_body->GetRigidBody();
 
     // Calculate forward vector
@@ -206,7 +205,7 @@ void _Player::UpdatePhysics()
     if (m_state == STATE_GRINDING) {
         // --- GRIND BALANCE CONTROLS ---
         float correctionForce = 0.05f * _Time::deltaTime;
-        
+
         // Use A/D to correct balance
         if (inputA) m_grindBalanceVel -= correctionForce;
         if (inputD) m_grindBalanceVel += correctionForce;
@@ -244,7 +243,7 @@ void _Player::UpdatePhysics()
     }
     else {
         // --- SKATING MOVEMENT ---
-        
+
         // --- Acceleration only allowed when grounded ---
         if (rb->isGrounded) {
             if (inputW) {
@@ -268,7 +267,7 @@ void _Player::UpdatePhysics()
                 rb->velocity.z -= fwd.z * m_acceleration * _Time::deltaTime * 0.3f;
             }
         }
-        
+
         // Turning (Tank Controls) - Allowed in Air
         if (inputA || inputD) {
             float turnDir = (inputA ? 1.0f : -1.0f);
@@ -303,8 +302,11 @@ void _Player::UpdatePhysicsWalk()
     if (isFrozen) return;
     if (m_skateLoop && !m_skateLoop->getIsPaused()) m_skateLoop->setIsPaused(true);
     if (m_grindLoop && !m_grindLoop->getIsPaused()) m_grindLoop->setIsPaused(true);
-    
-    if (m_scoreMgr) m_scoreMgr->Bail();
+
+    if (m_scoreMgr) {
+        m_scoreMgr->Bail();
+        m_scoreMgr->SetBalanceValue(0, false);
+    }
 
     _Rigidbody *rb = m_body->GetRigidBody();
 
@@ -318,7 +320,7 @@ void _Player::UpdatePhysicsWalk()
     Vector3 predictedPosX = m_body->pos;
     predictedPosX.x += rb->velocity.x * _Time::deltaTime;
     _Collider* colX = playerMainCollider->GetWorldSpaceCollider(predictedPosX, m_body->scale, m_body->rotation);
-    
+
     if(colX) {
         for(_StaticModelInstance* staticModel : m_collidableStaticModels) {
             for (_Collider* staticCollider : staticModel->colliders) {
@@ -340,7 +342,7 @@ void _Player::UpdatePhysicsWalk()
     Vector3 predictedPosZ = m_body->pos;
     predictedPosZ.z += rb->velocity.z * _Time::deltaTime;
     _Collider* colZ = playerMainCollider->GetWorldSpaceCollider(predictedPosZ, m_body->scale, m_body->rotation);
-    
+
     if(colZ) {
         for(_StaticModelInstance* staticModel : m_collidableStaticModels) {
             for (_Collider* staticCollider : staticModel->colliders) {
@@ -364,18 +366,18 @@ void _Player::UpdatePhysicsWalk()
     //GROUND DETECTION (Simple Floor & Stairs)
     // ------------------------------------------------------------------
     rb->isGrounded = false;
-    
+
     _Collider* playerCurrent = playerMainCollider->GetWorldSpaceCollider(m_body->pos, m_body->scale, m_body->rotation);
-    
+
     if (playerCurrent) {
         for(_StaticModelInstance* staticModel : m_collidableStaticModels) {
             for (_Collider* staticCollider : staticModel->colliders) {
                 if (staticCollider->m_type == COLLIDER_FLOOR || staticCollider->m_type == COLLIDER_STAIRS) {
-                    
+
                     _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
                     if (worldCol) {
                         if (playerCurrent->CheckCollision(worldCol)) {
-                            rb->isGrounded = true; 
+                            rb->isGrounded = true;
                             if(rb->velocity.y < 0) rb->velocity.y = 0;
 
                             // --- STAIR CLIMBING LOGIC ---
@@ -400,16 +402,16 @@ void _Player::UpdatePhysicsWalk()
     m_body->rotation.x = 0;
     m_body->rotation.z = 0;
 
-    if (rb->isGrounded) 
+    if (rb->isGrounded)
     {
         float frictionAmount = m_walkFriction * _Time::deltaTime;
         rb->velocity.x -= rb->velocity.x * frictionAmount;
         rb->velocity.z -= rb->velocity.z * frictionAmount;
-        
+
         if(abs(rb->velocity.x) < 0.1f) rb->velocity.x = 0;
         if(abs(rb->velocity.z) < 0.1f) rb->velocity.z = 0;
     }
-    
+
     //ANIMATION & UPDATE
     if(rb->velocity.x != 0 || rb->velocity.z != 0) {
         m_body->PlayAnimation("walk", 1.0f);
@@ -445,7 +447,7 @@ void _Player::UpdatePhysicsBoard()
             for (_Collider* staticCollider : staticModel->colliders) {
                 // Ignore rails for stopping velocity when skating
                 // BUT treat STAIRS as a wall when skating!
-                if (staticCollider->m_type == COLLIDER_WALL || staticCollider->m_type == COLLIDER_STAIRS) { 
+                if (staticCollider->m_type == COLLIDER_WALL || staticCollider->m_type == COLLIDER_STAIRS) {
                     _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
                     if(worldCol && colX->CheckCollision(worldCol)) hitX = true;
                     delete worldCol;
@@ -509,40 +511,40 @@ void _Player::UpdatePhysicsBoard()
                             float s = sin(rad);
                             float localX = relPos.x * c - relPos.z * s;
                             float localZ = relPos.x * s + relPos.z * c;
-                        
+
                             float halfWidth = staticModel->scale.x;
-                            float halfDepth = staticModel->scale.z; 
+                            float halfDepth = staticModel->scale.z;
                             float halfHeight = staticModel->scale.y;
-                        
+
                             // Check bounds
                             if (localX >= -halfWidth - 0.5f && localX <= halfWidth + 0.5f) {
                                 float radius = halfHeight * 2.0f;
                                 float wallZ = -halfDepth;
                                 float distFromWall = localZ - wallZ;
-                            
+
                                 if (distFromWall >= -0.5f) {
                                     if (distFromWall > radius) distFromWall = radius;
-                                
+
                                     float xCircle = radius - distFromWall;
                                     if (xCircle < 0) xCircle = 0;
-                                
+
                                     float circleY = radius - sqrt(pow(radius, 2) - pow(xCircle, 2));
                                     float pipeBottomY = staticModel->pos.y - halfHeight;
-                                
+
                                     float slopeRad = asin(xCircle / radius);
                                     float cosTheta = cos(slopeRad);
-                                    if(cosTheta < 0.3f) cosTheta = 0.3f; 
-                                    float geometryOffset = 1.0f / cosTheta; 
-                                    float visualTweak = 2.5f; 
+                                    if(cosTheta < 0.3f) cosTheta = 0.3f;
+                                    float geometryOffset = 1.0f / cosTheta;
+                                    float visualTweak = 2.5f;
                                     float finalY = pipeBottomY + circleY + geometryOffset + visualTweak;
-                                
+
                                     if (m_body->pos.y <= finalY + 2.0f && m_body->pos.y >= pipeBottomY - 1.0f)
                                     {
                                         isOnVert = true;
                                         rb->isGrounded = true;
                                         m_body->pos.y = finalY;
                                         if(rb->velocity.y < 0) rb->velocity.y = 0;
-                                    
+
                                         float slopeDeg = slopeRad * (180.0f / PI);
                                         m_body->rotation.x = slopeDeg;
                                         m_body->rotation.z = 0;
@@ -566,10 +568,10 @@ void _Player::UpdatePhysicsBoard()
     //STATE MACHINE & MOMENTUM
     // ------------------------------------------------------------------
     if (rb->isGrounded) {
-        
+
         // check if we just landed from air or grind
         if (m_state == STATE_AIR || m_state == STATE_GRINDING) {
-            
+
             // --- FIX: Restore Yaw if coming from grind ---
             if(m_state == STATE_GRINDING) {
                  m_playerYaw = m_preGrindYaw;
@@ -627,20 +629,20 @@ void _Player::UpdatePhysicsBoard()
         }
     }
     else if (isOnRail) {
-        
+
         // --- ENTER GRIND STATE ---
         if (m_state != STATE_GRINDING) {
             // Just landed on rail
             if (m_state == STATE_AIR && m_scoreMgr) {
                 m_scoreMgr->RegisterAirTime(m_airTime);
             }
-            m_airTime = 0.0f; 
-            
+            m_airTime = 0.0f;
+
             m_preGrindYaw = m_playerYaw;
             if(m_scoreMgr) m_scoreMgr->AddMultiplier(1);
 
             m_state = STATE_GRINDING;
-            
+
             // --- KICKFLIP RESET ---
             // Reset kickflip state on grind
             m_isKickflipping = false;
@@ -653,43 +655,43 @@ void _Player::UpdatePhysicsBoard()
 
             if (m_particleSystem) {
                 // Sparks fly from the board position
-                m_particleSystem->EmitSparks(m_skateboard->pos, 20); 
+                m_particleSystem->EmitSparks(m_skateboard->pos, 20);
             }
         }
 
         // --- GRIND MINIGAME PHYSICS ---
-        
+
         //Instability grows over time
         m_grindInstability += 0.05f * _Time::deltaTime;
 
         //Apply "Inverted Pendulum" force
         m_grindBalanceVel += m_grindBalance * 0.1f * m_grindInstability * _Time::deltaTime;
-        
+
         //Apply Velocity
         m_grindBalance += m_grindBalanceVel;
 
         //Update Visuals
         if(m_scoreMgr) m_scoreMgr->SetBalanceValue(m_grindBalance, true);
-        
+
         // Rotate player model to show leaning
-        m_body->rotation.x = m_grindBalance * -45.0f; 
+        m_body->rotation.x = m_grindBalance * -45.0f;
 
         //FAIL CONDITION (Bail)
         if (abs(m_grindBalance) > 1.0f) {
             m_state = STATE_BAILED;
             m_isOnBoard = false; // Force player off board
-            
+
             // Push player off the rail sideways
             rb->velocity.x += (m_grindBalance > 0 ? 5.0f : -5.0f);
             rb->velocity.y = 2.0f; // Little hop off
-            
+
             if(m_scoreMgr) {
                 m_scoreMgr->Bail(); // Reset Streak
                 m_scoreMgr->SetBalanceValue(0, false); // Hide UI
             }
         }
         else {
-            // Add points while grinding 
+            // Add points while grinding
             if(m_scoreMgr) {
                 m_scoreAccumulator += 100.0f * _Time::deltaTime;
                 if (m_scoreAccumulator >= 1.0f) {
@@ -701,9 +703,9 @@ void _Player::UpdatePhysicsBoard()
 
             if (m_particleSystem) {
                  // emit particles per frame for a continuous trail
-                 m_particleSystem->EmitSparks(m_skateboard->pos, 1); 
+                 m_particleSystem->EmitSparks(m_skateboard->pos, 1);
             }
-            
+
             float railYawRad = m_currentRail->rotation.y * PI / 180.0f;
             Vector3 railDir(-sin(railYawRad), 0, -cos(railYawRad));
             railDir.normalize();
@@ -718,19 +720,19 @@ void _Player::UpdatePhysicsBoard()
             float speed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
             rb->velocity.x = railDir.x * speed;
             rb->velocity.z = railDir.z * speed;
-            rb->velocity.y = 0; 
+            rb->velocity.y = 0;
 
             // Snap Position
             Vector3 diff = m_body->pos - m_currentRail->pos;
             float distAlongRail = (diff.x * railDir.x) + (diff.z * railDir.z);
             Vector3 newPos = m_currentRail->pos + (railDir * distAlongRail);
             float railTopY = m_currentRail->pos.y + (m_currentRail->scale.y * 1.0f);
-            newPos.y = railTopY + 0.9f; 
+            newPos.y = railTopY + 0.9f;
             m_body->pos = newPos;
 
             float moveAngle = atan2(-railDir.x, -railDir.z) * 180.0f / PI;
             m_playerYaw = moveAngle + 90.0f;
-            
+
             rb->isGrounded = true;
         }
     }
@@ -743,7 +745,7 @@ void _Player::UpdatePhysicsBoard()
         m_state = STATE_AIR;
         // --- TRACK AIR TIME ---
         m_airTime += _Time::deltaTime;
-        
+
         // Hide grind meter in air
         if(m_scoreMgr) m_scoreMgr->SetBalanceValue(0, false);
     }
@@ -755,7 +757,7 @@ void _Player::UpdatePhysicsBoard()
 
     if(m_isOnBoard){
         Vector3 rotatedOffset = CalculateBoardOffset(m_skateboardOffset, m_body->rotation);
-        
+
 
         if(!inputH){m_skateboard->rotation = m_body->rotation; m_skateboard->pos = m_body->pos + rotatedOffset;}
         else{m_skateboard->rotation = Vector3(0,m_body->rotation.y,m_body->rotation.z);m_skateboard->pos = Vector3(m_body->pos.x,m_body->pos.y-0.4f,m_body->pos.z);}
@@ -777,13 +779,39 @@ void _Player::UpdatePhysicsBoard()
     // Choose Animation
     float speed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
 
+        if(m_skateLoop)
+        {
+            bool shouldPlay = m_isOnBoard && (m_state == STATE_GROUNDED) && (speed > 1.0f) && !isFrozen;
+
+            if(shouldPlay)
+            {
+                if(m_skateLoop->getIsPaused()) {
+                    m_skateLoop->setIsPaused(false);
+                }
+                m_skateLoop->setPlaybackSpeed(0.5f + (speed / m_maxSpeed));
+            }
+            else {
+                if(!m_skateLoop->getIsPaused()){
+                    m_skateLoop->setIsPaused(true);
+                }
+            }
+        }
+        if(m_grindLoop){
+            bool shouldGrind = (m_state == STATE_GRINDING) && !isFrozen;
+
+            if (shouldGrind) {
+                if (m_grindLoop->getIsPaused()) m_grindLoop->setIsPaused(false);
+            } else {
+                if (!m_grindLoop->getIsPaused()) m_grindLoop->setIsPaused(true);
+            }
+        }
     if(inputH){
         m_body->PlayAnimation("idle",1.0f);
     }
-    
-    if (m_state == STATE_GRINDING) m_body->PlayAnimation("idle", 1.0f); 
-    else if (m_state == STATE_AIR) m_body->PlayAnimation("idle", 1.0f); 
-    else if (speed > 0.1f) m_body->PlayAnimation("kick", 1.0f); 
+
+    if (m_state == STATE_GRINDING) m_body->PlayAnimation("idle", 1.0f);
+    else if (m_state == STATE_AIR) m_body->PlayAnimation("idle", 1.0f);
+    else if (speed > 0.1f) m_body->PlayAnimation("kick", 1.0f);
     else m_body->PlayAnimation("idle", 1.0f);
 
     // Skate sound logic
@@ -813,13 +841,14 @@ void _Player::UpdatePhysicsBoard()
 
 
 
+
 void _Player::UpdateCamera(_camera* cam)
 {
     if(cam->isFreeCam) {isFrozen=true; return;}
     else {isFrozen=false;}
-    
+
     cam->des = m_body->pos;
-    cam->des.y += m_camHeight; 
+    cam->des.y += m_camHeight;
 
     float pitchRad = m_cameraPitch * PI / 180.0;
     float yawRad = m_cameraYaw * PI / 180.0;
@@ -827,7 +856,7 @@ void _Player::UpdateCamera(_camera* cam)
     cam->eye.x = cam->des.x - sin(yawRad) * cos(pitchRad) * m_camDistance;
     cam->eye.z = cam->des.z - cos(yawRad) * cos(pitchRad) * m_camDistance;
     cam->eye.y = cam->des.y + sin(pitchRad) * m_camDistance;
-    
+
     cam->up = Vector3(0, 1, 0);
 
     cam->rotAngle.x = m_cameraYaw;
@@ -845,40 +874,40 @@ void _Player::Draw()
     m_body->Draw();
     m_skateboard->Draw();
 
-    if (isDebug) 
+    if (isDebug)
     {
         glDisable(GL_TEXTURE_2D);
         glDisable(GL_LIGHTING);
-        glLineWidth(3.0f); 
+        glLineWidth(3.0f);
 
         for (auto* staticModel : m_collidableStaticModels)
         {
             float radY = staticModel->rotation.y * PI / 180.0f;
-            Vector3 fwdVec(sin(radY), 0, cos(radY)); 
+            Vector3 fwdVec(sin(radY), 0, cos(radY));
             Vector3 relPos = m_body->pos - staticModel->pos;
             float localZ = (relPos.x * fwdVec.x) + (relPos.z * fwdVec.z);
 
             float halfDepth = staticModel->scale.z;
-            float rampStart = halfDepth + 1.0f; 
-            float totalLen = (halfDepth * 2.0f) + 1.0f; 
+            float rampStart = halfDepth + 1.0f;
+            float totalLen = (halfDepth * 2.0f) + 1.0f;
             float distFromFront = rampStart - localZ;
             float t = distFromFront / totalLen;
 
-            if (t > 1.0f || t < -0.1f) continue; 
+            if (t > 1.0f || t < -0.1f) continue;
             if (t < 0.0f) t = 0.0f;
 
             float halfHeight = staticModel->scale.y;
-            float pipeBottomY = staticModel->pos.y - halfHeight; 
-            float curveHeight = (t * t) * (halfHeight * 2.0f); 
-            float targetWorldY = pipeBottomY + curveHeight; 
+            float pipeBottomY = staticModel->pos.y - halfHeight;
+            float curveHeight = (t * t) * (halfHeight * 2.0f);
+            float targetWorldY = pipeBottomY + curveHeight;
 
-            glColor3f(1.0f, 1.0f, 0.0f); 
+            glColor3f(1.0f, 1.0f, 0.0f);
             glBegin(GL_LINES);
                 glVertex3f(m_body->pos.x, m_body->pos.y, m_body->pos.z);
                 glVertex3f(m_body->pos.x, targetWorldY, m_body->pos.z);
             glEnd();
         }
-        
+
         glEnable(GL_LIGHTING);
         glEnable(GL_TEXTURE_2D);
     }
@@ -890,11 +919,11 @@ Vector3 _Player::CalculateBoardOffset(Vector3 baseOffset, Vector3 rotation) {
 
     float y1 = baseOffset.y * cos(radX) - baseOffset.z * sin(radX);
     float z1 = baseOffset.y * sin(radX) + baseOffset.z * cos(radX);
-    float x1 = baseOffset.x; 
+    float x1 = baseOffset.x;
 
     float x2 = x1 * cos(radY) + z1 * sin(radY);
     float z2 = -x1 * sin(radY) + z1 * cos(radY);
-    float y2 = y1; 
+    float y2 = y1;
 
     return Vector3(x2, y2, z2);
 }
@@ -916,15 +945,15 @@ void _Player::SetSoundManager(_sounds* mgr)
 
         m_grindLoop = m_soundMgr->sndEng->play2D("sounds/Rails.wav", true, true, true);
         if(m_grindLoop){
-            m_grindLoop->setVolume(1.0f);
+            m_grindLoop->setVolume(0.8f);
         }
     }
 }
-
 void _Player::StopSkateSound()
 {
     if (m_skateLoop) m_skateLoop->setIsPaused(true);
-    if (m_grindLoop) m_grindLoop->setIsPaused(true);
+
+    if(m_grindLoop) m_grindLoop->setIsPaused(true);
 
     // Optional: Kill momentum so you don't start the next level moving
     if (m_body && m_body->GetRigidBody()) {

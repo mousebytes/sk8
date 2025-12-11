@@ -23,10 +23,11 @@ void _sounds::playMusic(const char* fileName)
 
       if(music)
       {
-          music->setVolume(0.25f); // Lowered background music volume
+          music->setVolume(0.25f);
           music->drop();
       }
     }
+
 }
 
 void _sounds::playSFX(const char* fileName, float volume)

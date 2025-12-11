@@ -662,11 +662,8 @@ void _Scene::initGameplay()
 
     m_scoreManager->Init();
     m_player->SetScoreManager(m_scoreManager);
-
     m_player->SetSoundManager(m_sounds);
-
     m_scoreManager->SetSoundManager(m_sounds);
-
     m_sounds->playMusic("sounds/KickPush.mp3");
 }
 
