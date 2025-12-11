@@ -478,18 +478,18 @@ void _Player::UpdatePhysicsBoard()
                 if (worldCol) {
                     if (playerCurrent->CheckCollision(worldCol)) {
                         
-                        // A. Floor
+                        // Floor
                         if (staticCollider->m_type == COLLIDER_FLOOR) {
                             rb->isGrounded = true;
                         }
-                        // B. Rail
+                        // Rail
                         else if (staticCollider->m_type == COLLIDER_RAIL) {
                             if (rb->velocity.y <= 0.1) {
                                 isOnRail = true;
                                 m_currentRail = staticModel;
                             }
                         }
-                        // C. Halfpipe (Vert Logic)
+                        // Halfpipe (Vert Logic)
                         else if (staticCollider->m_type == COLLIDER_HALFPIPE) {
                             Vector3 relPos = m_body->pos - staticModel->pos;
                             float rad = staticModel->rotation.y * PI / 180.0f;
