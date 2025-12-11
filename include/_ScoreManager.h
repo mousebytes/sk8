@@ -26,7 +26,7 @@ public:
 
     void Init();
     void Update();
-    void Draw(_camera* cam); 
+    void Draw(_camera* cam, int screenWidth, int screenHeight); 
 
     // --- Gameplay Methods ---
     void AddScore(int points);            
@@ -34,9 +34,10 @@ public:
     void AddMultiplier(int amount = 1);   
     void RegisterAirTime(float time);
     void LandCombo();                     
-    void Bail();                          
+    void Bail();   
+    void SetFinalLevel(bool flag);                       
     
-    // --- Level Objectives (New Mechanics) ---
+    // --- Level Objectives ---
     // Setup for Level 1: "Reach X Score in Y Seconds"
     void SetScoreObjective(int targetScore, float timeLimit);
     
@@ -67,12 +68,16 @@ private:
     
     bool m_isTimed;
     bool m_isTagMode;
+    bool m_isFinalLevel;
     
     GameState m_gameState;
 
     // Resources
     _fonts* m_hudFont;     
     _fonts* m_popupFont;   
+
+    _textureLoader* m_winTex;
+    _textureLoader* m_loseTex;
 
     // Active Popups
     vector<ScorePopup*> m_popups;
@@ -83,7 +88,7 @@ private:
     // Helpers for HUD
     void DrawTimer();
     void DrawObjectives();
-    void DrawWinLoss();
+    void DrawWinLoss(int width, int height);
 
     float m_balanceValue;
     bool m_showBalanceMeter;

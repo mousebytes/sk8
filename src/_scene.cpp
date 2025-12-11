@@ -5,8 +5,8 @@ _Scene::_Scene()
     m_isCustomGame = false;
     //ctor
 
-    // REMOVED: terrainBlueprint = new _StaticModel();
-    // REMOVED: terrainInstance = new _StaticModelInstance(terrainBlueprint);
+    // terrainBlueprint = new _StaticModel();
+    // terrainInstance = new _StaticModelInstance(terrainBlueprint);
 
     // Instead, we initialize the floor blueprint here
     terrainBlueprint = new _StaticModel();
@@ -77,6 +77,9 @@ _Scene::_Scene()
     //Init Sound Manager
     m_sounds = new _sounds();
     m_sounds->initSounds();
+
+    m_creditsButton = new _Button();
+    m_creditsImage = new _Button();
 }
 
 _Scene::~_Scene()
@@ -138,12 +141,14 @@ _Scene::~_Scene()
 
     delete m_backgroundImageButton;
 
-    delete m_scoreManager;
 
     delete m_particleSystem;
 
     delete m_scoreManager;
     if(m_sounds) delete m_sounds;
+
+    delete m_creditsButton;
+    delete m_creditsImage;
 }
 
 void _Scene::reSizeScene(int width, int height)
@@ -206,6 +211,7 @@ void _Scene::initGL()
     initHelpScreen();
     initPauseMenu();
     initLevelEditor();
+    initCreditsScreen();
 
     m_sceneState = SceneState::LandingPage;
 }
@@ -241,6 +247,9 @@ void _Scene::drawScene()
         case SceneState::EditorPaused:
             drawLevelEditor();     // Draw editor in background
             drawEditorPauseMenu(); // Draw overlay on top
+            break;
+        case SceneState::Credits:
+            drawCreditsScreen();
             break;
         default:
             break;
@@ -291,6 +300,9 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case SceneState::EditorPaused:
             handleEditorPauseInput(hWnd, uMsg, wParam, lParam);
             break;
+        case SceneState::Credits:
+            handleCreditsScreenInput(uMsg, wParam, lParam);
+            break;
     }
     return 0;
 }
@@ -316,80 +328,60 @@ void _Scene::handleGameplayInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
             if (wParam == VK_ESCAPE)
             {
+                // --- CHECK IF WON/LOST FIRST ---
+                GameState state = m_scoreManager->GetState();
+                
+                // If Lost, OR if Won and it is the Final Level -> ESC goes to Main Menu
+                if (state == GAME_LOST || (state == GAME_WON && m_currentLevelIndex == 3)) {
+                     m_sceneState = SceneState::MainMenu;
+                     m_camera->isFreeCam = false;
+                     // Reset cursor
+                     POINT pt = { width / 2, height / 2 };
+                     ClientToScreen(hWnd, &pt);
+                     SetCursorPos(pt.x, pt.y);
+                     return; 
+                }
+
+                // Otherwise toggle pause
                 m_sceneState = SceneState::Paused;
-                m_player->isFrozen = true; // freeze player logic
-                break; // dont process other keys
+                m_player->isFrozen = true; 
+                break; 
             }
 
             m_inputs->wParam = wParam;
-            // Removed m_inputs->keyPressed(m_camera);
-
-            // Pass input to camera
             m_camera->HandleKeys(uMsg, wParam);
-
-            // Pass input to player
             m_player->HandleKeys(uMsg, wParam);
 
-            if(wParam == '1'){
-                isDebug=!isDebug;
-            }
+            if(wParam == '1'){ isDebug=!isDebug; }
             else if(wParam=='2'){
                 colliderDrawFace=!colliderDrawFace;
-                if(!isDebug){
-                    isDebug=true;
-                    colliderDrawFace=true;
-                }
+                if(!isDebug){ isDebug=true; colliderDrawFace=true; }
             }
-
-            // --- CHEAT KEYS TO SWITCH LEVELS ---
+            
             else if(wParam == '7') loadCampaignLevel1();
             else if(wParam == '8') loadCampaignLevel2();
             else if(wParam == '9') loadCampaignLevel3();
 
             break;
         case WM_KEYUP:
-            // Pass key release events to the player
             m_player->HandleKeys(uMsg, wParam);
-            // Pass key release to camera
             m_camera->HandleKeys(uMsg, wParam);
             break;
 
         case WM_LBUTTONDOWN:
             mouseMapping(LOWORD(lParam), HIWORD(lParam));
-            // need to create local scope with {}
             {
-                // fire from the camera's eye, in the camera's look direction
                 Vector3 startPos = m_camera->eye;
                 Vector3 direction = m_camera->des - m_camera->eye;
-                //m_bulletManager->Fire(startPos, direction);
              }
-
-            break;
-
-        case WM_RBUTTONDOWN:
-
-            break;
-
-         case WM_MBUTTONDOWN:
-
-
-            break;
-
-        case WM_LBUTTONUP:
-        case WM_RBUTTONUP:
-        case WM_MBUTTONUP:
             break;
 
         case WM_MOUSEMOVE:
             if(m_camera->isFreeCam) m_camera->handleMouse(hWnd, LOWORD(lParam), HIWORD(lParam), width / 2, height / 2);
             handleMouseMovement(hWnd, lParam);
             break;
-        case WM_MOUSEWHEEL:
 
-            break;
-
-        default:
-            break;
+        default: break;
     }
 }
 
@@ -500,7 +492,27 @@ void _Scene::handleMainMenuInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
         else if (m_exitButton->isClicked(mouseX,mouseY)){
             exit(0);
         }
+        else if (m_creditsButton->isClicked(mouseX, mouseY)) {
+            m_sceneState = SceneState::Credits;
+        }
 
+    }
+}
+
+void _Scene::handleCreditsScreenInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    if (uMsg == WM_LBUTTONDOWN)
+    {
+        int mouseX = LOWORD(lParam);
+        int mouseY = HIWORD(lParam);
+
+        if (m_backButton->isClicked(mouseX, mouseY)) {
+            m_sceneState = SceneState::MainMenu;
+        }
+    }
+    else if (uMsg == WM_KEYDOWN && wParam == VK_ESCAPE)
+    {
+        m_sceneState = SceneState::MainMenu;
     }
 }
 
@@ -681,12 +693,23 @@ void _Scene::initMainMenu()
     m_editorButton->Init("images/editor-btn.png", 200, 70, width/2, height/2 + 40, 0, 1, 1);
     m_helpButton->Init("images/help-btn.png", 200, 70, width/2, height/2 + 120, 0, 1, 1);
     m_exitButton->Init("images/exit-btn.png", 200, 70, width/2, height/2 + 200, 0, 1, 1);
+    m_creditsButton->Init("images/help-btn.png", 150, 50, width - 100, height - 100, 0, 1, 1);
+}
+
+void _Scene::initCreditsScreen()
+{
+    // Load the full screen credits image
+    m_creditsImage->Init("images/menus/Credits.png", width, height, width/2, height/2, 0, 1, 1);
+    
+    // We can reuse the back button from the Help screen logic
+    // But we need to ensure it's initialized. 
+    // (It is initialized in initHelpScreen, which is called in initGL, so we are safe)
 }
 
 void _Scene::initHelpScreen()
 {
+    m_helpInfo->Init("images/menus/MainHelp.png",width,height,width/2,height/2,0,1,1);
     m_backButton->Init("images/exit-btn.png", 150, 50, 100, height - 100, 0, 1, 1); // Placeholder
-    m_helpInfo->Init("images/help-page.png",width/2,height/2,width/2,height/2,0,1,1);
 }
 
 void _Scene::initPauseMenu()
@@ -754,26 +777,16 @@ void _Scene::updateGameplay()
         if (m_levelTransitionTimer <= 0.0f) {
              m_levelCompleteTriggered = false;
 
-             // Advance Level
-             m_currentLevelIndex++;
+             // Only auto-advance if we are NOT on the final level (Level 3)
+             if (m_currentLevelIndex < 3) {
+                 m_currentLevelIndex++;
 
-             if (m_currentLevelIndex == 2) {
-                 loadCampaignLevel2();
-             }
-             else if (m_currentLevelIndex == 3) {
-                 loadCampaignLevel3();
-             }
-             else {
-                 // All levels complete! Return to menu
-                 m_sceneState = SceneState::MainMenu;
-                 m_camera->isFreeCam = false;
-                 // Reset cursor if needed
-                 POINT pt = { width / 2, height / 2 };
-                 ClientToScreen(GetActiveWindow(), &pt);
-                 SetCursorPos(pt.x, pt.y);
-
-                 // Reset Campaign Progress
-                 m_currentLevelIndex = 1;
+                 if (m_currentLevelIndex == 2) {
+                     loadCampaignLevel2();
+                 }
+                 else if (m_currentLevelIndex == 3) {
+                     loadCampaignLevel3();
+                 }
              }
         }
     }
@@ -817,7 +830,7 @@ void _Scene::drawGameplay()
     }
 
     // Draw this LAST (after player, map, etc) so text appears on top
-    m_scoreManager->Draw(m_camera);
+    m_scoreManager->Draw(m_camera,width,height);
 
     // this used to be the gun area but could be used to
     // draw anything over the scene
@@ -863,7 +876,7 @@ void _Scene::drawEditorPauseMenu()
         glVertex2f(0, height);
     glEnd();
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    glDisable(GL_BLEND);
+    //glDisable(GL_BLEND);
 
     // Draw Buttons
     m_editorResumeButton->Draw();
@@ -895,28 +908,43 @@ void _Scene::drawLandingPage()
 
 void _Scene::drawMainMenu()
 {
-    draw2DOverlay(); // set up 2D drawing
+    draw2DOverlay(); //setup 2d drawing
 
-    // draw the buttons
     m_backgroundImageButton->Draw();
     m_playButton->Draw();
     m_playCustomButton->Draw();
     m_helpButton->Draw();
     m_exitButton->Draw();
     m_editorButton->Draw();
+    
+    // Add this:
+    m_creditsButton->Draw();
 
-    // restore 3D projection
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
 }
 
+void _Scene::drawCreditsScreen()
+{
+    draw2DOverlay();
+
+    m_creditsImage->Draw();
+    m_backButton->Draw();
+
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+}
+
+
 void _Scene::drawHelpScreen()
 {
     draw2DOverlay(); // set up 2D drawing
 
-    m_backButton->Draw();
     m_helpInfo->Draw();
+    m_backButton->Draw();
+    
 
 
     // restore 3D projection
@@ -1153,6 +1181,8 @@ void _Scene::loadCampaignLevel1() {
     m_currentLevelIndex = 1;
     m_levelCompleteTriggered = false;
 
+    m_scoreManager->SetFinalLevel(false);
+
     // 1. Clear old objects
     for(auto* obj : m_customLevelObjects) delete obj;
     m_customLevelObjects.clear();
@@ -1181,6 +1211,8 @@ void _Scene::loadCampaignLevel2() {
     m_currentLevelIndex = 2;
     m_levelCompleteTriggered = false;
 
+    m_scoreManager->SetFinalLevel(false);
+
     for(auto* obj : m_customLevelObjects) delete obj;
     m_customLevelObjects.clear();
     for(auto* tag : m_activeTags) delete tag;
@@ -1205,6 +1237,8 @@ void _Scene::loadCampaignLevel3() {
     m_isCustomGame = false;
     m_currentLevelIndex = 3;
     m_levelCompleteTriggered = false;
+
+    m_scoreManager->SetFinalLevel(true);
 
     for(auto* obj : m_customLevelObjects) delete obj;
     m_customLevelObjects.clear();

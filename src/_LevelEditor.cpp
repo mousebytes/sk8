@@ -426,7 +426,7 @@ void _LevelEditor::Draw() {
         glColor4f(1, 1, 1, 0.5f); 
         m_ghostObject->Draw();
         glColor4f(1, 1, 1, 1);
-        glDisable(GL_BLEND);
+        //glDisable(GL_BLEND);
     }
 
     // Draw Grid
