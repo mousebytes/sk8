@@ -1254,7 +1254,7 @@ void _Scene::loadCampaignLevel3() {
 
     // DYNAMIC OBJECTIVE: Count the tags we just loaded!
     int totalTags = m_activeTags.size();
-    m_scoreManager->SetTagObjective(totalTags, 45.0f);
+    m_scoreManager->SetTagObjective(totalTags, 90.0f);
 
     m_player->m_body->pos = Vector3(0, 5, 0);
     m_player->ResetBoard();
