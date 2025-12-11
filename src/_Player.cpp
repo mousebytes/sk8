@@ -141,7 +141,7 @@ void _Player::HandleKeys(UINT uMsg, WPARAM wParam)
                 {
                     m_isKickflipping = true;
                     m_kickflipProgress = 0.0f;
-                    if(m_scoreMgr) m_scoreMgr->AddTrickScore(100); 
+                    if(m_scoreMgr) m_scoreMgr->AddTrickScore(100);
 
                     if(m_soundMgr) m_soundMgr->playSFX("sounds/kickflip.wav", 0.7f);
                 }
@@ -491,7 +491,7 @@ void _Player::UpdatePhysicsBoard()
                 _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
                 if (worldCol) {
                     if (playerCurrent->CheckCollision(worldCol)) {
-                        
+
                         // Floor
                         if (staticCollider->m_type == COLLIDER_FLOOR) {
                             rb->isGrounded = true;
@@ -779,9 +779,14 @@ void _Player::UpdatePhysicsBoard()
     // Choose Animation
     float speed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
 
+    bool isGameActive = true;
+    if (m_scoreMgr && m_scoreMgr->GetState() != GAME_PLAYING) {
+        isGameActive = false;
+    }
+
         if(m_skateLoop)
         {
-            bool shouldPlay = m_isOnBoard && (m_state == STATE_GROUNDED) && (speed > 1.0f) && !isFrozen;
+            bool shouldPlay = m_isOnBoard && (m_state == STATE_GROUNDED) && (speed > 1.0f) && !isFrozen && isGameActive;
 
             if(shouldPlay)
             {
@@ -797,7 +802,7 @@ void _Player::UpdatePhysicsBoard()
             }
         }
         if(m_grindLoop){
-            bool shouldGrind = (m_state == STATE_GRINDING) && !isFrozen;
+            bool shouldGrind = (m_state == STATE_GRINDING) && !isFrozen  && isGameActive;
 
             if (shouldGrind) {
                 if (m_grindLoop->getIsPaused()) m_grindLoop->setIsPaused(false);
@@ -805,40 +810,18 @@ void _Player::UpdatePhysicsBoard()
                 if (!m_grindLoop->getIsPaused()) m_grindLoop->setIsPaused(true);
             }
         }
+
     if(inputH){
         m_body->PlayAnimation("idle",1.0f);
     }
 
-    if (m_state == STATE_GRINDING) m_body->PlayAnimation("idle", 1.0f);
+    else if (m_state == STATE_GRINDING) m_body->PlayAnimation("idle", 1.0f);
     else if (m_state == STATE_AIR) m_body->PlayAnimation("idle", 1.0f);
     else if (speed > 0.1f) m_body->PlayAnimation("kick", 1.0f);
     else m_body->PlayAnimation("idle", 1.0f);
 
-    // Skate sound logic
-    if (m_skateLoop) {
-        bool shouldPlay = m_isOnBoard && (m_state == STATE_GROUNDED) && (speed > 1.0f) && !isFrozen;
 
-        if (shouldPlay) {
-            if (m_skateLoop->getIsPaused()) m_skateLoop->setIsPaused(false);
-            // Optional: Pitch shift based on speed for realism
-            m_skateLoop->setPlaybackSpeed(0.5f + (speed / m_maxSpeed));
-        } else {
-            if (!m_skateLoop->getIsPaused()) m_skateLoop->setIsPaused(true);
-        }
-    }
-
-    // Grind sound logic
-    if (m_grindLoop) {
-        bool shouldGrind = (m_state == STATE_GRINDING) && !isFrozen;
-
-        if (shouldGrind) {
-            if (m_grindLoop->getIsPaused()) m_grindLoop->setIsPaused(false);
-        } else {
-            if (!m_grindLoop->getIsPaused()) m_grindLoop->setIsPaused(true);
-        }
-    }
 }
-
 
 
 
