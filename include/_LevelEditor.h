@@ -8,6 +8,7 @@
 #include"_CubeHitbox.h"
 #include"_SphereHitbox.h"
 #include "_AnimatedModelInstance.h"
+#include "_fonts.h"
 
 class _LevelEditor {
 public:
@@ -56,6 +57,13 @@ private:
     
     // Helper to check if mouse ray hits an object
     _StaticModelInstance* RaycastCheck(HWND hWnd, _camera* cam);
+
+    bool m_showHelpers;
+    _fonts* m_helperFont;
+    vector<_Button*> m_helperButtons; 
+    
+    void InitHelpers(int width, int height);
+    void DrawHelpers();
 };
 
 #endif

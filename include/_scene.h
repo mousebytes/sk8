@@ -147,7 +147,7 @@ class _Scene
         // --- Sound Manager ---
         _sounds *m_sounds;
 
-        enum SceneState {LandingPage, MainMenu, Help, Playing, Paused, LevelEditor, EditorPaused};
+        enum SceneState {LandingPage, MainMenu, Help, Credits, Playing, Paused, LevelEditor, EditorPaused};
         SceneState m_sceneState;
 
         _LevelEditor* m_levelEditor;
@@ -168,6 +168,14 @@ class _Scene
         bool m_levelCompleteTriggered;  // Flag to start the timer
 
         _ParticleSystem* m_particleSystem;
+
+
+        // --- Credits Scene ---
+        _Button *m_creditsImage;
+        void initCreditsScreen();
+        void drawCreditsScreen();
+        void handleCreditsScreenInput(UINT,WPARAM,LPARAM);
+        _Button *m_creditsButton;
 };
 
 #endif // _SCENE_H

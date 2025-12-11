@@ -16,6 +16,10 @@ _LevelEditor::_LevelEditor() {
     m_gridSize = 1.0f;
     m_currentRotation = 0.0f;
     m_selectedType = "";
+
+    m_showHelpers = true; 
+    m_helperFont = nullptr;
+    
 }
 
 _LevelEditor::~_LevelEditor() {
@@ -26,6 +30,10 @@ _LevelEditor::~_LevelEditor() {
     delete m_saveButton;
     delete m_loadButton;
     delete m_exitButton;
+
+    if (m_helperFont) delete m_helperFont;
+    for (auto* btn : m_helperButtons) delete btn;
+    m_helperButtons.clear();
 
     for (auto const& pair : m_blueprints) {
         delete pair.second;
@@ -139,6 +147,46 @@ void _LevelEditor::Init(int width, int height) {
     
     //AUTO LOAD ON START
     LoadLevel("saves/level_custom.txt");
+
+    InitHelpers(width, height);
+}
+
+void _LevelEditor::InitHelpers(int width, int height) {
+    m_helperFont = new _fonts();
+    m_helperFont->initFonts("images/fontsheet.png", 15, 8);
+
+    // Position setup: Right side of screen
+    int startX = width - 130;
+    int startY = 100;
+    int gap = 80;
+
+    // Helper lambda to create buttons easily
+    auto AddBtn = [&](string file, int x, int y) {
+        _Button* b = new _Button();
+        
+        b->Init((char*)file.c_str(), 64, 64, x, y, 0, 1, 1);
+        m_helperButtons.push_back(b);
+    };
+
+    // --- SCALE CONTROLS ---
+    // J, K, Backspace
+    AddBtn("images/help ui/jKey.png", startX - 80, startY + 30);
+    AddBtn("images/help ui/kKey.png", startX, startY + 30);
+    AddBtn("images/help ui/backspaceKey.png", startX + 80, startY + 30);
+
+    // --- CAM CONTROLS ---
+    // Z, X, Space
+    int camY = startY + 100;
+    AddBtn("images/help ui/zKey.png", startX - 80, camY + 30);
+    AddBtn("images/help ui/xKey.png", startX, camY + 30);
+    AddBtn("images/help ui/spaceKey.png", startX + 80, camY + 30);
+
+    // --- EDIT CONTROLS ---
+    // Ctrl, Left Click, Right Click
+    int editY = camY + 100;
+    AddBtn("images/help ui/ctrlKey.png", startX - 80, editY + 30);
+    AddBtn("images/help ui/leftClick.png", startX, editY + 30);
+    AddBtn("images/help ui/rightClick.png", startX + 80, editY + 30);
 }
 
 void _LevelEditor::SetGhost(string type) {
@@ -282,6 +330,10 @@ void _LevelEditor::Update(HWND hWnd, _camera* cam) {
 }
 
 void _LevelEditor::HandleKeyInput(WPARAM wParam) {
+    if (wParam == 'T' || wParam == 't') {
+        m_showHelpers = !m_showHelpers;
+    }
+
     if (wParam == 'R' || wParam == 'r') {
         m_currentRotation += 90.0f;
         if (m_currentRotation >= 360.0f) m_currentRotation -= 360.0f;
@@ -426,7 +478,7 @@ void _LevelEditor::Draw() {
         glColor4f(1, 1, 1, 0.5f); 
         m_ghostObject->Draw();
         glColor4f(1, 1, 1, 1);
-        glDisable(GL_BLEND);
+        //glDisable(GL_BLEND);
     }
 
     // Draw Grid
@@ -460,12 +512,51 @@ void _LevelEditor::Draw() {
 
     glColor3f(1.0f, 1.0f, 1.0f);
     for(auto* btn : m_itemButtons) btn->Draw();
+    if (m_showHelpers) {
+        DrawHelpers();
+    }
 
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
+}
+
+void _LevelEditor::DrawHelpers() {
+    // Draw Buttons
+    for (auto* btn : m_helperButtons) btn->Draw();
+
+    // Draw Labels
+    m_helperFont->setSize(15.0f, -15.0f);
+
+    // Determine positions relative to the buttons we placed
+    // (We know the layout from InitHelpers)
+    float startX_GL = 1.3f; // Approximate GL coords for right side text
+    float startY_GL = 0.8f; 
+
+    // Accessing the first button of "Scale" group (J key)
+    Vector3 jPos = m_helperButtons[0]->GetPos(); 
+    
+    // Label: "Scale Object"
+    m_helperFont->setPosition(jPos.x - 20, jPos.y - 40, 0); 
+    m_helperFont->drawText("Scale");
+
+    // Access Z key (index 3)
+    Vector3 zPos = m_helperButtons[3]->GetPos();
+    // Label: "Camera Height"
+    m_helperFont->setPosition(zPos.x - 20, zPos.y - 40, 0);
+    m_helperFont->drawText("Camera");
+
+    // Access Ctrl key (index 6)
+    Vector3 ctrlPos = m_helperButtons[6]->GetPos();
+    // Label: "Tools"
+    m_helperFont->setPosition(ctrlPos.x - 20, ctrlPos.y - 40, 0);
+    m_helperFont->drawText("Tools");
+    
+    // toggle text help
+    m_helperFont->setPosition(200, 20, 0);
+    m_helperFont->drawText("Press 'T' to Toggle Help");
 }
 
 void _LevelEditor::SaveLevel(string filename) {

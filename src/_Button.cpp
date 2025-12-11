@@ -74,6 +74,7 @@ bool _Button::isClicked(int mouseX, int mouseY) {
 
     // check if the mouse click is inside the button
     if (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom) {
+
         return true;
     }
     return false;

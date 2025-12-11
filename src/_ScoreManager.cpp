@@ -6,7 +6,10 @@ _ScoreManager::_ScoreManager() {
     m_multiplier = 1;
     m_hudFont = new _fonts();
     m_popupFont = new _fonts();
-
+    
+    m_winTex = new _textureLoader();
+    m_loseTex = new _textureLoader();
+    
     m_timeLimit = 0.0f;
     m_currentTime = 0.0f;
     m_targetScore = 0;
@@ -15,16 +18,20 @@ _ScoreManager::_ScoreManager() {
 
     m_isTimed = false;
     m_isTagMode = false;
+    m_isFinalLevel = false;
     m_gameState = GAME_PLAYING;
 
     m_balanceValue = 0.0f;
     m_showBalanceMeter = false;
+
     m_soundMgr = nullptr;
 }
 
 _ScoreManager::~_ScoreManager() {
     delete m_hudFont;
     delete m_popupFont;
+    delete m_winTex;
+    delete m_loseTex;
     for (auto p : m_popups) delete p;
     m_popups.clear();
 }
@@ -32,6 +39,9 @@ _ScoreManager::~_ScoreManager() {
 void _ScoreManager::Init() {
     m_hudFont->initFonts("images/fontsheet.png", 15, 8);
     m_popupFont->initFonts("images/fontsheet.png", 15, 8);
+
+    m_winTex->loadTexture("images/menus/WinScreen.png");
+    m_loseTex->loadTexture("images/menus/GameOver.png");
 }
 
 void _ScoreManager::SetScoreObjective(int targetScore, float timeLimit) {
@@ -113,10 +123,9 @@ void _ScoreManager::Update() {
     }
 }
 
-void _ScoreManager::Draw(_camera* cam) {
-
-    glPushMatrix();
-    glLoadIdentity();
+void _ScoreManager::Draw(_camera* cam, int screenWidth, int screenHeight) {
+glPushMatrix(); 
+    glLoadIdentity(); 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
 
@@ -139,9 +148,25 @@ void _ScoreManager::Draw(_camera* cam) {
     //Objectives (Top Right)
     DrawObjectives();
 
-    //Win/Loss Messages (Center Screen)
-    if (m_gameState != GAME_PLAYING) DrawWinLoss();
+    // --- FPS COUNTER ---
+    // Render at Top Right
+    if (_Time::deltaTime > 0.0f) {
+        // Calculate Frames Per Second
+        int fps = (int)(1.0f / _Time::deltaTime);
+        string fpsStr = to_string(fps) + " FPS";
 
+        // Position: Far Right (X=1.8), Top (Y=1.0)
+        m_hudFont->setPosition(1.8f, -1.2f, -3.0f);
+        m_hudFont->setSize(0.03f, 0.03f); // Slightly smaller font
+        
+        glColor3f(0.0f, 1.0f, 0.0f); // Green Color
+        m_hudFont->drawText(fpsStr);
+        glColor3f(1.0f, 1.0f, 1.0f); // Reset Color
+    }
+
+    //Win/Loss Messages (Center Screen or Fullscreen Overlay)
+    if (m_gameState != GAME_PLAYING) DrawWinLoss(screenWidth, screenHeight);
+    
     //Popups (Center Screen Overlay)
     for (auto p : m_popups) {
         float scale = 0.1f;
@@ -197,25 +222,76 @@ void _ScoreManager::DrawObjectives() {
     }
 }
 
-void _ScoreManager::DrawWinLoss() {
-    m_hudFont->setSize(0.2f, 0.2f); // Big Text
+void _ScoreManager::DrawWinLoss(int width, int height) {
+    
+    bool drawOverlay = false;
+    _textureLoader* texToDraw = nullptr;
 
-    if (m_gameState == GAME_WON) {
-        string msg = "COMPLETE!";
-        // Center text math
-        float width = msg.length() * (0.2f * 1.5f);
-        m_hudFont->setPosition(-width/2, 0.2f, -3.0f);
-        glColor3f(0.0f, 1.0f, 0.0f); // Green
-        m_hudFont->drawText(msg);
+    // --- LOGIC: CHOOSE IMAGE OR TEXT ---
+    if (m_gameState == GAME_LOST) {
+        texToDraw = m_loseTex; // Always show GameOver.png on failure
+        drawOverlay = true;
     }
-    else if (m_gameState == GAME_LOST) {
-        string msg = "FAILED";
-        float width = msg.length() * (0.2f * 1.5f);
-        m_hudFont->setPosition(-width/2, 0.2f, -3.0f);
-        glColor3f(1.0f, 0.0f, 0.0f); // Red
-        m_hudFont->drawText(msg);
+    else if (m_gameState == GAME_WON) {
+        if (m_isFinalLevel) {
+            texToDraw = m_winTex; // Show WinScreen.png only on final level
+            drawOverlay = true;
+        }
+        else {
+            // Standard Text for intermediate levels
+            m_hudFont->setSize(0.2f, 0.2f); 
+            string msg = "COMPLETE!";
+            float txtW = msg.length() * (0.2f * 1.5f);
+            m_hudFont->setPosition(-txtW/2, 0.2f, -3.0f);
+            glColor3f(0.0f, 1.0f, 0.0f); 
+            m_hudFont->drawText(msg);
+            glColor3f(1.0f, 1.0f, 1.0f);
+        }
     }
-    glColor3f(1.0f, 1.0f, 1.0f);
+
+    // --- DRAW FULLSCREEN OVERLAY IF NEEDED ---
+    if (drawOverlay && texToDraw) {
+        // Temporarily switch to 2D Ortho Mode to draw the image covering screen
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
+        glLoadIdentity();
+        gluOrtho2D(0, width, height, 0); // Top-left origin
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadIdentity();
+
+        glDisable(GL_LIGHTING);
+        glEnable(GL_TEXTURE_2D);
+        
+        // --- DISABLE CULLING FOR THIS QUAD ---
+        glDisable(GL_CULL_FACE); 
+        
+        glColor3f(1, 1, 1);
+
+        texToDraw->bindTexture();
+
+        glBegin(GL_QUADS);
+            glTexCoord2f(0, 0); glVertex2f(0, 0);
+            glTexCoord2f(1, 0); glVertex2f(width, 0);
+            glTexCoord2f(1, 1); glVertex2f(width, height);
+            glTexCoord2f(0, 1); glVertex2f(0, height);
+        glEnd();
+
+        // Restore State
+        glEnable(GL_CULL_FACE);
+
+        glPopMatrix(); // Pop ModelView
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix(); // Pop Projection
+        glMatrixMode(GL_MODELVIEW);
+        
+        // Re-disable depth test as we are still inside Draw() 
+        glDisable(GL_DEPTH_TEST); 
+    }
+}
+
+void _ScoreManager::SetFinalLevel(bool flag){
+    m_isFinalLevel=flag;
 }
 
 void _ScoreManager::AddScore(int points) {
@@ -234,11 +310,13 @@ void _ScoreManager::AddMultiplier(int amount) {
 
     m_multiplier += amount;
 
+    // --- SOUND LOGIC ---
     if (m_soundMgr) {
         int soundIndex = m_multiplier - 1;
 
         if(soundIndex >= 1){
-            if(soundIndex > 6) soundIndex = 6;
+            // Cap at combo_6.wav if you don't have more files
+            if(soundIndex > 6) soundIndex = 6; 
 
             string filename = "sounds/combo_" + to_string(soundIndex) + ".wav";
             m_soundMgr->playSFX(filename.c_str(), 0.5f);
@@ -362,8 +440,8 @@ void _ScoreManager::DrawBalanceMeter() {
     glEnable(GL_TEXTURE_2D);
     glColor3f(1,1,1);
 }
+
 void _ScoreManager::SetSoundManager(_sounds* mgr)
 {
     m_soundMgr = mgr;
 }
-

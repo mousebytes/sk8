@@ -141,9 +141,9 @@ void _Player::HandleKeys(UINT uMsg, WPARAM wParam)
                 {
                     m_isKickflipping = true;
                     m_kickflipProgress = 0.0f;
-                    if(m_scoreMgr) m_scoreMgr->AddTrickScore(100);
+                    if(m_scoreMgr) m_scoreMgr->AddTrickScore(100); 
 
-                    if(m_soundMgr) m_soundMgr->playSFX("sounds/kickflip.wav");
+                    if(m_soundMgr) m_soundMgr->playSFX("sounds/kickflip.wav", 0.7f);
                 }
             }
             else {
@@ -491,19 +491,19 @@ void _Player::UpdatePhysicsBoard()
                 _Collider* worldCol = staticCollider->GetWorldSpaceCollider(staticModel->pos, staticModel->scale, staticModel->rotation);
                 if (worldCol) {
                     if (playerCurrent->CheckCollision(worldCol)) {
-
-                        // A. Floor
+                        
+                        // Floor
                         if (staticCollider->m_type == COLLIDER_FLOOR) {
                             rb->isGrounded = true;
                         }
-                        // B. Rail
+                        // Rail
                         else if (staticCollider->m_type == COLLIDER_RAIL) {
                             if (rb->velocity.y <= 0.1) {
                                 isOnRail = true;
                                 m_currentRail = staticModel;
                             }
                         }
-                        // C. Halfpipe (Vert Logic)
+                        // Halfpipe (Vert Logic)
                         else if (staticCollider->m_type == COLLIDER_HALFPIPE) {
                             Vector3 relPos = m_body->pos - staticModel->pos;
                             float rad = staticModel->rotation.y * PI / 180.0f;
@@ -814,15 +814,28 @@ void _Player::UpdatePhysicsBoard()
     else if (speed > 0.1f) m_body->PlayAnimation("kick", 1.0f);
     else m_body->PlayAnimation("idle", 1.0f);
 
-    //Skate sound logic
-    if (m_skateLoop){
-            bool shouldPlay = m_isOnBoard && (m_state == STATE_GROUNDED) && (speed > 1.0f) && !isFrozen;
+    // Skate sound logic
+    if (m_skateLoop) {
+        bool shouldPlay = m_isOnBoard && (m_state == STATE_GROUNDED) && (speed > 1.0f) && !isFrozen;
 
-    if(shouldPlay){
-        if(m_skateLoop->getIsPaused()) m_skateLoop->setIsPaused(false);
-      } else {
-          if(!m_skateLoop->getIsPaused()) m_skateLoop->setIsPaused(true);
-      }
+        if (shouldPlay) {
+            if (m_skateLoop->getIsPaused()) m_skateLoop->setIsPaused(false);
+            // Optional: Pitch shift based on speed for realism
+            m_skateLoop->setPlaybackSpeed(0.5f + (speed / m_maxSpeed));
+        } else {
+            if (!m_skateLoop->getIsPaused()) m_skateLoop->setIsPaused(true);
+        }
+    }
+
+    // Grind sound logic
+    if (m_grindLoop) {
+        bool shouldGrind = (m_state == STATE_GRINDING) && !isFrozen;
+
+        if (shouldGrind) {
+            if (m_grindLoop->getIsPaused()) m_grindLoop->setIsPaused(false);
+        } else {
+            if (!m_grindLoop->getIsPaused()) m_grindLoop->setIsPaused(true);
+        }
     }
 }
 
@@ -847,6 +860,12 @@ void _Player::UpdateCamera(_camera* cam)
     cam->up = Vector3(0, 1, 0);
 
     cam->rotAngle.x = m_cameraYaw;
+    if(m_cameraPitch > 89.0f){
+        m_cameraPitch = 89.0f;
+    }
+    if(m_cameraPitch < -89.0f){
+        m_cameraPitch = -89.0f;
+    }
     cam->rotAngle.y = m_cameraPitch;
 }
 
@@ -920,6 +939,7 @@ void _Player::SetSoundManager(_sounds* mgr)
 {
     m_soundMgr = mgr;
     if(m_soundMgr && m_soundMgr->sndEng){
+        // Initialize loops as paused
         m_skateLoop = m_soundMgr->sndEng->play2D("sounds/Rolling.wav", true, true, true);
         if(m_skateLoop) m_skateLoop->setVolume(0.6f);
 
@@ -940,10 +960,9 @@ void _Player::StopSkateSound()
         m_body->GetRigidBody()->velocity = Vector3(0,0,0);
     }
 }
+
 void _Player::PauseSkateSound()
 {
     if (m_skateLoop) m_skateLoop->setIsPaused(true);
-
     if (m_grindLoop) m_grindLoop->setIsPaused(true);
-
 }

@@ -18,6 +18,7 @@ void _sounds::playMusic(const char* fileName)
 {
     if(sndEng)
     {
+      // Play 2D, loop = true, startPaused = false, track = true
       ISound* music = sndEng->play2D(fileName, true, false, true);
 
       if(music)
@@ -33,6 +34,7 @@ void _sounds::playSFX(const char* fileName, float volume)
 {
     if(sndEng)
     {
+        // Play 2D, loop = false, startPaused = false, track = true
         ISound* sfx = sndEng->play2D(fileName, false, false, true);
 
         if (sfx)
