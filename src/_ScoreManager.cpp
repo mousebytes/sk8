@@ -146,6 +146,22 @@ glPushMatrix();
     //Objectives (Top Right)
     DrawObjectives();
 
+    // --- FPS COUNTER ---
+    // Render at Top Right
+    if (_Time::deltaTime > 0.0f) {
+        // Calculate Frames Per Second
+        int fps = (int)(1.0f / _Time::deltaTime);
+        string fpsStr = to_string(fps) + " FPS";
+
+        // Position: Far Right (X=1.8), Top (Y=1.0)
+        m_hudFont->setPosition(1.8f, -1.2f, -3.0f);
+        m_hudFont->setSize(0.03f, 0.03f); // Slightly smaller font
+        
+        glColor3f(0.0f, 1.0f, 0.0f); // Green Color
+        m_hudFont->drawText(fpsStr);
+        glColor3f(1.0f, 1.0f, 1.0f); // Reset Color
+    }
+
     //Win/Loss Messages (Center Screen or Fullscreen Overlay)
     if (m_gameState != GAME_PLAYING) DrawWinLoss(screenWidth, screenHeight);
     

@@ -795,6 +795,12 @@ void _Player::UpdateCamera(_camera* cam)
     cam->up = Vector3(0, 1, 0);
 
     cam->rotAngle.x = m_cameraYaw;
+    if(m_cameraPitch > 89.0f){
+        m_cameraPitch = 89.0f;
+    }
+    if(m_cameraPitch < -89.0f){
+        m_cameraPitch = -89.0f;
+    }
     cam->rotAngle.y = m_cameraPitch;
 }
 
