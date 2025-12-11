@@ -43,6 +43,8 @@
 			<Add library="glu32" />
 			<Add library="winmm" />
 			<Add library="gdi32" />
+			<Add library="../common/lib/libirrKlang.a" />
+			<Add library="../common/lib/glut32.lib" />
 			<Add directory="../common/lib" />
 		</Linker>
 		<Unit filename="include/Anorms.h" />
@@ -54,6 +56,7 @@
 		<Unit filename="include/_Hitbox.h" />
 		<Unit filename="include/_LevelEditor.h" />
 		<Unit filename="include/_ObjModel.h" />
+		<Unit filename="include/_ParticleSystem.h" />
 		<Unit filename="include/_Player.h" />
 		<Unit filename="include/_Rigidbody.h" />
 		<Unit filename="include/_ScoreManager.h" />
@@ -72,6 +75,7 @@
 		<Unit filename="include/_parallax.h" />
 		<Unit filename="include/_scene.h" />
 		<Unit filename="include/_skybox.h" />
+		<Unit filename="include/_sounds.h" />
 		<Unit filename="include/_sprite.h" />
 		<Unit filename="include/_textureloader.h" />
 		<Unit filename="include/_timer.h" />
@@ -83,6 +87,7 @@
 		<Unit filename="src/_Hitbox.cpp" />
 		<Unit filename="src/_LevelEditor.cpp" />
 		<Unit filename="src/_ObjModel.cpp" />
+		<Unit filename="src/_ParticleSystem.cpp" />
 		<Unit filename="src/_Player.cpp" />
 		<Unit filename="src/_Rigidbody.cpp" />
 		<Unit filename="src/_ScoreManager.cpp" />
@@ -100,6 +105,7 @@
 		<Unit filename="src/_parallax.cpp" />
 		<Unit filename="src/_scene.cpp" />
 		<Unit filename="src/_skybox.cpp" />
+		<Unit filename="src/_sounds.cpp" />
 		<Unit filename="src/_sprite.cpp" />
 		<Unit filename="src/_textureloader.cpp" />
 		<Unit filename="src/_timer.cpp" />

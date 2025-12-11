@@ -572,3 +572,384 @@
 1764292742 source:d:\fresno state stuff\csci 191\sk8\src\_camera.cpp
 	"_camera.h"
 
+1765408252 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\main.cpp
+	<windows.h>
+	<stdlib.h>
+	<iostream>
+	<windows.h>
+	<gl/gl.h>
+	<_scene.h>
+
+1765417451 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_scene.h
+	<_common.h>
+	<_light.h>
+	<_model.h>
+	<_inputs.h>
+	<_textureloader.h>
+	<_parallax.h>
+	<_skybox.h>
+	<_sprite.h>
+	<_timer.h>
+	<_camera.h>
+	<_collisioncheck.h>
+	"_StaticModelInstance.h"
+	"_inputs.h"
+	"_Button.h"
+	"_skybox.h"
+	"_sounds.h"
+	"_Collider.h"
+	"_CubeHitbox.h"
+	"_SphereHitbox.h"
+	"_AnimatedModelInstance.h"
+	"_Player.h"
+	"_Bullets.h"
+	"_LevelEditor.h"
+	"_ScoreManager.h"
+	"_ParticleSystem.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_common.h
+	<iostream>
+	<windows.h>
+	<string>
+	<gl/gl.h>
+	<GL/glut.h>
+	<math.h>
+	<stdlib.h>
+	<time.h>
+	<chrono>
+	<fstream>
+	<vector>
+	<list>
+	<sstream>
+	<limits>
+	<algorithm>
+	<cmath>
+	<map>
+	"_Time.h"
+
+1738025111 c:\users\delar\onedrive\desktop\csci 191t\common\include\gl\glut.h
+	<windows.h>
+	<stdlib.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_time.h
+	"_common.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_light.h
+	<_common.h>
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_model.h
+	<_common.h>
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_inputs.h
+	<_common.h>
+	<_model.h>
+	<_parallax.h>
+	<_skybox.h>
+	<_sprite.h>
+	<_camera.h>
+	"_StaticModelInstance.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_parallax.h
+	<_common.h>
+	<_textureLoader.h>
+	<_timer.h>
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_textureloader.h
+	<_common.h>
+	<SOIL2.h>
+
+1758757297 c:\users\delar\onedrive\desktop\csci 191t\common\include\soil2.h
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_timer.h
+	<_common.h>
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_skybox.h
+	<_common.h>
+	<_textureloader.h>
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_sprite.h
+	<_common.h>
+	<_textureloader.h>
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_camera.h
+	<_common.h>
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_staticmodelinstance.h
+	"_StaticModel.h"
+	"_common.h"
+	"_Collider.h"
+	"_Rigidbody.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_staticmodel.h
+	<_common.h>
+	<_textureloader.h>
+	"_ObjModel.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_objmodel.h
+	"_common.h"
+	"_textureloader.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_collider.h
+	"_common.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_rigidbody.h
+	"_common.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_collisioncheck.h
+	<_common.h>
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_button.h
+	"_common.h"
+	"_textureloader.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_cubehitbox.h
+	"_Collider.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_spherehitbox.h
+	"_Collider.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_animatedmodelinstance.h
+	<_common.h>
+	"_AnimatedModel.h"
+	"_Collider.h"
+	"_StaticModelInstance.h"
+	"_CubeHitbox.h"
+	"_SphereHitbox.h"
+	"_Rigidbody.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_animatedmodel.h
+	<_common.h>
+	"_ObjModel.h"
+
+1765422164 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_player.h
+	"_camera.h"
+	"_inputs.h"
+	"_common.h"
+	"_AnimatedModelInstance.h"
+	"_StaticModelInstance.h"
+	"_ScoreManager.h"
+	"_ParticleSystem.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_scoremanager.h
+	"_common.h"
+	"_fonts.h"
+	"_camera.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_fonts.h
+	"_common.h"
+	"_textureloader.h"
+
+1765416597 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_particlesystem.h
+	"_common.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_bullets.h
+	"_common.h"
+	"_StaticModelInstance.h"
+	"_AnimatedModelInstance.h"
+	"_SphereHitbox.h"
+	"_CubeHitbox.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_leveleditor.h
+	"_common.h"
+	"_StaticModelInstance.h"
+	"_Button.h"
+	"_camera.h"
+	"_CubeHitbox.h"
+	"_SphereHitbox.h"
+	"_AnimatedModelInstance.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_animatedmodel.cpp
+	"_AnimatedModel.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_animatedmodelinstance.cpp
+	"_AnimatedModelInstance.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_bullets.cpp
+	"_Bullets.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_button.cpp
+	"_Button.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_camera.cpp
+	"_camera.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_collisioncheck.cpp
+	"_collisioncheck.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_cubehitbox.cpp
+	"_CubeHitbox.h"
+	"_SphereHitbox.h"
+
+1765420457 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_fonts.cpp
+	"_fonts.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_hitbox.cpp
+	"_Hitbox.h"
+
+1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_hitbox.h
+	"_common.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_inputs.cpp
+	"_inputs.h"
+
+1765420457 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_leveleditor.cpp
+	"_LevelEditor.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_light.cpp
+	"_light.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_model.cpp
+	"_model.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_objmodel.cpp
+	"_ObjModel.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_parallax.cpp
+	"_parallax.h"
+
+1765422164 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_player.cpp
+	"_Player.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_rigidbody.cpp
+	"_Rigidbody.h"
+
+1765417642 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_scene.cpp
+	"_scene.h"
+
+1765420457 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_scoremanager.cpp
+	"_ScoreManager.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_skybox.cpp
+	"_skybox.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_spherehitbox.cpp
+	"_SphereHitbox.h"
+	"_CubeHitbox.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_sprite.cpp
+	"_sprite.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_staticmodel.cpp
+	"_StaticModel.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_staticmodelinstance.cpp
+	"_StaticModelInstance.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_textureloader.cpp
+	"_textureloader.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_time.cpp
+	"_Time.h"
+
+1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_timer.cpp
+	"_timer.h"
+
+1765416597 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_particlesystem.cpp
+	"_ParticleSystem.h"
+
+1765422828 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_sounds.h
+	<SNDS/irrKlang.h>
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\irrklang.h
+	"ik_irrKlangTypes.h"
+	"ik_vec3d.h"
+	"ik_IRefCounted.h"
+	"ik_IVirtualRefCounted.h"
+	"ik_ESoundOutputDrivers.h"
+	"ik_ESoundEngineOptions.h"
+	"ik_EStreamModes.h"
+	"ik_SAudioStreamFormat.h"
+	"ik_ISoundEngine.h"
+	"ik_ISoundSource.h"
+	"ik_ISound.h"
+	"ik_IAudioStream.h"
+	"ik_IAudioStreamLoader.h"
+	"ik_ISoundEffectControl.h"
+	"ik_ISoundStopEventReceiver.h"
+	"ik_IFileFactory.h"
+	"ik_IFileReader.h"
+	"ik_ISoundDeviceList.h"
+	"ik_IAudioRecorder.h"
+	"ik_ISoundMixedOutputReceiver.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_irrklangtypes.h
+	<wchar.h>
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_vec3d.h
+	<math.h>
+	"ik_irrKlangTypes.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_irefcounted.h
+	"ik_irrKlangTypes.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_ivirtualrefcounted.h
+	"ik_irrKlangTypes.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_esoundoutputdrivers.h
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_esoundengineoptions.h
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_estreammodes.h
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_saudiostreamformat.h
+	"ik_IRefCounted.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_isoundengine.h
+	"ik_IRefCounted.h"
+	"ik_vec3d.h"
+	"ik_ISoundSource.h"
+	"ik_ISound.h"
+	"ik_EStreamModes.h"
+	"ik_IFileFactory.h"
+	"ik_ISoundMixedOutputReceiver.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_isoundsource.h
+	"ik_IVirtualRefCounted.h"
+	"ik_vec3d.h"
+	"ik_EStreamModes.h"
+	"ik_SAudioStreamFormat.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_isound.h
+	"ik_IVirtualRefCounted.h"
+	"ik_ISoundEffectControl.h"
+	"ik_vec3d.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_isoundeffectcontrol.h
+	"ik_IVirtualRefCounted.h"
+	"ik_vec3d.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_ifilefactory.h
+	"ik_IRefCounted.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_isoundmixedoutputreceiver.h
+	"ik_IRefCounted.h"
+	"ik_SAudioStreamFormat.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_iaudiostream.h
+	"ik_IRefCounted.h"
+	"ik_SAudioStreamFormat.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_iaudiostreamloader.h
+	"ik_IRefCounted.h"
+	"ik_IFileReader.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_ifilereader.h
+	"ik_IRefCounted.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_isoundstopeventreceiver.h
+	"ik_IRefCounted.h"
+	"ik_SAudioStreamFormat.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_isounddevicelist.h
+	"ik_IRefCounted.h"
+
+1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\ik_iaudiorecorder.h
+	"ik_IRefCounted.h"
+	"ik_ISoundSource.h"
+
+1765416279 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_sounds.cpp
+	"_sounds.h"
+	"_common.h"
+

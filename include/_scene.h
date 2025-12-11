@@ -16,6 +16,7 @@
 #include"_inputs.h"
 #include"_Button.h"
 #include"_skybox.h"
+#include "_sounds.h"
 #include"_Collider.h"
 #include"_CubeHitbox.h"
 #include"_SphereHitbox.h"
@@ -66,7 +67,7 @@ class _Scene
         void drawMainMenu();
         void handleMainMenuInput(UINT,WPARAM,LPARAM);
 
-        
+
         // --- Help Scene ---
         _Button *m_backButton;
         _Button *m_helpInfo;
@@ -91,13 +92,13 @@ class _Scene
         vector<_StaticModelInstance*> m_customLevelObjects;
 
         bool m_isCustomGame;
-        
+
         // --- LEVEL LOADING FUNCTIONS ---
         void loadCampaignLevel(); // Defaults to Level 1
         void loadCampaignLevel1(); // Tutorial / Score Attack
         void loadCampaignLevel2(); // Tag the City
         void loadCampaignLevel3(); // Downhill Rush (Race)
-        
+
         void loadCustomLevel();
 
         _StaticModelInstance* m_customFloor;
@@ -139,10 +140,12 @@ class _Scene
         _StaticModel* m_stairsBlueprint;
         _StaticModel* m_woodFloorBlueprint;
         _StaticModel* m_sideBlueprint;
-        
+
         // --- NEW SPRAYCAN BLUEPRINT ---
         _StaticModel* m_sprayCanBlueprint;
 
+        // --- Sound Manager ---
+        _sounds *m_sounds;
 
         enum SceneState {LandingPage, MainMenu, Help, Playing, Paused, LevelEditor, EditorPaused};
         SceneState m_sceneState;

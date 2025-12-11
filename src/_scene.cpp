@@ -4,10 +4,10 @@ _Scene::_Scene()
 {
     m_isCustomGame = false;
     //ctor
-    
+
     // REMOVED: terrainBlueprint = new _StaticModel();
     // REMOVED: terrainInstance = new _StaticModelInstance(terrainBlueprint);
-    
+
     // Instead, we initialize the floor blueprint here
     terrainBlueprint = new _StaticModel();
     // We will init the instance in initGameplay()
@@ -59,7 +59,7 @@ _Scene::_Scene()
     m_stairsBlueprint = new _StaticModel();
     m_woodFloorBlueprint = new _StaticModel();
     m_sideBlueprint = new _StaticModel();
-    
+
     // Initialize Spraycan
     m_sprayCanBlueprint = new _StaticModel();
 
@@ -73,6 +73,10 @@ _Scene::_Scene()
     m_levelCompleteTriggered = false;
 
     m_particleSystem = new _ParticleSystem();
+
+    //Init Sound Manager
+    m_sounds = new _sounds();
+    m_sounds->initSounds();
 }
 
 _Scene::~_Scene()
@@ -91,10 +95,10 @@ _Scene::~_Scene()
     delete m_exitButton;
     delete m_backButton;
     delete m_playCustomButton;
-    
+
     for(auto* obj : m_customLevelObjects) delete obj;
     m_customLevelObjects.clear();
-    
+
     // Cleanup Tags
     for(auto* tag : m_activeTags) delete tag;
     m_activeTags.clear();
@@ -106,7 +110,7 @@ _Scene::~_Scene()
 
     delete m_bulletManager;
     delete m_bulletBlueprint;
-    
+
     delete m_resumeButton;
     delete m_pauseHelpButton;
     delete m_pauseMenuButton;
@@ -137,6 +141,9 @@ _Scene::~_Scene()
     delete m_scoreManager;
 
     delete m_particleSystem;
+
+    delete m_scoreManager;
+    if(m_sounds) delete m_sounds;
 }
 
 void _Scene::reSizeScene(int width, int height)
@@ -275,7 +282,7 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case SceneState::Help:
             handleHelpScreenInput(uMsg, wParam, lParam);
             break;
-        case SceneState::Paused: 
+        case SceneState::Paused:
             handlePauseMenuInput(uMsg, wParam, lParam);
             break;
         case SceneState::LevelEditor:
@@ -283,7 +290,7 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
         case SceneState::EditorPaused:
             handleEditorPauseInput(hWnd, uMsg, wParam, lParam);
-            break; 
+            break;
     }
     return 0;
 }
@@ -316,7 +323,7 @@ void _Scene::handleGameplayInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
             m_inputs->wParam = wParam;
             // Removed m_inputs->keyPressed(m_camera);
-            
+
             // Pass input to camera
             m_camera->HandleKeys(uMsg, wParam);
 
@@ -333,7 +340,7 @@ void _Scene::handleGameplayInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
                     colliderDrawFace=true;
                 }
             }
-            
+
             // --- CHEAT KEYS TO SWITCH LEVELS ---
             else if(wParam == '7') loadCampaignLevel1();
             else if(wParam == '8') loadCampaignLevel2();
@@ -356,7 +363,7 @@ void _Scene::handleGameplayInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
                 Vector3 direction = m_camera->des - m_camera->eye;
                 //m_bulletManager->Fire(startPos, direction);
              }
-            
+
             break;
 
         case WM_RBUTTONDOWN:
@@ -417,12 +424,12 @@ void _Scene::handleLevelEditorInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
     {
         case WM_KEYDOWN:
              m_inputs->wParam = wParam;
-             
+
              // Removed m_inputs->keyPressed(m_camera);
              m_camera->HandleKeys(uMsg, wParam);
 
              m_levelEditor->HandleKeyInput(wParam); // J, K, R
-             
+
              // Go to Editor Pause Menu instead of Main Menu
              if(wParam == VK_ESCAPE) {
                  m_sceneState = SceneState::EditorPaused;
@@ -431,7 +438,7 @@ void _Scene::handleLevelEditorInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
              // --- Toggle Camera Lock on Enter ---
              if(wParam == VK_RETURN || wParam == VK_CONTROL) {
                  m_camera->isFreeCam = !m_camera->isFreeCam;
-                 
+
                  // If we just re-enabled the camera, snap cursor to center immediately.
                  if (m_camera->isFreeCam) {
                      POINT pt = { width / 2, height / 2 };
@@ -446,9 +453,9 @@ void _Scene::handleLevelEditorInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
         case WM_KEYUP:
              m_camera->HandleKeys(uMsg, wParam);
              break;
-        
+
         case WM_MOUSEMOVE:
-             if(m_camera->isFreeCam) 
+             if(m_camera->isFreeCam)
                  m_camera->handleMouse(hWnd, LOWORD(lParam), HIWORD(lParam), width/2, height/2);
              break;
 
@@ -484,8 +491,8 @@ void _Scene::handleMainMenuInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
         else if (m_editorButton->isClicked(mouseX, mouseY)) {
             m_sceneState = SceneState::LevelEditor;
             m_player->isFrozen = false;
-            m_camera->camReset();      
-            m_camera->isFreeCam = true; 
+            m_camera->camReset();
+            m_camera->isFreeCam = true;
         }
         else if (m_helpButton->isClicked(mouseX, mouseY)) {
             m_sceneState = SceneState::Help;
@@ -570,7 +577,7 @@ void _Scene::initLandingPage()
 void _Scene::initGameplay()
 {
     terrainBlueprint->LoadModel("models/terrain.obj","models/Terrain_Tex.png");
-    
+
     // --- SETUP UNIFIED FLOOR ---
     // Flatten the terrain model to make a huge floor
     // This is the SAME logic used in custom levels
@@ -579,8 +586,8 @@ void _Scene::initGameplay()
 
     // Add a floor collider (Box from y=-5 to y=0)
     m_customFloor->AddCollider(new _CubeHitbox(
-        Vector3(-1, -1.0f, -1), 
-        Vector3(1, 0.0f, 1), 
+        Vector3(-1, -1.0f, -1),
+        Vector3(1, 0.0f, 1),
         COLLIDER_FLOOR
     ));
 
@@ -609,10 +616,10 @@ void _Scene::initGameplay()
 
     m_player->SetParticleSystem(m_particleSystem);
     m_particleSystem->Init();
-    
+
     // Register the unified floor initially
     m_player->RegisterStaticCollider(m_customFloor);
-    
+
     m_sprayCanBlueprint->LoadModel("models/spraycan/spraycan.obj", "models/spraycan/map.png");
 
 
@@ -641,6 +648,8 @@ void _Scene::initGameplay()
 
     m_scoreManager->Init();
     m_player->SetScoreManager(m_scoreManager);
+
+    m_sounds->playMusic("sounds/KickPush.mp3");
 }
 
 void _Scene::initLevelEditor() {
@@ -654,7 +663,7 @@ void _Scene::initLevelEditor() {
     // Initialize Pause Menu Buttons centered on screen
     int cX = width / 2;
     int cY = height / 2;
-    
+
     m_editorResumeButton->Init("images/play-btn.png", 200, 60, cX, cY - 60, 0, 1, 1);
     m_editorSaveButton->Init("images/save-btn.png", 200, 60, cX, cY + 10, 0, 1, 1);
     m_editorExitButton->Init("images/exit-btn.png", 200, 60, cX, cY + 80, 0, 1, 1);
@@ -669,7 +678,7 @@ void _Scene::initMainMenu()
     m_playCustomButton->Init("images/custom-btn.png", 200, 70, width/2, height/2 - 40, 0, 1, 1);
     // (You might need a new texture for this button, reusing play-btn for now)
 
-    m_editorButton->Init("images/editor-btn.png", 200, 70, width/2, height/2 + 40, 0, 1, 1); 
+    m_editorButton->Init("images/editor-btn.png", 200, 70, width/2, height/2 + 40, 0, 1, 1);
     m_helpButton->Init("images/help-btn.png", 200, 70, width/2, height/2 + 120, 0, 1, 1);
     m_exitButton->Init("images/exit-btn.png", 200, 70, width/2, height/2 + 200, 0, 1, 1);
 }
@@ -709,7 +718,7 @@ void _Scene::updateGameplay()
 {
     m_player->UpdatePhysics();
     m_particleSystem->Update();
-    
+
     // Update Camera (Free Cam logic runs here if active)
     m_camera->Update();
 
@@ -718,7 +727,7 @@ void _Scene::updateGameplay()
 
     // --- Update Tags ---
     CheckTagCollisions();
-    
+
     // Animate Tags (Spin)
     for(auto* tag : m_activeTags) {
         tag->rotation.y += 100.0f * _Time::deltaTime;
@@ -727,11 +736,11 @@ void _Scene::updateGameplay()
     // update cam set eye/des/up based on player
     // Note: If FreeCam is active, Player::UpdateCamera returns early
     m_player->UpdateCamera(m_camera);
-    
+
     // --- LEVEL PROGRESSION LOGIC ---
     if (!m_isCustomGame) { // Only progress in campaign
         if (m_scoreManager->GetState() == GAME_WON) {
-            
+
             if (!m_levelCompleteTriggered) {
                 m_levelCompleteTriggered = true;
                 m_levelTransitionTimer = 3.0f; // Wait 3 seconds
@@ -741,13 +750,13 @@ void _Scene::updateGameplay()
 
     if (m_levelCompleteTriggered) {
         m_levelTransitionTimer -= _Time::deltaTime;
-        
+
         if (m_levelTransitionTimer <= 0.0f) {
              m_levelCompleteTriggered = false;
-             
+
              // Advance Level
              m_currentLevelIndex++;
-             
+
              if (m_currentLevelIndex == 2) {
                  loadCampaignLevel2();
              }
@@ -757,14 +766,14 @@ void _Scene::updateGameplay()
              else {
                  // All levels complete! Return to menu
                  m_sceneState = SceneState::MainMenu;
-                 m_camera->isFreeCam = false; 
+                 m_camera->isFreeCam = false;
                  // Reset cursor if needed
                  POINT pt = { width / 2, height / 2 };
                  ClientToScreen(GetActiveWindow(), &pt);
                  SetCursorPos(pt.x, pt.y);
-                 
+
                  // Reset Campaign Progress
-                 m_currentLevelIndex = 1; 
+                 m_currentLevelIndex = 1;
              }
         }
     }
@@ -794,7 +803,7 @@ void _Scene::drawGameplay()
 
     m_player->Draw();
     m_particleSystem->Draw();
-    
+
     m_bulletManager->Draw();
 
     // --- DRAW TAGS ---
@@ -821,8 +830,8 @@ void _Scene::drawGameplay()
     // looking down the  zaxis.
     glLoadIdentity();
 
-    
-   
+
+
 }
 
 void _Scene::drawLevelEditor()
@@ -842,7 +851,7 @@ void _Scene::drawLevelEditor()
 
 void _Scene::drawEditorPauseMenu()
 {
-    draw2DOverlay(); 
+    draw2DOverlay();
 
     // Semi-transparent dark overlay
     glEnable(GL_BLEND);
@@ -876,7 +885,7 @@ void _Scene::drawLandingPage()
     m_backgroundImageButton->Draw();
     m_landingTitle->Draw();
     m_landingInstructions->Draw();
-    
+
 
     // restore 3D projection
     glMatrixMode(GL_PROJECTION);
@@ -930,7 +939,7 @@ void _Scene::drawPauseMenu()
         glVertex2f(0, height);
     glEnd();
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    
+
 
 
     if (m_showPauseHelp)
@@ -991,7 +1000,7 @@ void _Scene::handleMouseMovement(HWND hWnd, LPARAM lParam)
 void _Scene::loadCustomLevel() {
     m_isCustomGame = true;
     m_scoreManager->SetFreePlay();
-    
+
     // Clear old
     for(auto* obj : m_customLevelObjects) delete obj;
     m_customLevelObjects.clear();
@@ -1008,16 +1017,16 @@ void _Scene::loadCustomLevel() {
         cout << "No custom level found!" << endl;
         return;
     }
-    
+
     string type;
     float x, y, z, rot, scale;
     while (file >> type >> x >> y >> z >> rot >> scale) {
-        
+
         // CHECK FOR TAG
         if (type == "tag") {
             _StaticModelInstance* t = new _StaticModelInstance(m_sprayCanBlueprint);
             t->pos = Vector3(x, y, z);
-            t->rotation.y = rot; 
+            t->rotation.y = rot;
             t->scale = Vector3(scale, scale, scale);
             m_activeTags.push_back(t);
             continue; // Skip the rest of loop
@@ -1031,20 +1040,20 @@ void _Scene::loadCustomLevel() {
         else if(type == "stairs") blueprint = m_stairsBlueprint;
         else if(type == "wood_floor") blueprint = m_woodFloorBlueprint;
         else if(type == "side") blueprint = m_sideBlueprint;
-        
+
         if (blueprint) {
             _StaticModelInstance* newObj = new _StaticModelInstance(blueprint);
             newObj->pos = Vector3(x, y, z);
             newObj->rotation.y = rot;
             newObj->scale = Vector3(scale, scale, scale);
-            
+
             // --- ASSIGN COLLIDERS ---
             Vector3 cMin(-1,-1,-1);
             Vector3 cMax(1,1,1);
 
             if(type == "halfpipe") {
                 newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_HALFPIPE));
-            } 
+            }
             else if(type == "rail") {
                 newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_RAIL));
             }
@@ -1057,20 +1066,20 @@ void _Scene::loadCustomLevel() {
             else {
                 newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_WALL));
             }
-            
+
             m_customLevelObjects.push_back(newObj);
             m_player->RegisterStaticCollider(newObj);
         }
     }
     file.close();
-    
+
     m_player->m_body->pos = Vector3(0, 1, 0);
     m_player->ResetBoard();
 }
 
 // Helper func to parse file string
-void LoadLevelFromFile(string filename, 
-                       vector<_StaticModelInstance*>& objects, 
+void LoadLevelFromFile(string filename,
+                       vector<_StaticModelInstance*>& objects,
                        vector<_StaticModelInstance*>& tags,
                        _Player* player,
                        _StaticModel* railBP,
@@ -1079,7 +1088,7 @@ void LoadLevelFromFile(string filename,
                        _StaticModel* stairBP,
                        _StaticModel* woodBP,
                        _StaticModel* sideBP,
-                       _StaticModel* tagBP) 
+                       _StaticModel* tagBP)
 {
     ifstream file(filename);
     if (!file.is_open()) {
@@ -1090,7 +1099,7 @@ void LoadLevelFromFile(string filename,
     string type;
     float x, y, z, rot, scale;
     while (file >> type >> x >> y >> z >> rot >> scale) {
-        
+
         // TAG LOGIC
         if (type == "tag") {
             _StaticModelInstance* t = new _StaticModelInstance(tagBP);
@@ -1114,7 +1123,7 @@ void LoadLevelFromFile(string filename,
             newObj->pos = Vector3(x, y, z);
             newObj->rotation.y = rot;
             newObj->scale = Vector3(scale, scale, scale);
-            
+
             Vector3 cMin(-1,-1,-1);
             Vector3 cMax(1,1,1);
 
@@ -1123,7 +1132,7 @@ void LoadLevelFromFile(string filename,
             else if(type == "stairs") newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_STAIRS));
             else if(type == "wood_floor") newObj->AddCollider(new _CubeHitbox(Vector3(-1, -0.1f, -1), Vector3(1, 0.1f, 1), COLLIDER_FLOOR));
             else newObj->AddCollider(new _CubeHitbox(cMin, cMax, COLLIDER_WALL));
-            
+
             objects.push_back(newObj);
             player->RegisterStaticCollider(newObj);
         }
@@ -1144,25 +1153,25 @@ void _Scene::loadCampaignLevel1() {
     m_currentLevelIndex = 1;
     m_levelCompleteTriggered = false;
 
-    //Clear old objects
+    // 1. Clear old objects
     for(auto* obj : m_customLevelObjects) delete obj;
     m_customLevelObjects.clear();
     for(auto* tag : m_activeTags) delete tag;
     m_activeTags.clear();
 
-    //Set Objective
+    // 2. Set Objective
     m_scoreManager->SetScoreObjective(5000, 60.0f);
 
-    //Register Standard Physics (Unified Floor)
+    // 3. Register Standard Physics (Unified Floor)
     m_player->ClearColliders();
     m_player->RegisterStaticCollider(m_customFloor); // Use unified floor
 
-    //LOAD FROM FILE
+    // 4. LOAD FROM FILE
     LoadLevelFromFile("saves/level1.txt", m_customLevelObjects, m_activeTags, m_player,
                       m_railBlueprint, m_halfpipeBlueprint, m_scaffoldBlueprint,
                       m_stairsBlueprint, m_woodFloorBlueprint, m_sideBlueprint, m_sprayCanBlueprint);
 
-    //Reset Player
+    // 5. Reset Player
     m_player->m_body->pos = Vector3(0, 5, 0);
     m_player->ResetBoard();
 }
@@ -1178,7 +1187,7 @@ void _Scene::loadCampaignLevel2() {
     m_activeTags.clear();
 
     m_player->ClearColliders();
-    m_player->RegisterStaticCollider(m_customFloor); 
+    m_player->RegisterStaticCollider(m_customFloor);
 
     LoadLevelFromFile("saves/level2.txt", m_customLevelObjects, m_activeTags, m_player,
                       m_railBlueprint, m_halfpipeBlueprint, m_scaffoldBlueprint,
@@ -1203,7 +1212,7 @@ void _Scene::loadCampaignLevel3() {
     m_activeTags.clear();
 
     m_player->ClearColliders();
-    m_player->RegisterStaticCollider(m_customFloor); 
+    m_player->RegisterStaticCollider(m_customFloor);
 
     LoadLevelFromFile("saves/level3.txt", m_customLevelObjects, m_activeTags, m_player,
                       m_railBlueprint, m_halfpipeBlueprint, m_scaffoldBlueprint,
@@ -1226,7 +1235,7 @@ void _Scene::CheckTagCollisions() {
 
     for (auto it = m_activeTags.begin(); it != m_activeTags.end(); ) {
         _StaticModelInstance* tag = *it;
-        
+
         Vector3 playerPos = m_player->m_body->pos;
         Vector3 tagPos = tag->pos;
 
