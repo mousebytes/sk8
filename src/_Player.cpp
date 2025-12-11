@@ -62,6 +62,7 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
     inputA = false;
     inputS = false;
     inputD = false;
+    inputH = false;
 
     m_particleSystem = nullptr;
 }
@@ -100,6 +101,7 @@ void _Player::HandleKeys(UINT uMsg, WPARAM wParam)
         case 'S': inputS = isDown; break;
         case 'A': inputA = isDown; break;
         case 'D': inputD = isDown; break;
+        case 'H': inputH = isDown; break;
     }
 
     //HANDLE ONE-SHOT ACTIONS (Instant Triggers)
@@ -596,6 +598,11 @@ void _Player::UpdatePhysicsBoard()
 
         // Return rotation to flat if not on vert
         if(!isOnVert) m_body->rotation.x *= 0.95f;
+
+        if(inputH && !isOnVert){
+            m_body->rotation.x = 90.0f;
+        }
+
         // Reset lean from grind
         m_body->rotation.z = 0.0f;
 
@@ -736,8 +743,10 @@ void _Player::UpdatePhysicsBoard()
 
     if(m_isOnBoard){
         Vector3 rotatedOffset = CalculateBoardOffset(m_skateboardOffset, m_body->rotation);
-        m_skateboard->pos = m_body->pos + rotatedOffset;
-        m_skateboard->rotation = m_body->rotation;
+        
+
+        if(!inputH){m_skateboard->rotation = m_body->rotation; m_skateboard->pos = m_body->pos + rotatedOffset;}
+        else{m_skateboard->rotation = Vector3(0,m_body->rotation.y,m_body->rotation.z);m_skateboard->pos = Vector3(m_body->pos.x,m_body->pos.y-0.4f,m_body->pos.z);}
 
         // --- KICKFLIP ANIMATION LOGIC ---
         if (m_isKickflipping) {
@@ -756,6 +765,9 @@ void _Player::UpdatePhysicsBoard()
     // Choose Animation
     float speed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
 
+    if(inputH){
+        m_body->PlayAnimation("idle",1.0f);
+    }
     
     if (m_state == STATE_GRINDING) m_body->PlayAnimation("idle", 1.0f); 
     else if (m_state == STATE_AIR) m_body->PlayAnimation("idle", 1.0f); 

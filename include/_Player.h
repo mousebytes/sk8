@@ -80,7 +80,7 @@ class _Player{
     void HandleMouse(float deltaX, float deltaY);
 
     // take key presses
-    bool inputW, inputA, inputS, inputD;
+    bool inputW, inputA, inputS, inputD, inputH;
     bool inputSpace;
 
     // HandleKeys accepts the message type (to distinguish Up/Down)
