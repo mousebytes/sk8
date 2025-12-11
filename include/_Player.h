@@ -6,6 +6,7 @@
 #include"_AnimatedModelInstance.h"
 #include"_StaticModelInstance.h"
 #include"_ScoreManager.h"
+#include"_ParticleSystem.h"
 
 enum PlayerState {
     STATE_GROUNDED,
@@ -70,6 +71,10 @@ class _Player{
     // --- Kickflip Vars ---
     bool m_isKickflipping;
     float m_kickflipProgress;
+
+    _ParticleSystem *m_particleSystem;
+
+    void SetParticleSystem(_ParticleSystem* p_sys) { m_particleSystem = p_sys; }
 
     // takes raw input deltas
     void HandleMouse(float deltaX, float deltaY);

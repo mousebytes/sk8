@@ -71,6 +71,8 @@ _Scene::_Scene()
     m_currentLevelIndex = 1;
     m_levelTransitionTimer = 0.0f;
     m_levelCompleteTriggered = false;
+
+    m_particleSystem = new _ParticleSystem();
 }
 
 _Scene::~_Scene()
@@ -133,6 +135,8 @@ _Scene::~_Scene()
     delete m_backgroundImageButton;
 
     delete m_scoreManager;
+
+    delete m_particleSystem;
 }
 
 void _Scene::reSizeScene(int width, int height)
@@ -602,6 +606,9 @@ void _Scene::initGameplay()
     m_skateboardBlueprint->LoadTexture("models/skateboard/colormap.png");
     m_skateboardBlueprint->RegisterAnimation("idle","models/skateboard/skateboard",1);
     m_player = new _Player(m_player_blueprint, m_skateboardBlueprint);
+
+    m_player->SetParticleSystem(m_particleSystem);
+    m_particleSystem->Init();
     
     // Register the unified floor initially
     m_player->RegisterStaticCollider(m_customFloor);
@@ -701,6 +708,7 @@ void _Scene::draw2DOverlay()
 void _Scene::updateGameplay()
 {
     m_player->UpdatePhysics();
+    m_particleSystem->Update();
     
     // Update Camera (Free Cam logic runs here if active)
     m_camera->Update();
@@ -785,6 +793,7 @@ void _Scene::drawGameplay()
     m_customFloor->Draw();
 
     m_player->Draw();
+    m_particleSystem->Draw();
     
     m_bulletManager->Draw();
 

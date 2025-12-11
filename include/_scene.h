@@ -24,6 +24,7 @@
 #include"_Bullets.h"
 #include"_LevelEditor.h"
 #include"_ScoreManager.h"
+#include"_ParticleSystem.h"
 
 class _Scene
 {
@@ -162,6 +163,8 @@ class _Scene
         int m_currentLevelIndex;        // 1, 2, or 3
         float m_levelTransitionTimer;   // Delay before loading next level
         bool m_levelCompleteTriggered;  // Flag to start the timer
+
+        _ParticleSystem* m_particleSystem;
 };
 
 #endif // _SCENE_H

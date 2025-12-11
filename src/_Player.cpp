@@ -20,8 +20,8 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
     m_cameraYaw = 0.0f;     // Camera starts directly behind player
     
     // --- SKATE PHYSICS VARS ---
-    m_acceleration = 15.0f; // units per second^2
-    m_maxSpeed = 30.0f;     // units per second
+    m_acceleration = 10.0f; // units per second^2
+    m_maxSpeed = 15.0f;     // units per second
     m_turnSpeed = 360.0f;   // degrees per second
     m_friction = 0.3f;      // Damping factor (higher = stops faster)
     m_jumpForce = 8.0f;     // Initial upward velocity
@@ -62,6 +62,8 @@ _Player::_Player(_AnimatedModel* modelBlueprint, _AnimatedModel* boardBlueprint)
     inputA = false;
     inputS = false;
     inputD = false;
+
+    m_particleSystem = nullptr;
 }
 
 _Player::~_Player()
@@ -596,6 +598,14 @@ void _Player::UpdatePhysicsBoard()
         if(!isOnVert) m_body->rotation.x *= 0.95f;
         // Reset lean from grind
         m_body->rotation.z = 0.0f;
+
+        // --- PARTICLE LOGIC FOR SKATING ---
+        float speed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
+        if (speed > 5.0f && m_particleSystem) {
+             // Emit dust occasionally based on random chance or timer
+             // For simplicity, just emit 1 particle per frame if moving fast
+             m_particleSystem->EmitDust(m_skateboard->pos, rb->velocity, 1);
+        }
     }
     else if (isOnRail) {
         
@@ -621,6 +631,11 @@ void _Player::UpdatePhysicsBoard()
             m_grindBalance = 0.0f;
             m_grindBalanceVel = 0.002f; // Give a tiny initial push so it doesn't sit perfect
             m_grindInstability = 0.2f; // Start easy
+
+            if (m_particleSystem) {
+                // Sparks fly from the board position
+                m_particleSystem->EmitSparks(m_skateboard->pos, 20); 
+            }
         }
 
         // --- GRIND MINIGAME PHYSICS ---
@@ -655,7 +670,6 @@ void _Player::UpdatePhysicsBoard()
             }
         }
         else {
-            // --- EXISTING RAIL MOVEMENT CODE ---
             // Add points while grinding 
             if(m_scoreMgr) {
                 m_scoreAccumulator += 100.0f * _Time::deltaTime;
@@ -664,6 +678,11 @@ void _Player::UpdatePhysicsBoard()
                     m_scoreMgr->AddTrickScore(pointsToAdd);
                     m_scoreAccumulator -= pointsToAdd;
                 }
+            }
+
+            if (m_particleSystem) {
+                 // emit particles per frame for a continuous trail
+                 m_particleSystem->EmitSparks(m_skateboard->pos, 1); 
             }
             
             float railYawRad = m_currentRail->rotation.y * PI / 180.0f;
@@ -736,6 +755,7 @@ void _Player::UpdatePhysicsBoard()
 
     // Choose Animation
     float speed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
+
     
     if (m_state == STATE_GRINDING) m_body->PlayAnimation("idle", 1.0f); 
     else if (m_state == STATE_AIR) m_body->PlayAnimation("idle", 1.0f); 
