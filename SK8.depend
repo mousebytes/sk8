@@ -723,7 +723,7 @@
 	<_common.h>
 	"_ObjModel.h"
 
-1765422164 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_player.h
+1765446862 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_player.h
 	"_camera.h"
 	"_inputs.h"
 	"_common.h"
@@ -731,11 +731,13 @@
 	"_StaticModelInstance.h"
 	"_ScoreManager.h"
 	"_ParticleSystem.h"
+	"_sounds.h"
 
-1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_scoremanager.h
+1765432987 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_scoremanager.h
 	"_common.h"
 	"_fonts.h"
 	"_camera.h"
+	"_sounds.h"
 
 1765408252 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_fonts.h
 	"_common.h"
@@ -809,16 +811,16 @@
 1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_parallax.cpp
 	"_parallax.h"
 
-1765422164 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_player.cpp
+1765447730 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_player.cpp
 	"_Player.h"
 
 1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_rigidbody.cpp
 	"_Rigidbody.h"
 
-1765417642 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_scene.cpp
+1765447652 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_scene.cpp
 	"_scene.h"
 
-1765420457 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_scoremanager.cpp
+1765448224 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_scoremanager.cpp
 	"_ScoreManager.h"
 
 1765408253 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_skybox.cpp
@@ -849,7 +851,7 @@
 1765416597 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_particlesystem.cpp
 	"_ParticleSystem.h"
 
-1765422828 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_sounds.h
+1765448236 c:\users\delar\onedrive\desktop\csci 191t\sk8\include\_sounds.h
 	<SNDS/irrKlang.h>
 
 1743639412 c:\users\delar\onedrive\desktop\csci 191t\common\include\snds\irrklang.h
@@ -949,7 +951,7 @@
 	"ik_IRefCounted.h"
 	"ik_ISoundSource.h"
 
-1765416279 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_sounds.cpp
+1765448150 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_sounds.cpp
 	"_sounds.h"
 	"_common.h"
 

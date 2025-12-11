@@ -318,6 +318,8 @@ void _Scene::handleGameplayInput(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             {
                 m_sceneState = SceneState::Paused;
                 m_player->isFrozen = true; // freeze player logic
+
+                m_player->PauseSkateSound();
                 break; // dont process other keys
             }
 
@@ -561,6 +563,8 @@ void _Scene::handlePauseMenuInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 m_sceneState = SceneState::MainMenu;
                 // player will be unfrozen (isFrozen=false) when play is clicked from main menu
+
+                m_player->StopSkateSound();
             }
         }
     }
@@ -648,8 +652,10 @@ void _Scene::initGameplay()
 
     m_scoreManager->Init();
     m_player->SetScoreManager(m_scoreManager);
+    m_player->SetSoundManager(m_sounds);
+    m_scoreManager->SetSoundManager(m_sounds);
 
-    m_sounds->playMusic("sounds/KickPush.mp3");
+    //m_sounds->playMusic("sounds/KickPush.mp3");
 }
 
 void _Scene::initLevelEditor() {
@@ -766,6 +772,7 @@ void _Scene::updateGameplay()
              else {
                  // All levels complete! Return to menu
                  m_sceneState = SceneState::MainMenu;
+                 m_player->StopSkateSound();
                  m_camera->isFreeCam = false;
                  // Reset cursor if needed
                  POINT pt = { width / 2, height / 2 };
@@ -998,6 +1005,7 @@ void _Scene::handleMouseMovement(HWND hWnd, LPARAM lParam)
 // Now handles both Custom Level logic AND Campaign Level Logic
 // plus the "tag" type.
 void _Scene::loadCustomLevel() {
+    m_player->StopSkateSound();
     m_isCustomGame = true;
     m_scoreManager->SetFreePlay();
 
@@ -1149,6 +1157,7 @@ void _Scene::loadCampaignLevel() {
 }
 
 void _Scene::loadCampaignLevel1() {
+    m_player->StopSkateSound();
     m_isCustomGame = false;
     m_currentLevelIndex = 1;
     m_levelCompleteTriggered = false;
@@ -1177,6 +1186,7 @@ void _Scene::loadCampaignLevel1() {
 }
 
 void _Scene::loadCampaignLevel2() {
+    m_player->StopSkateSound();
     m_isCustomGame = false;
     m_currentLevelIndex = 2;
     m_levelCompleteTriggered = false;
@@ -1202,6 +1212,7 @@ void _Scene::loadCampaignLevel2() {
 }
 
 void _Scene::loadCampaignLevel3() {
+    m_player->StopSkateSound();
     m_isCustomGame = false;
     m_currentLevelIndex = 3;
     m_levelCompleteTriggered = false;
