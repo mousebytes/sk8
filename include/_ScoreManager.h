@@ -26,17 +26,17 @@ public:
 
     void Init();
     void Update();
-    void Draw(_camera* cam, int screenWidth, int screenHeight); 
+    void Draw(_camera* cam, int screenWidth, int screenHeight);
 
     // --- Gameplay Methods ---
     void AddScore(int points);
     void AddTrickScore(int points);
     void AddMultiplier(int amount = 1);
     void RegisterAirTime(float time);
-    void LandCombo();                     
-    void Bail();   
-    void SetFinalLevel(bool flag);                       
-    
+    void LandCombo();
+    void Bail();
+    void SetFinalLevel(bool flag);
+
     // --- Level Objectives ---
     // Setup for Level 1: "Reach X Score in Y Seconds"
     void SetScoreObjective(int targetScore, float timeLimit);
@@ -70,7 +70,7 @@ private:
     bool m_isTimed;
     bool m_isTagMode;
     bool m_isFinalLevel;
-    
+
     GameState m_gameState;
 
     // Resources
@@ -97,7 +97,6 @@ private:
     bool m_showBalanceMeter;
     void DrawBalanceMeter();
 
-    _sounds* m_soundMgr;
 };
 
 #endif
