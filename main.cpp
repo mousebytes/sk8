@@ -337,7 +337,7 @@ int WINAPI WinMain(
 */
 	// Create Our OpenGL Window
 
-	if (!CreateGLWindow("Game Engine Lesson 01",fullscreenWidth,fullscreenHeight,256,fullscreen))
+	if (!CreateGLWindow("SK8",fullscreenWidth,fullscreenHeight,256,fullscreen))
 	{
 		return 0;				        // Quit If Window Was Not Created
 	}

@@ -44,7 +44,6 @@
 			<Add library="winmm" />
 			<Add library="gdi32" />
 			<Add library="../common/lib/libirrKlang.a" />
-			<Add library="../common/lib/glut32.lib" />
 			<Add directory="../common/lib" />
 		</Linker>
 		<Unit filename="include/Anorms.h" />

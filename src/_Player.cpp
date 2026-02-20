@@ -830,6 +830,26 @@ void _Player::UpdateCamera(_camera* cam)
     if(cam->isFreeCam) {isFrozen=true; return;}
     else {isFrozen=false;}
 
+    // --- DYNAMIC CAMERA LOGIC ---
+    // Get the player's current horizontal speed
+    _Rigidbody* rb = m_body->GetRigidBody();
+    float currentSpeed = sqrt(rb->velocity.x * rb->velocity.x + rb->velocity.z * rb->velocity.z);
+    
+    // Define minimum and maximum camera distances
+    float minCamDist = 8.0f;
+    float maxCamDist = 12.0f; 
+    
+    // Calculate target distance based on ratio of current speed to max speed
+    float speedRatio = currentSpeed / m_maxSpeed; 
+    if (speedRatio > 1.0f) speedRatio = 1.0f; // Clamp to 1.0
+    
+    float targetCamDist = minCamDist + (maxCamDist - minCamDist) * speedRatio;
+    
+    // Smoothly interpolate (lerp) current distance towards target distance
+    // Multiplying by 5.0f controls how snappy the camera zoom is
+    m_camDistance += (targetCamDist - m_camDistance) * 5.0f * _Time::deltaTime; 
+    // ----------------------------
+
     cam->des = m_body->pos;
     cam->des.y += m_camHeight;
 

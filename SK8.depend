@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1762952769 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\main.cpp
+1765475357 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\main.cpp
 	<windows.h>
 	<stdlib.h>
 	<iostream>
@@ -7,7 +7,7 @@
 	<gl/gl.h>
 	<_scene.h>
 
-1764232142 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
+1765429067 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scene.h
 	<_common.h>
 	<_light.h>
 	<_model.h>
@@ -23,6 +23,7 @@
 	"_inputs.h"
 	"_Button.h"
 	"_skybox.h"
+	"_sounds.h"
 	"_Collider.h"
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
@@ -31,6 +32,7 @@
 	"_Bullets.h"
 	"_LevelEditor.h"
 	"_ScoreManager.h"
+	"_ParticleSystem.h"
 
 1763517359 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_common.h
 	<iostream>
@@ -136,7 +138,7 @@
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_parallax.cpp
 	"_parallax.h"
 
-1764313086 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
+1765477333 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scene.cpp
 	"_scene.h"
 
 1764203831 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_skybox.cpp
@@ -145,7 +147,7 @@
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_sprite.cpp
 	"_sprite.h"
 
-1762680089 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_textureloader.cpp
+1765431690 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_textureloader.cpp
 	"_textureloader.h"
 
 1762563177 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_timer.cpp
@@ -186,10 +188,10 @@
 	<_textureloader.h>
 	"_ObjModel.h"
 
-1763090180 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_animatedmodel.cpp
+1765475471 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_animatedmodel.cpp
 	"_AnimatedModel.h"
 
-1763090155 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_staticmodel.cpp
+1765475487 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_staticmodel.cpp
 	"_StaticModel.h"
 
 1762385406 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_objmodel.h
@@ -236,13 +238,15 @@
 	"_SphereHitbox.h"
 	"_Rigidbody.h"
 
-1764313086 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
+1765469526 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_player.h
 	"_camera.h"
 	"_inputs.h"
 	"_common.h"
 	"_AnimatedModelInstance.h"
 	"_StaticModelInstance.h"
 	"_ScoreManager.h"
+	"_ParticleSystem.h"
+	"_sounds.h"
 
 1762858827 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_targetmanager.h
 	"_AnimatedModel.h"
@@ -254,14 +258,14 @@
 1763554379 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_animatedmodelinstance.cpp
 	"_AnimatedModelInstance.h"
 
-1762684664 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_button.cpp
+1765433836 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_button.cpp
 	"_Button.h"
 
 1763554379 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_cubehitbox.cpp
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
 
-1764728051 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
+1771578152 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_player.cpp
 	"_Player.h"
 
 1762998150 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_spherehitbox.cpp
@@ -277,7 +281,7 @@
 1763508283 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_rigidbody.cpp
 	"_Rigidbody.h"
 
-1764726789 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_leveleditor.h
+1765431438 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_leveleditor.h
 	"_common.h"
 	"_StaticModelInstance.h"
 	"_Button.h"
@@ -285,23 +289,25 @@
 	"_CubeHitbox.h"
 	"_SphereHitbox.h"
 	"_AnimatedModelInstance.h"
+	"_fonts.h"
 
-1764731308 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_leveleditor.cpp
+1765433311 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_leveleditor.cpp
 	"_LevelEditor.h"
 
-1764218959 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scoremanager.h
+1765469526 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_scoremanager.h
 	"_common.h"
 	"_fonts.h"
 	"_camera.h"
+	"_sounds.h"
 
 1764201863 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_fonts.h
 	"_common.h"
 	"_textureloader.h"
 
-1764203317 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_fonts.cpp
+1765419750 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_fonts.cpp
 	"_fonts.h"
 
-1764727020 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scoremanager.cpp
+1765476507 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_scoremanager.cpp
 	"_ScoreManager.h"
 
 1763175933 source:d:\fresno state stuff\csci 191\sk8\main.cpp
@@ -952,6 +958,116 @@
 	"ik_ISoundSource.h"
 
 1765448150 source:c:\users\delar\onedrive\desktop\csci 191t\sk8\src\_sounds.cpp
+	"_sounds.h"
+	"_common.h"
+
+1765450223 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_sounds.h
+	<SNDS/irrKlang.h>
+
+1759822857 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\irrklang.h
+	"ik_irrKlangTypes.h"
+	"ik_vec3d.h"
+	"ik_IRefCounted.h"
+	"ik_IVirtualRefCounted.h"
+	"ik_ESoundOutputDrivers.h"
+	"ik_ESoundEngineOptions.h"
+	"ik_EStreamModes.h"
+	"ik_SAudioStreamFormat.h"
+	"ik_ISoundEngine.h"
+	"ik_ISoundSource.h"
+	"ik_ISound.h"
+	"ik_IAudioStream.h"
+	"ik_IAudioStreamLoader.h"
+	"ik_ISoundEffectControl.h"
+	"ik_ISoundStopEventReceiver.h"
+	"ik_IFileFactory.h"
+	"ik_IFileReader.h"
+	"ik_ISoundDeviceList.h"
+	"ik_IAudioRecorder.h"
+	"ik_ISoundMixedOutputReceiver.h"
+
+1759822939 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_irrklangtypes.h
+	<wchar.h>
+
+1759822938 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_vec3d.h
+	<math.h>
+	"ik_irrKlangTypes.h"
+
+1759822939 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_irefcounted.h
+	"ik_irrKlangTypes.h"
+
+1759822939 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_ivirtualrefcounted.h
+	"ik_irrKlangTypes.h"
+
+1759822938 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_esoundoutputdrivers.h
+
+1759822938 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_esoundengineoptions.h
+
+1759822938 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_estreammodes.h
+
+1759822939 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_saudiostreamformat.h
+	"ik_IRefCounted.h"
+
+1759822939 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_isoundengine.h
+	"ik_IRefCounted.h"
+	"ik_vec3d.h"
+	"ik_ISoundSource.h"
+	"ik_ISound.h"
+	"ik_EStreamModes.h"
+	"ik_IFileFactory.h"
+	"ik_ISoundMixedOutputReceiver.h"
+
+1759822939 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_isoundsource.h
+	"ik_IVirtualRefCounted.h"
+	"ik_vec3d.h"
+	"ik_EStreamModes.h"
+	"ik_SAudioStreamFormat.h"
+
+1759822939 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_isound.h
+	"ik_IVirtualRefCounted.h"
+	"ik_ISoundEffectControl.h"
+	"ik_vec3d.h"
+
+1759822939 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_isoundeffectcontrol.h
+	"ik_IVirtualRefCounted.h"
+	"ik_vec3d.h"
+
+1759822938 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_ifilefactory.h
+	"ik_IRefCounted.h"
+
+1759822939 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_isoundmixedoutputreceiver.h
+	"ik_IRefCounted.h"
+	"ik_SAudioStreamFormat.h"
+
+1759822938 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_iaudiostream.h
+	"ik_IRefCounted.h"
+	"ik_SAudioStreamFormat.h"
+
+1759822938 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_iaudiostreamloader.h
+	"ik_IRefCounted.h"
+	"ik_IFileReader.h"
+
+1759822938 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_ifilereader.h
+	"ik_IRefCounted.h"
+
+1759822939 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_isoundstopeventreceiver.h
+	"ik_IRefCounted.h"
+	"ik_SAudioStreamFormat.h"
+
+1759822939 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_isounddevicelist.h
+	"ik_IRefCounted.h"
+
+1759822938 c:\users\amora\desktop\fresno state stuff\csci 191\common\include\snds\ik_iaudiorecorder.h
+	"ik_IRefCounted.h"
+	"ik_ISoundSource.h"
+
+1765407338 c:\users\amora\desktop\fresno state stuff\csci 191\sk8\include\_particlesystem.h
+	"_common.h"
+
+1765410123 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_particlesystem.cpp
+	"_ParticleSystem.h"
+
+1765469526 source:c:\users\amora\desktop\fresno state stuff\csci 191\sk8\src\_sounds.cpp
 	"_sounds.h"
 	"_common.h"
 

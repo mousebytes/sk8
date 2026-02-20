@@ -696,7 +696,7 @@ void _Scene::initMainMenu()
     m_editorButton->Init("images/editor-btn.png", 200, 70, width/2, height/2 + 40, 0, 1, 1);
     m_helpButton->Init("images/help-btn.png", 200, 70, width/2, height/2 + 120, 0, 1, 1);
     m_exitButton->Init("images/exit-btn.png", 200, 70, width/2, height/2 + 200, 0, 1, 1);
-    m_creditsButton->Init("images/help-btn.png", 150, 50, width - 100, height - 100, 0, 1, 1);
+    m_creditsButton->Init("images/credits-btn.png", 150, 50, width - 100, height - 100, 0, 1, 1);
 }
 
 void _Scene::initCreditsScreen()

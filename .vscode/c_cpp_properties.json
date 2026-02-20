@@ -3,7 +3,8 @@
     {
       "name": "windows-cygwin-gcc-x64",
       "includePath": [
-        "${workspaceFolder}/**"
+        "${workspaceFolder}/**",
+        "../common/include"
       ],
       "defines": [
         "_DEBUG",

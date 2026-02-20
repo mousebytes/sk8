@@ -9,7 +9,7 @@ _AnimatedModel::~_AnimatedModel() {
 }
 
 bool _AnimatedModel::LoadTexture(char* texpath) {
-    cout << "Loading texture: " << texpath << '\n';
+    //cout << "Loading texture: " << texpath << '\n';
     myTex.loadTexture(texpath);
     modelTexID = myTex.textID;
     return modelTexID != 0;
@@ -26,7 +26,7 @@ int _AnimatedModel::GetFrameCount(string animName) {
 
 // loads an animation from a sequence of OBJs and stores it by name
 bool _AnimatedModel::RegisterAnimation(string name, const char* baseName, int frameCount) {
-    
+
     // create a new vector to hold this animation's frames
     vector<ObjModel*> frames;
 
@@ -89,7 +89,7 @@ void _AnimatedModel::FreeModel() {
 }
 
 void _AnimatedModel::Draw(string animName, int frameA, int frameB, float interp) {
-    
+
     // find the requested animation in our map
     if (m_Animations.find(animName) == m_Animations.end()) {
         return; // this animation doesn't exist
@@ -115,7 +115,7 @@ void _AnimatedModel::Draw(string animName, int frameA, int frameB, float interp)
 
     // calc the final vertex positions and normals,
     // and store them in m_ScratchFrame.
-    
+
     for (size_t i = 0; i < modelA->vertices.size(); ++i) {
         // get vert pos from both frames
         Vector3& posA = modelA->vertices[i];
@@ -126,7 +126,7 @@ void _AnimatedModel::Draw(string animName, int frameA, int frameB, float interp)
         m_ScratchFrame.vertices[i].y = posA.y + (posB.y - posA.y) * interp;
         m_ScratchFrame.vertices[i].z = posA.z + (posB.z - posA.z) * interp;
     }
-    
+
     // also lerp normals for smooth lighting
     for (size_t i = 0; i < modelA->normals.size(); ++i) {
         Vector3 &normA = modelA->normals[i];
